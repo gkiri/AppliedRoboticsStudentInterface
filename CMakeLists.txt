@@ -14,11 +14,21 @@ include_directories(
  ${project_interface_INCLUDE_DIRS}
 )
 
+## CREATE EXECUTABLE 
+add_executable(calibrate
+  src/calibration2.cpp)
+
 ## CREATE EXECUTABLE LIBRARY
 add_library(student SHARED
    src/student_interface.cpp
+   #src/image_saver.cpp
+   #src/image_undistort.cpp
 )
 
 target_link_libraries(student
+  ${OpenCV_LIBRARIES}  
+)
+
+target_link_libraries(calibrate
   ${OpenCV_LIBRARIES}  
 )
