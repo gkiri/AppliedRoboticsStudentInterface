@@ -16,7 +16,7 @@ include_directories(
 
 ## CREATE EXECUTABLE 
 add_executable(calibrate
-  src/calibration2.cpp)
+  src/camera_calibration.cpp)
 
 ## CREATE EXECUTABLE LIBRARY
 add_library(student SHARED
