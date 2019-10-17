@@ -1,6 +1,34 @@
 <?xml version="1.0"?>
 <opencv_storage>
 <images>
+
+
+<!-- $(AR_ROOT)/Computer_Vision/000.jpg
+$(AR_ROOT)/Computer_Vision/001.jpg
+$(AR_ROOT)/Computer_Vision/002.jpg
+$(AR_ROOT)/Computer_Vision/003.jpg
+$(AR_ROOT)/Computer_Vision/004.jpg
+$(AR_ROOT)/Computer_Vision/005.jpg -->
+
+<!-- 
+"$(AR_ROOT)"/Computer_Vision/000.jpg
+"$(AR_ROOT)"/Computer_Vision/001.jpg
+"$(AR_ROOT)"/Computer_Vision/002.jpg
+"$(AR_ROOT)"/Computer_Vision/003.jpg
+"$(AR_ROOT)"/Computer_Vision/004.jpg
+"$(AR_ROOT)"/Computer_Vision/005.jpg
+"$(AR_ROOT)"/Computer_Vision/006.jpg
+"$(AR_ROOT)"/Computer_Vision/007.jpg
+"$(AR_ROOT)"/Computer_Vision/008.jpg
+"$(AR_ROOT)"/Computer_Vision/009.jpg
+"$(AR_ROOT)"/Computer_Vision/010.jpg
+"$(AR_ROOT)"/Computer_Vision/011.jpg
+"$(AR_ROOT)"/Computer_Vision/012.jpg
+"$(AR_ROOT)"/Computer_Vision/013.jpg
+"$(AR_ROOT)"/Computer_Vision/014.jpg
+"$(AR_ROOT)"/Computer_Vision/015.jpg -->
+
+
 /home/gkiri/Desktop/Computer_Vision/000.jpg
 /home/gkiri/Desktop/Computer_Vision/001.jpg
 /home/gkiri/Desktop/Computer_Vision/002.jpg
