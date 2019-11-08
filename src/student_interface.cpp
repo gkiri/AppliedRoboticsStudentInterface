@@ -12,10 +12,37 @@
 #include <sstream>
 
 
-#include "findRobot.cpp"
 #include "loadImage.cpp"
-// #include "findRobot.cpp"
-// #include "findRobot.cpp"
+
+#include "findRobot.cpp"
+
+#include "dubins_curve.hpp"
+
+
+// typedef enum 
+// {
+//     LSL = 0,
+//     LSR = 1,
+//     RSL = 2,
+//     RSR = 3,
+//     RLR = 4,
+//     LRL = 5
+// } DubinsPathType;
+
+// typedef struct 
+// {
+//     /* the initial configuration */
+//     double qi[3];        
+//     /* the lengths of the three segments */
+//     double param[3];     
+//     /* model forward velocity / model angular velocity */
+//     double rho;          
+//     /* the path type described */
+//     DubinsPathType type; 
+// } DubinsPath;
+
+
+
 namespace student {
 
 //  void loadImage(cv::Mat& img_out, const std::string& config_folder){  
@@ -162,25 +189,23 @@ namespace student {
     return ok;
 
 
-
-
   }
 
-  // void imageUndistort(const cv::Mat& img_in, cv::Mat& img_out, 
-  //         const cv::Mat& cam_matrix, const cv::Mat& dist_coeffs, const std::string& config_folder){
+  void imageUndistort(const cv::Mat& img_in, cv::Mat& img_out, 
+          const cv::Mat& cam_matrix, const cv::Mat& dist_coeffs, const std::string& config_folder){
 
-  //   //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );
-  //   cv::undistort(img_in, img_out, cam_matrix,dist_coeffs);
+    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );
+    cv::undistort(img_in, img_out, cam_matrix,dist_coeffs);
 
-  //   // cv::initUndistortRectifyMap(); //Implemet when free its fast
-  //   // cv::remap();
+    // cv::initUndistortRectifyMap(); //Implemet when free its fast
+    // cv::remap();
 
-  //   std::cout << "Team4::---------------------imageUndistort----------------------------->>"  << std::endl;
+    std::cout << "Team4::---------------------imageUndistort----------------------------->>"  << std::endl;
    
-  //   //cv::initUndistortRectifyMap;
-  //   //cv::remap
+    //cv::initUndistortRectifyMap;
+    //cv::remap
 
-  // }
+  }
 
  //-------------------------------------------------------------------------
   //          FIND PLANE TRANSFORM
@@ -213,16 +238,51 @@ namespace student {
 
   bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
     //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );  
-    cv::Mat dst_mat;
+    //cv::Mat dst_mat;
     //cv::cvtColor(img_in, dst_mat, COLOR_BGR2HSV);
   }
 
-  // bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
-  //   throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );    
-  // }
+  bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
+    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );    
+  }
 
-  bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, const std::vector<std::pair<int,Polygon>>& victim_list, const Polygon& gate, const float x, const float y, const float theta, Path& path){
-    throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );     
+bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, 
+              const std::vector<std::pair<int,Polygon>>& victim_list, 
+              const Polygon& gate, const float x, const float y, const float theta, 
+              Path& path,
+              const std::string& config_folder)
+
+{
+
+
+    std::cout << "Gkiri:: planPath:: Started" << std::endl;
+    double q0[3];
+    double q1[3];
+    double rho=3.0;
+    //Gkiri  Test function
+    dubins_test(); 
+
+    std::cout << "Gkiri:: planPath:: stage-0" << std::endl;
+    q0[0]=0;
+    q0[1]=0;
+    q0[2]= -2/3*3.14;
+
+
+    q1[0]=4;
+    q1[1]=0;
+    q1[2]= -3.14/3.0 ;
+
+    DubinsPath dub_path;
+    dubins_shortest_path(&dub_path,  q0,  q1,  rho);
+
+
+    std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
+    std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
+
+    std::cout << "Gkiri:: planPath:: End" << std::endl;
+
+
+    return true;
   }
 
 
