@@ -17,7 +17,8 @@ include_directories(
 ## CREATE EXECUTABLE LIBRARY
 add_library(student SHARED
    src/student_interface.cpp
-   src/image_undistort.cpp
+   ##src/image_undistort.cpp
+   src/dubins_curve.cpp
 )
 
 target_link_libraries(student
@@ -46,6 +47,9 @@ add_executable(demo_full_example
 add_executable(demo_simple_shape_detection
   src/demo_shape_detection/demo_simple_shape_detection.cpp
 )
+add_executable(demo_match_template
+   src/match_template.cpp
+)
 
 target_link_libraries(demo_dilatation_erosion
   ${OpenCV_LIBRARIES}
@@ -67,4 +71,7 @@ target_link_libraries(demo_full_example
 )
 target_link_libraries(demo_simple_shape_detection
   ${OpenCV_LIBRARIES}
+)
+target_link_libraries(demo_match_template
+  ${OpenCV_LIBRARIES}  
 )
