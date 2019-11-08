@@ -18,29 +18,7 @@
 
 #include "dubins_curve.hpp"
 
-
-// typedef enum 
-// {
-//     LSL = 0,
-//     LSR = 1,
-//     RSL = 2,
-//     RSR = 3,
-//     RLR = 4,
-//     LRL = 5
-// } DubinsPathType;
-
-// typedef struct 
-// {
-//     /* the initial configuration */
-//     double qi[3];        
-//     /* the lengths of the three segments */
-//     double param[3];     
-//     /* model forward velocity / model angular velocity */
-//     double rho;          
-//     /* the path type described */
-//     DubinsPathType type; 
-// } DubinsPath;
-
+#include "image_undistort.hpp"
 
 
 namespace student {
@@ -135,9 +113,9 @@ namespace student {
   bool extrinsicCalib(const cv::Mat& img_in, std::vector<cv::Point3f> object_points, const cv::Mat& camera_matrix, cv::Mat& rvec, cv::Mat& tvec, const std::string& config_folder){
     //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );   
 
-        std::cout << "Team4::---------------------extrinsicCalib----------------------------->>"  << std::endl;
-        //cv::solvePnP(object_points, , camera_matrix,);
-         std::string file_path = config_folder + "/extrinsicCalib.csv";
+    std::cout << "Team4::---------------------extrinsicCalib----------------------------->>"  << std::endl;
+    //cv::solvePnP(object_points, , camera_matrix,);
+    std::string file_path = config_folder + "/extrinsicCalib.csv";
 
     std::vector<cv::Point2f> image_points;
 
@@ -191,21 +169,19 @@ namespace student {
 
   }
 
+
   void imageUndistort(const cv::Mat& img_in, cv::Mat& img_out, 
           const cv::Mat& cam_matrix, const cv::Mat& dist_coeffs, const std::string& config_folder){
 
-    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );
-    cv::undistort(img_in, img_out, cam_matrix,dist_coeffs);
+    static ImageUndistort image_undistort;
 
-    // cv::initUndistortRectifyMap(); //Implemet when free its fast
-    // cv::remap();
+    if(!image_undistort.isInitialized()){
+      image_undistort.initialize(img_in.size(), cam_matrix, dist_coeffs);
+    }
 
-    std::cout << "Team4::---------------------imageUndistort----------------------------->>"  << std::endl;
-   
-    //cv::initUndistortRectifyMap;
-    //cv::remap
+    image_undistort.undistort(img_in, img_out);  
+  } 
 
-  }
 
  //-------------------------------------------------------------------------
   //          FIND PLANE TRANSFORM
@@ -243,7 +219,12 @@ namespace student {
   }
 
   bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
-    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );    
+    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );
+
+    std::cout << "Gkiri:: findRobot:: Started" << std::endl;
+    findRobot_api(img_in, scale, triangle, x, y, theta, config_folder);
+
+
   }
 
 bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, 
