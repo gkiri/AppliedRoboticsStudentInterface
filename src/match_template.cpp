@@ -107,22 +107,7 @@ void processImage(const std::string& filename)
     // mirror the template, we want them to have the same shape of the number that we
     // have in the unwarped ground image
     cv::flip(num_template, num_template, 1); 
-    // //rotate the template by an angle step amount to detect tilted numbers
-    // int angle_step = 15; 
-    // int iImageHeight = num_template.size().height; 
-    // int iImageWidth = num_template.size().width;
-    // for (int angle=0; angle<360; angle += angle_step) {     
-    //   cv::Mat matRotation = cv::getRotationMatrix2D( cv::Point(iImageWidth/2, iImageHeight/2), (angle_step), 1 );
-    //   cv::warpAffine(num_template, num_template, matRotation, num_template.size() );
-        
-    //   //Show the loaded template!
-    //   cv::imshow("Loaded template " + std::to_string(i) ,num_template);
-    //   cv::waitKey(0);
-
-    //   // Store the template in templROIs (vector of mat)
-    //   templROIs.emplace_back(num_template);
-    //  } 
-
+   
     //Show the loaded template!
     cv::imshow("Loaded template " + std::to_string(i) ,num_template);
     cv::waitKey(0);
@@ -161,10 +146,11 @@ void processImage(const std::string& filename)
     
     // Find the template digit with the best matching
     double maxScore = 0;
-    int maxIdx = -1;
-    int angle_step = 15;
+    int maxIdx = -1;    
+    int angle_step = 15; //Angle of rotation
     int iImageHeight = processROI.size().height; 
     int iImageWidth = processROI.size().width;
+    //Rotate the number
     for (int angle = 0; angle <= 360; angle += angle_step) {    
       std::cout << "Angle value: " << angle << std::endl;   
       cv::Mat matRotation = cv::getRotationMatrix2D( cv::Point(iImageWidth/2, iImageHeight/2), (angle_step), 1 );
