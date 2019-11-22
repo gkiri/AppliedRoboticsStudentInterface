@@ -25,6 +25,11 @@
 
 #include "inflate_polygons.cpp"
 
+#define PRINTOUT 1 //Print out polygons (0 -no, 1 -yes)
+
+#define PRINTOUT_ALL 0    //(0)Print 1by1 - (1)Print all polygons
+
+
 namespace student {
 
 //  void loadImage(cv::Mat& img_out, const std::string& config_folder){  
@@ -247,7 +252,14 @@ namespace student {
                               //Radius of circle approximating robot shape (m)  
     std::vector<Polygon> inflated_obstacle_list;
     //Inflate polygon function --> Return std::vector<Polygon>
-    inflated_obstacle_list = inflate_polygons(obstacle_list, OFFSET);  
+    inflated_obstacle_list = inflate_polygons(obstacle_list, OFFSET);
+
+    //Print polygons
+    #if PRINTOUT 
+    print_polygons_out(obstacle_list, inflated_obstacle_list);
+    #endif      
+
+
 
     return 0;
 
