@@ -11,7 +11,6 @@
 #include <experimental/filesystem>
 #include <sstream>
 
-
 #include "loadImage.cpp"
 
 #include "findRobot.cpp"
@@ -19,6 +18,16 @@
 #include "dubins_curve.hpp"
 
 #include "image_undistort.hpp"
+
+#include "clipper.hpp"
+
+#include <graphics.h>
+
+#include "inflate_polygons.cpp"
+
+#define PRINTOUT 1 //Print out polygons (0 -no, 1 -yes)
+
+#define PRINTOUT_ALL 0    //(0)Print 1by1 - (1)Print all polygons
 
 
 namespace student {
@@ -227,43 +236,33 @@ namespace student {
 
   }
 
-bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, 
-              const std::vector<std::pair<int,Polygon>>& victim_list, 
-              const Polygon& gate, const float x, const float y, const float theta, 
-              Path& path,
-              const std::string& config_folder)
+  bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, 
+                const std::vector<std::pair<int,Polygon>>& victim_list, 
+                const Polygon& gate, const float x, const float y, const float theta, 
+                Path& path,
+                const std::string& config_folder)
 
-{
+  { 
+    //Robot parameters (move to another file?)
+    const double robot_length = 0.2; //(m)
+    const double robot_width = 0.14; //(m)
 
+    //Inflate polygons
+    double OFFSET = sqrt(pow(robot_length/2,2) + pow(robot_width/2,2)); 
+                              //Radius of circle approximating robot shape (m)  
+    std::vector<Polygon> inflated_obstacle_list;
+    //Inflate polygon function --> Return std::vector<Polygon>
+    inflated_obstacle_list = inflate_polygons(obstacle_list, OFFSET);
 
-    std::cout << "Gkiri:: planPath:: Started" << std::endl;
-    double q0[3];
-    double q1[3];
-    double rho=3.0;
-    //Gkiri  Test function
-    dubins_test(); 
-
-    std::cout << "Gkiri:: planPath:: stage-0" << std::endl;
-    q0[0]=0;
-    q0[1]=0;
-    q0[2]= -2/3*3.14;
-
-
-    q1[0]=4;
-    q1[1]=0;
-    q1[2]= -3.14/3.0 ;
-
-    DubinsPath dub_path;
-    dubins_shortest_path(&dub_path,  q0,  q1,  rho);
+    //Print polygons
+    #if PRINTOUT 
+    print_polygons_out(obstacle_list, inflated_obstacle_list);
+    #endif      
 
 
-    std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
-    std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
 
-    std::cout << "Gkiri:: planPath:: End" << std::endl;
+    return 0;
 
-
-    return true;
   }
 
 
