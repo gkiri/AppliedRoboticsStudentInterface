@@ -25,9 +25,13 @@
 
 #include "inflate_polygons.cpp"
 
-#define PRINTOUT 1 //Print out polygons (0 -no, 1 -yes)
+#include "draw_functions.cpp"
 
+//Unit test and printouts variables
+#define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
 #define PRINTOUT_ALL 0    //(0)Print 1by1 - (1)Print all polygons
+#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
+#define DRAW_TEST 1       //(0)Deactivated - (1)Draw function test
 
 
 namespace student {
@@ -247,6 +251,12 @@ namespace student {
     const double robot_length = 0.2; //(m)
     const double robot_width = 0.14; //(m)
 
+    //Visualising the map parameters
+    double map_w = 1.5; //real map width in m
+    double map_h = 1; //real map height in m  
+    double img_map_w = 720; //image map width in pixels
+    //image map height is calculated through the other three parameters
+
     //Inflate polygons
     double OFFSET = sqrt(pow(robot_length/2,2) + pow(robot_width/2,2)); 
                               //Radius of circle approximating robot shape (m)  
@@ -259,7 +269,55 @@ namespace student {
     print_polygons_out(obstacle_list, inflated_obstacle_list);
     #endif      
 
+    #if VISUALIZE_MAP
+    //Visualize elements in a map image
+    //Initialize map matrix and scale
+    img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);
+    std::cout << "Scale: " << map_param.scale << std::endl;
 
+    #if DRAW_TEST
+    //Test for drawing function
+    //std::vector<Point> eg_points;
+    //Generate random points
+    // for(int i=0;i<1000;i++){
+    //   float x_rand = (rand() % 150 + 1)/100; //Generate floar random numbers does not work
+    //   float y_rand = (rand() % 100 + 1)/100; 
+    //   std::cout << x_rand << "," << y_rand << std::endl;
+    //   eg_points.emplace_back(x_rand,y_rand);
+    // }
+    // std::cout << "Scale" << map_param.scale << std::endl;
+    // //Add points to map image    
+    // for (int i=0;i<1000;i++){
+    //   draw_point(eg_points[i], map_param);      
+    // }       
+    
+
+    //Draw polygon
+    Polygon poly;
+    // //Code for drawing a single polygon
+    // poly = obstacle_list[0];
+    // draw_polygon(poly, map_param);
+
+    //Code for printing all polygons
+    //std::vector<Polygon> poly_list = obstacle_list; //for printing the original polygons
+    std::vector<Polygon> poly_list = inflated_obstacle_list; //inflated polygons
+    
+    for (size_t i = 0; i<poly_list.size(); i++){
+      poly = poly_list[i];
+      draw_polygon(poly, map_param);
+    }
+
+    //Code for single point
+    Point eg_point;
+    eg_point.x = 0.75;
+    eg_point.y = 0.5;
+    draw_point(eg_point, map_param);
+    #endif
+
+    //Show map image
+    cv::imshow("Image",map_param.img_map);
+    cv::waitKey( 0 );
+    #endif
 
     return 0;
 

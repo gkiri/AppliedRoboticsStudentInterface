@@ -5,6 +5,7 @@
 
 #define OFFSETTING 0    //(0)Deactivation - (1)Activation of printouts.
 
+
 std::vector<Polygon> inflate_polygons(const std::vector<Polygon>& obstacle_list, double OFFSET){
     //Constant variables
     const double INT_ROUND = 1000.;    
@@ -74,76 +75,78 @@ std::vector<Polygon> inflate_polygons(const std::vector<Polygon>& obstacle_list,
     return inflated_obstacle_list;
 }
 
-//////PRINTING OUT POLYGONS///////////
-void print_polygons_out(std::vector<Polygon> obstacle_list, 
-                        std::vector<Polygon> inflated_obstacle_list){
-    //variables
-    Polygon ob, inflated_ob; 
-    int ob_size, inflated_ob_size;
-    int obl_size = obstacle_list.size(); //inflated obstacle size is the same    
+// //////PRINTING OUT POLYGONS///////////
+// void print_polygons_out(std::vector<Polygon> obstacle_list, 
+//                         std::vector<Polygon> inflated_obstacle_list){
+//     //variables
+//     Polygon ob, inflated_ob; 
+//     int ob_size, inflated_ob_size;
+//     int obl_size = obstacle_list.size(); //inflated obstacle size is the same    
 
-    const double TO_CM = 100;
-    int map_w = 150; //map width in cms
-    int map_h = 100; //map height in cms
+//     const double TO_CM = 100;
+//     int map_w = 150; //map width in cms
+//     int map_h = 100; //map height in cms
 
-    using namespace cv;
-    std::vector<std::vector<cv::Point>> polys, inf_polys;
-    std::vector<cv::Point> v_img_ob, v_img_inflated_ob;
-    int img_map_w = 720; //map width in pixels
-    int img_map_h = 576; //map height in pixels
-    Mat image = Mat::zeros(img_map_h, img_map_w, CV_8UC3);
+//     using namespace cv;
+//     std::vector<std::vector<cv::Point>> polys, inf_polys;
+//     std::vector<cv::Point> v_img_ob, v_img_inflated_ob;
+//     int img_map_w = 720; //map width in pixels
+//     int img_map_h = 576; //map height in pixels
+//     Mat image = Mat::zeros(img_map_h, img_map_w, CV_8UC3);
 
-    //Loop over each polygon
-    for (size_t i = 0; i<obl_size; i++){
-        #if PRINTOUT_ALL
-        #else
-        //Reset variables
-        image.setTo(Scalar::all(0));
-        polys.clear();
-        inf_polys.clear();
-        #endif 
-        v_img_ob.clear();
-        v_img_inflated_ob.clear();      
-        //Retrieve both polygons and the number of vertexes
-        ob = obstacle_list[i];
-        inflated_ob = inflated_obstacle_list[i];
-        ob_size = ob.size();
-        inflated_ob_size = inflated_ob.size();     
-        std::cout << "Polygon:" << i << "  size obstacle:" << ob_size << 
-                            "  size inflated obstacle:" << inflated_ob_size << std::endl;    
-        //Loop over each obstacle vertex
-        for (size_t j = 0; j<ob_size; j++){        
-            int x_ob = ob[j].x*TO_CM;
-            int y_ob = ob[j].y*TO_CM;                            
-            v_img_ob.emplace_back(img_map_w*x_ob/map_w, img_map_h*y_ob/map_h);                   
-        }
-        //Loop over each inflated obstacle vertex
-        for (size_t j = 0; j<inflated_ob_size; j++){         
-            int x_inf_ob = inflated_ob[j].x*TO_CM;
-            int y_inf_ob = inflated_ob[j].y*TO_CM;                  
-            v_img_inflated_ob.emplace_back(img_map_w*x_inf_ob/map_w, img_map_h*y_inf_ob/map_h);                
-        }       
+//     //Loop over each polygon
+//     for (size_t i = 0; i<obl_size; i++){
+//         #if PRINTOUT_ALL
+//         #else
+//         //Reset variables
+//         image.setTo(Scalar::all(0));
+//         polys.clear();
+//         inf_polys.clear();
+//         #endif 
+//         v_img_ob.clear();
+//         v_img_inflated_ob.clear();      
+//         //Retrieve both polygons and the number of vertexes
+//         ob = obstacle_list[i];
+//         inflated_ob = inflated_obstacle_list[i];
+//         ob_size = ob.size();
+//         inflated_ob_size = inflated_ob.size();     
+//         std::cout << "Polygon:" << i << "  size obstacle:" << ob_size << 
+//                             "  size inflated obstacle:" << inflated_ob_size << std::endl;    
+//         //Loop over each obstacle vertex
+//         for (size_t j = 0; j<ob_size; j++){        
+//             int x_ob = ob[j].x*TO_CM;
+//             int y_ob = ob[j].y*TO_CM;                            
+//             v_img_ob.emplace_back(img_map_w*x_ob/map_w, img_map_h*y_ob/map_h);                   
+//         }
+//         //Loop over each inflated obstacle vertex
+//         for (size_t j = 0; j<inflated_ob_size; j++){         
+//             int x_inf_ob = inflated_ob[j].x*TO_CM;
+//             int y_inf_ob = inflated_ob[j].y*TO_CM;                  
+//             v_img_inflated_ob.emplace_back(img_map_w*x_inf_ob/map_w, img_map_h*y_inf_ob/map_h);                
+//         }       
         
-        #if PRINTOUT_ALL
-        //Save all polygon 
-        inf_polys.push_back(v_img_inflated_ob);
-        polys.push_back(v_img_ob);
+//         #if PRINTOUT_ALL
+//         //Save all polygon 
+//         inf_polys.push_back(v_img_inflated_ob);
+//         polys.push_back(v_img_ob);
 
-        #else
-        ////Draw polygons one by one
-        inf_polys = {v_img_inflated_ob};      
-        fillPoly(image, inf_polys, Scalar(255,0,0));
-        polys = {v_img_ob}; 
-        fillPoly(image, polys, Scalar(255,255,255));
-        imshow("Image",image);
-        waitKey( 0 );
-        #endif      
-    }
-    #if PRINTOUT_ALL
-    //Draw all polygons
-    fillPoly(image, inf_polys, Scalar(255,0,0));
-    fillPoly(image, polys, Scalar(255,255,255));
-    imshow("Image",image);
-    waitKey( 0 );
-    #endif
-}
+//         #else
+//         ////Draw polygons one by one
+//         inf_polys = {v_img_inflated_ob};      
+//         fillPoly(image, inf_polys, Scalar(255,0,0));
+//         polys = {v_img_ob}; 
+//         fillPoly(image, polys, Scalar(255,255,255));
+//         imshow("Image",image);
+//         waitKey( 0 );
+//         #endif      
+//     }
+//     #if PRINTOUT_ALL
+//     //Draw all polygons
+//     fillPoly(image, inf_polys, Scalar(255,0,0));
+//     fillPoly(image, polys, Scalar(255,255,255));
+//     imshow("Image",image);
+//     waitKey( 0 );
+//     #endif
+// }
+
+
