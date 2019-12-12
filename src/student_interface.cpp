@@ -30,7 +30,7 @@
 //Unit test and printouts variables
 #define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
 #define PRINTOUT_ALL 1   //(0)Print 1by1 - (1)Print all polygons
-#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
 #define DRAW_TEST 1       //(0)Deactivated - (1)Draw function test
 
 #define DUBINS_CURVE 1
@@ -312,7 +312,7 @@ namespace student {
                 const std::string& config_folder)
 
   { 
-    std::cout << "Scale: " << map_param.scale << std::endl;
+    //std::cout << "Scale: " << map_param.scale << std::endl;
     
     //Robot parameters (move to another file?)
     const double robot_length = 0.2; //(m)
@@ -369,7 +369,7 @@ namespace student {
     for(int i=0;i<1000;i++){
       int x_rand = rand() % 150 + 1; //Generate random sample
       int y_rand = rand() % 100 + 1; 
-      std::cout << x_rand << "," << y_rand << std::endl;
+      //std::cout << x_rand << "," << y_rand << std::endl;
       eg_points.emplace_back(x_rand,y_rand);
     }
     std::cout << "Scale" << map_param.scale << std::endl;
