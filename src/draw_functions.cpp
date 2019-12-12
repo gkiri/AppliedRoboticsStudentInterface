@@ -8,13 +8,14 @@ struct img_map_def{
     cv::Mat img_map;
     float scale;
 };
+int TO_CM = 100;    //Transform from m to cms
 
 img_map_def initialize_img_map(double map_w, double map_h, double img_map_w){
     // Initialize the map parameters for the visual representation of points, dubins curves
     // and polygons 
-
-    cv::Mat img_map = cv::Mat::zeros(map_h*img_map_w/map_w, img_map_w, CV_8UC3); //create empty map
-    float scale = img_map_w/map_w; //Calculate the scale (relation btw pixels and cms)
+    
+    float scale = img_map_w/(map_w*TO_CM); //Calculate the scale (relation btw pixels and cms)
+    cv::Mat img_map = cv::Mat::zeros(scale*map_h*TO_CM, img_map_w, CV_8UC3); //create empty map
 
     img_map_def result = {img_map, scale};
     return result;
@@ -40,8 +41,8 @@ void draw_polygon(Polygon poly, img_map_def img_map_def){
     std::vector<cv::Point> poly_scaled;   
 
     for (size_t i = 0; i<poly.size(); i++){        
-        float poly_scaled_x = poly[i].x*img_map_def.scale;
-        float poly_scaled_y = poly[i].y*img_map_def.scale;                         
+        float poly_scaled_x = poly[i].x*img_map_def.scale*TO_CM;
+        float poly_scaled_y = poly[i].y*img_map_def.scale*TO_CM;                         
         poly_scaled.emplace_back(poly_scaled_x, poly_scaled_y);                   
     }
     v_poly_scaled = {poly_scaled};  //fillpoly works with vectors of polygons

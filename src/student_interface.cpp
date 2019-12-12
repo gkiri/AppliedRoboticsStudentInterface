@@ -276,22 +276,6 @@ namespace student {
     std::cout << "Scale: " << map_param.scale << std::endl;
 
     #if DRAW_TEST
-    //Test for drawing function
-    //std::vector<Point> eg_points;
-    //Generate random points
-    // for(int i=0;i<1000;i++){
-    //   float x_rand = (rand() % 150 + 1)/100; //Generate floar random numbers does not work
-    //   float y_rand = (rand() % 100 + 1)/100; 
-    //   std::cout << x_rand << "," << y_rand << std::endl;
-    //   eg_points.emplace_back(x_rand,y_rand);
-    // }
-    // std::cout << "Scale" << map_param.scale << std::endl;
-    // //Add points to map image    
-    // for (int i=0;i<1000;i++){
-    //   draw_point(eg_points[i], map_param);      
-    // }       
-    
-
     //Draw polygon
     Polygon poly;
     // //Code for drawing a single polygon
@@ -307,11 +291,25 @@ namespace student {
       draw_polygon(poly, map_param);
     }
 
-    //Code for single point
-    Point eg_point;
-    eg_point.x = 0.75;
-    eg_point.y = 0.5;
-    draw_point(eg_point, map_param);
+    // //Code for single point
+    // Point eg_point;
+    // eg_point.x = 0.75;
+    // eg_point.y = 0.5;
+    // draw_point(eg_point, map_param);
+
+    //Generate random points
+    std::vector<Point> eg_points;    
+    for(int i=0;i<1000;i++){
+      int x_rand = rand() % 150 + 1; //Generate random sample
+      int y_rand = rand() % 100 + 1; 
+      std::cout << x_rand << "," << y_rand << std::endl;
+      eg_points.emplace_back(x_rand,y_rand);
+    }
+    std::cout << "Scale" << map_param.scale << std::endl;
+    //Add points to map image    
+    for (int i=0;i<1000;i++){
+      draw_point(eg_points[i], map_param);      
+    }     
     #endif
 
     //Show map image
