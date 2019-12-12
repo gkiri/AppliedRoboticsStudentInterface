@@ -21,8 +21,6 @@
 
 #include "clipper.hpp"
 
-//#include <graphics.h>
-
 #include "inflate_polygons.cpp"
 
 #include "draw_functions.cpp"
@@ -30,7 +28,7 @@
 //Unit test and printouts variables
 #define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
 #define PRINTOUT_ALL 1   //(0)Print 1by1 - (1)Print all polygons
-#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
 #define DRAW_TEST 1       //(0)Deactivated - (1)Draw function test
 
 #define DUBINS_CURVE 1
@@ -241,69 +239,6 @@ namespace student {
 
   }
 
-  int printConfiguration(double q[3], double x, void* user_data) {
-      //printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
-
-      Path *path=(Path *)user_data;
-      //double rho=1.4; //original
-      double rho=1.4;
-      path->points.emplace_back(x, q[0], q[1], q[2],1/rho);
-      return 0;
-  }
-
-  bool dubins_wrapper_api(Path& path)
-  {
-    #if DUBINS_CURVE
-    std::cout << "Gkiri:: planPath:: Started" << std::endl;
-    #endif
-
-    double q0[3];
-    double q1[3];
-    double rho=0.1; //0.1 is original
- 
-    #if DUBINS_CURVE
-    std::cout << "Gkiri:: planPath:: stage-0" << std::endl;
-    #endif
-
-    q0[0]=0;
-    q0[1]=0;
-    q0[2]=0;
-
-    // q1[0]=0.75;
-    // q1[1]=0.5;
-    // q1[2]=3.142;
-
-    q1[0]=0.8;
-    q1[1]=0.5;
-    q1[2]=3.142;
-
-    DubinsPath dub_path;
-    dubins_shortest_path(&dub_path,  q0,  q1,  rho);
-    
-    #if DUBINS_CURVE
-    printf("#x,y,theta,t\n");
-    #endif
-
-    dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path);
-    
-
-    // if(dub_path.type >=0 && dub_path.type<=3 )
-    // {
-
-    // }
-
-
-    #if DUBINS_CURVE
-    std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
-    std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
-
-    std::cout << "Gkiri:: planPath:: End" << std::endl;
-    #endif
-
-
-    return true;
-
-  }
 
   bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, 
                 const std::vector<std::pair<int,Polygon>>& victim_list, 
@@ -312,8 +247,8 @@ namespace student {
                 const std::string& config_folder)
 
   { 
-    std::cout << "Scale: " << map_param.scale << std::endl;
-    
+    //std::cout << "Gkiri::planPath " << std::endl;
+
     //Robot parameters (move to another file?)
     const double robot_length = 0.2; //(m)
     const double robot_width = 0.14; //(m)
@@ -343,6 +278,22 @@ namespace student {
     std::cout << "Scale: " << map_param.scale << std::endl;
 
     #if DRAW_TEST
+    //Test for drawing function
+    //std::vector<Point> eg_points;
+    //Generate random points
+    // for(int i=0;i<1000;i++){
+    //   float x_rand = (rand() % 150 + 1)/100; //Generate floar random numbers does not work
+    //   float y_rand = (rand() % 100 + 1)/100; 
+    //   std::cout << x_rand << "," << y_rand << std::endl;
+    //   eg_points.emplace_back(x_rand,y_rand);
+    // }
+    // std::cout << "Scale" << map_param.scale << std::endl;
+    // //Add points to map image    
+    // for (int i=0;i<1000;i++){
+    //   draw_point(eg_points[i], map_param);      
+    // }       
+    
+
     //Draw polygon
     Polygon poly;
     // //Code for drawing a single polygon
@@ -358,25 +309,11 @@ namespace student {
       draw_polygon(poly, map_param);
     }
 
-    // //Code for single point
-    // Point eg_point;
-    // eg_point.x = 0.75;
-    // eg_point.y = 0.5;
-    // draw_point(eg_point, map_param);
-
-    //Generate random points
-    std::vector<Point> eg_points;    
-    for(int i=0;i<1000;i++){
-      int x_rand = rand() % 150 + 1; //Generate random sample
-      int y_rand = rand() % 100 + 1; 
-      std::cout << x_rand << "," << y_rand << std::endl;
-      eg_points.emplace_back(x_rand,y_rand);
-    }
-    std::cout << "Scale" << map_param.scale << std::endl;
-    //Add points to map image    
-    for (int i=0;i<1000;i++){
-      draw_point(eg_points[i], map_param);      
-    }     
+    //Code for single point
+    Point eg_point;
+    eg_point.x = 0.75;
+    eg_point.y = 0.5;
+    draw_point(eg_point, map_param);
     #endif
 
     //Show map image
