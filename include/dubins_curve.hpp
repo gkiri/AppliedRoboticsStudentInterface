@@ -7,6 +7,8 @@
 #define DUBINS_H
 
 
+#include "student_planning_interface.hpp"
+
 
 void dubins_test();
 
@@ -152,6 +154,12 @@ int dubins_path_endpoint(DubinsPath* path, double q[3]);
  * @param newpath - the resultant path
  */
 int dubins_extract_subpath(DubinsPath* path, double t, DubinsPath* newpath);
+
+
+
+//Helper functions
+
+bool dubins_wrapper_api(Path& path);
 
 
 #endif

@@ -1,6 +1,10 @@
 #include "dubins_curve.hpp"
 
+
 #define EPSILON (10e-10)
+
+
+#define DUBINS_CURVE 1
 
 typedef enum 
 {
@@ -32,6 +36,25 @@ typedef struct
     double d_sq;
 } DubinsIntermediateResults;
 
+
+
+struct arc_extract
+{
+    Point start_point;
+    Point end_point;
+    float radius;
+    Point center;
+    float length;
+
+};
+
+struct line_extract
+{
+    Point start_point;
+    Point end_point;
+    float length;
+
+};
 
 int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double out[3]);
 int dubins_intermediate_results(DubinsIntermediateResults* in, double q0[3], double q1[3], double rho);
@@ -423,3 +446,90 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
     }
     return result;
 }
+
+
+
+
+//Helper functions
+
+
+
+int printConfiguration(double q[3], double x, void* user_data) {
+      //printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
+
+      Path *path=(Path *)user_data;
+      //double rho=1.4; //original
+      double rho=1.4;
+      path->points.emplace_back(x, q[0], q[1], q[2],1/rho);
+      return 0;
+  }
+
+
+bool dubins_wrapper_api(Path& path)
+  {
+    #if DUBINS_CURVE
+    std::cout << "Gkiri:: planPath:: Started" << std::endl;
+    #endif
+
+    double q0[3];
+    double q1[3];
+    double rho=0.1; //0.1 is original
+ 
+    #if DUBINS_CURVE
+    std::cout << "Gkiri:: planPath:: stage-0" << std::endl;
+    #endif
+
+    q0[0]=0;
+    q0[1]=0;
+    q0[2]=0;
+
+    // q1[0]=0.75;
+    // q1[1]=0.5;
+    // q1[2]=3.142;
+
+    q1[0]=0.8;
+    q1[1]=0.5;
+    q1[2]=3.142;
+
+    DubinsPath dub_path;
+    dubins_shortest_path(&dub_path,  q0,  q1,  rho);
+    
+    #if DUBINS_CURVE
+    printf("#x,y,theta,t\n");
+    #endif
+
+    dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path);
+    
+    // if(dub_path.type >=0 && dub_path.type<=3 )
+    // {
+
+    // }
+    #if DUBINS_CURVE
+    std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
+    std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
+
+    std::cout << "Gkiri:: planPath:: End" << std::endl;
+    #endif
+
+
+    return true;
+
+  }
+
+
+  void dubins_segments_extract(DubinsPath *path)
+  {
+    #if DUBINS_CURVE
+    std::cout << "Gkiri:: dubins_segments_extract:: End" << std::endl;
+    #endif
+    struct arc_extract arc;
+    arc.start_point.x=path->qi[0];
+    arc.start_point.y=path->qi[1];
+
+    
+
+
+
+
+
+  }
