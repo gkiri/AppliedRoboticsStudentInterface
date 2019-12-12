@@ -21,7 +21,7 @@
 
 #include "clipper.hpp"
 
-#include <graphics.h>
+//#include <graphics.h>
 
 #include "inflate_polygons.cpp"
 
