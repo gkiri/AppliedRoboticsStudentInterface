@@ -45,6 +45,7 @@ struct arc_extract
     float radius;
     Point center;
     float length;
+    int LSR;
 
 };
 
@@ -465,7 +466,7 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
 
 
 int printConfiguration(double q[3], double x, void* user_data) {
-      printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
+      //printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
 
       Path *path=(Path *)user_data;
       //double rho=1.4; //original
@@ -512,12 +513,9 @@ bool dubins_wrapper_api(Path& path)
 
     dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path,end_point_segments);
 
-    dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg);
+    /*Extracting segments from dubins curve */
+    dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg,q1);
     
-    // if(dub_path.type >=0 && dub_path.type<=3 )
-    // {
-
-    // }
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
     std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
@@ -528,12 +526,18 @@ bool dubins_wrapper_api(Path& path)
     #endif
 
 
+    /* Test Code for Dubins Segment Extract */
+
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].start_point.x=" << three_seg[0].start_point.x <<"three_seg[0].start_point.y" << three_seg[0].start_point.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].start_point.x=" << three_seg[1].start_point.x <<"three_seg[1].start_point.y" << three_seg[1].start_point.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].start_point.x=" << three_seg[2].start_point.x <<"three_seg[2].start_point.y" << three_seg[2].start_point.y  << std::endl;
+
     return true;
 
   }
 
 
-  void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg)
+  void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg,double goal[3])
   {
     #if DUBINS_CURVE
     std::cout << "Gkiri:: dubins_segments_extract:: End" << std::endl;
@@ -541,7 +545,7 @@ bool dubins_wrapper_api(Path& path)
 
     three_seg[0].start_point.x=path->qi[0];
     three_seg[0].start_point.y=path->qi[1];
-    three_seg[0].radius=1/rho;
+    three_seg[0].radius=1/rho;//First curve
     three_seg[0].end_point.x=end_point_segments[0];
     three_seg[0].end_point.y=end_point_segments[1];
     three_seg[0].length=path->param[0];
@@ -549,17 +553,61 @@ bool dubins_wrapper_api(Path& path)
 
     three_seg[1].start_point.x=end_point_segments[0];
     three_seg[1].start_point.y=end_point_segments[1];
-    three_seg[1].radius=0;
+    three_seg[1].radius=0;//stright line
     three_seg[1].end_point.x=end_point_segments[3];
     three_seg[1].end_point.y=end_point_segments[4];
     three_seg[1].length=path->param[1];
 
     three_seg[2].start_point.x=end_point_segments[3];
     three_seg[2].start_point.y=end_point_segments[4];
-    three_seg[2].radius=1/rho;
-    three_seg[2].end_point.x=end_point_segments[3];
-    three_seg[2].end_point.y=end_point_segments[4];
+    three_seg[2].radius=1/rho;//second curve
+    three_seg[2].end_point.x=goal[0];
+    three_seg[2].end_point.y=goal[1];
     three_seg[2].length=path->param[2];
+
+    // if(path.){
+
+    // }
+
+    switch(path->type)
+    {
+    case LSL:
+        three_seg[0].LSR=L_SEG;
+        three_seg[1].LSR=S_SEG;
+        three_seg[2].LSR=L_SEG;
+        break;
+    case RSL:
+        three_seg[0].LSR=R_SEG;//one for R
+        three_seg[1].LSR=S_SEG;
+        three_seg[2].LSR=L_SEG;
+        break;
+    case LSR:
+        three_seg[0].LSR=L_SEG;//zero for L
+        three_seg[0].LSR=S_SEG;
+        three_seg[2].LSR=R_SEG;
+        break;
+    case RSR:
+        three_seg[0].LSR=R_SEG;//zero for L
+        three_seg[1].LSR=S_SEG;
+        three_seg[2].LSR=R_SEG;
+        break;
+    case LRL:
+         three_seg[0].LSR=L_SEG;//zero for L
+         three_seg[1].LSR=R_SEG;
+         three_seg[2].LSR=L_SEG;
+
+         three_seg[1].radius=1/rho;//R
+         break;
+    case RLR:
+        three_seg[0].LSR=R_SEG;//zero for L
+        three_seg[1].LSR=L_SEG;
+        three_seg[2].LSR=R_SEG;
+
+        three_seg[1].radius=1/rho;
+        break;
+    default:
+         break;
+    }
 
 
 
