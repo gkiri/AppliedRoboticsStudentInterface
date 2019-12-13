@@ -28,8 +28,8 @@
 //Unit test and printouts variables
 #define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
 #define PRINTOUT_ALL 1   //(0)Print 1by1 - (1)Print all polygons
-#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
-#define DRAW_TEST 1       //(0)Deactivated - (1)Draw function test
+#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
+#define DRAW_TEST 0       //(0)Deactivated - (1)Draw function test
 
 #define DUBINS_CURVE 1
 
@@ -275,24 +275,9 @@ namespace student {
     //Visualize elements in a map image
     //Initialize map matrix and scale
     img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);
-    std::cout << "Scale: " << map_param.scale << std::endl;
+    //std::cout << "Scale: " << map_param.scale << std::endl;
 
-    #if DRAW_TEST
-    //Test for drawing function
-    //std::vector<Point> eg_points;
-    //Generate random points
-    // for(int i=0;i<1000;i++){
-    //   float x_rand = (rand() % 150 + 1)/100; //Generate floar random numbers does not work
-    //   float y_rand = (rand() % 100 + 1)/100; 
-    //   std::cout << x_rand << "," << y_rand << std::endl;
-    //   eg_points.emplace_back(x_rand,y_rand);
-    // }
-    // std::cout << "Scale" << map_param.scale << std::endl;
-    // //Add points to map image    
-    // for (int i=0;i<1000;i++){
-    //   draw_point(eg_points[i], map_param);      
-    // }       
-    
+    #if DRAW_TEST   
 
     //Draw polygon
     Polygon poly;
@@ -309,12 +294,75 @@ namespace student {
       draw_polygon(poly, map_param);
     }
 
-    //Code for single point
-    Point eg_point;
-    eg_point.x = 0.75;
-    eg_point.y = 0.5;
-    draw_point(eg_point, map_param);
+    // //Code for single point
+    // Point eg_point;
+    // eg_point.x = 0.75;
+    // eg_point.y = 0.5;
+    // draw_point(eg_point, map_param);
+
+    //Generate random pointst
+    std::vector<Point> eg_points;    
+    for(int i=0;i<1000;i++){
+      int x_rand = rand() % 150 + 1; //Generate random sample
+      int y_rand = rand() % 100 + 1; 
+      //std::cout << x_rand << "," << y_rand << std::endl;
+      eg_points.emplace_back(x_rand,y_rand);
+    }    
+    //Add points to map image    
+    for (int i=0;i<1000;i++){
+      draw_point(eg_points[i], map_param);      
+    }
+
+    //#endif
+
+    //Draw segment
+
+    /* Drawing semicircle-------------------------------------------*/
+    arc_extract semi_circle;
+    semi_circle.start_point = Point(0.1,0.5);
+    semi_circle.end_point = Point(0.3,0.5);
+    semi_circle.radius = 0.1;
+    semi_circle.center = Point(0.2,0.5);
+    semi_circle.length = 15;  
+
+    draw_arc(semi_circle, map_param);
+    arc_param semicircle_param;
+    semicircle_param = calculate_arc_drawing_angles(semi_circle);
+    std::cout << "SemiCircle Rotation angle: " << semicircle_param.rotation_angle << std::endl;
+    std::cout << "SemiCircle Angle btw cs & ce: " << semicircle_param.angle_cs_ce << std::endl;
+
+    /* Drawing arc-------------------------------------------*/
+    arc_extract arc;
+    arc.radius = 0.2;
+    arc.start_point = Point(arc.center.x - arc.radius, arc.center.y);
+    arc.end_point = Point(arc.center.x, arc.center.y + arc.radius);
+    
+    arc.center = Point(0.9,0.3);
+    arc.length = 15;  
+
+    draw_arc(arc, map_param);
+    arc_param arc_param;
+    arc_param = calculate_arc_drawing_angles(arc);
+    std::cout << "Arc Rotation angle: " << arc_param.rotation_angle << std::endl;
+    std::cout << "Arc Angle btw cs & ce: " << arc_param.angle_cs_ce << std::endl;
+
     #endif
+
+    /* Drawing a line-----------------------------------------*/
+    //Transform pair of points into line_extract type
+    Point pt1 = Point(0.15,0.15);
+    Point pt2 = Point(0.90,0.90);
+    line_extract line_test;
+    line_test = to_line_extract_type(pt1,pt2,true);
+    std::cout << "start_point: " << line_test.start_point.x << ", " 
+              << line_test.start_point.y << std::endl;
+    std::cout << "end_point: " << line_test.end_point.x << ", " 
+              << line_test.end_point.y << std::endl;
+    std::cout << "lenght: " << line_test.length << std::endl;
+
+    //drawing line
+    draw_segment(line_test,map_param);
+    
 
     //Show map image
     cv::imshow("Image",map_param.img_map);

@@ -34,6 +34,24 @@ typedef struct
     DubinsPathType type; 
 } DubinsPath;
 
+struct arc_extract
+{
+    Point start_point;
+    Point end_point;
+    float radius;
+    Point center;
+    float length;
+
+};
+
+struct line_extract
+{
+    Point start_point;
+    Point end_point;
+    float length;
+
+};
+
 #define EDUBOK        (0)   /* No error */
 #define EDUBCOCONFIGS (1)   /* Colocated configurations */
 #define EDUBPARAM     (2)   /* Path parameterisitation error */
@@ -161,15 +179,7 @@ int dubins_extract_subpath(DubinsPath* path, double t, DubinsPath* newpath);
 
 bool dubins_wrapper_api(Path& path);
 
-/**
- * Convenience function to extract a subset of a path
- *
- * @param path    - an DubinsPath path
- * @param end_point_segments       - end points of segment 1 & 2
- * @param three_seg - Each segment extracted and its data
- * @param goal - segmet 3 end point
- */
 
-void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3] ,double goal[3]);
+void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3]);
 
 #endif
