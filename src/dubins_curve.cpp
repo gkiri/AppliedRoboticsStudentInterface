@@ -36,26 +36,6 @@ typedef struct
     double d_sq;
 } DubinsIntermediateResults;
 
-
-
-struct arc_extract
-{
-    Point start_point;
-    Point end_point;
-    float radius;
-    Point center;
-    float length;
-
-};
-
-struct line_extract
-{
-    Point start_point;
-    Point end_point;
-    float length;
-
-};
-
 int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double out[3]);
 int dubins_intermediate_results(DubinsIntermediateResults* in, double q0[3], double q1[3], double rho);
 

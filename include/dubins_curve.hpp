@@ -34,6 +34,24 @@ typedef struct
     DubinsPathType type; 
 } DubinsPath;
 
+struct arc_extract
+{
+    Point start_point;
+    Point end_point;
+    float radius;
+    Point center;
+    float length;
+
+};
+
+struct line_extract
+{
+    Point start_point;
+    Point end_point;
+    float length;
+
+};
+
 #define EDUBOK        (0)   /* No error */
 #define EDUBCOCONFIGS (1)   /* Colocated configurations */
 #define EDUBPARAM     (2)   /* Path parameterisitation error */
