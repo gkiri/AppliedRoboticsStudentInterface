@@ -29,7 +29,7 @@
 #define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
 #define PRINTOUT_ALL 1   //(0)Print 1by1 - (1)Print all polygons
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
-#define DRAW_TEST 0       //(0)Deactivated - (1)Draw function test
+#define DRAW_TEST 1       //(0)Deactivated - (1)Draw function test
 
 #define DUBINS_CURVE 1
 
@@ -354,11 +354,11 @@ namespace student {
     std::cout << "Arc Angle btw cs & ce: " << arc_param.angle_cs_ce << std::endl;
 
    
-    /* Drawing a line-----------------------------------------*/
-    //Transform pair of points into line_extract type
+    /* Drawing a line-----------------------------------------*/    
     Point pt1 = Point(0.15,0.15);
     Point pt2 = Point(0.90,0.90);
     line_extract line_test;
+    //Transform pair of points into line_extract type
     line_test = to_line_extract_type(pt1,pt2,true);
     std::cout << "start_point: " << line_test.start_point.x << ", " 
               << line_test.start_point.y << std::endl;
@@ -369,16 +369,15 @@ namespace student {
     //drawing line
     draw_segment(line_test,map_param);
     
-    #endif
-    // Draw robot
+    /* Drawing robot position-----------------------------------------*/
     draw_robot(x,y,theta,map_param);    
 
-    //Code for victim    
+    /* Drawing victims position and number-----------------------------*/    
     for(int i=0;i<victim_list.size();i++){      
       draw_victim(victim_list[i], map_param);
     }    
 
-    //#endif
+    #endif
 
     //Show map image
     cv::imshow("Image",map_param.img_map);
