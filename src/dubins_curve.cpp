@@ -126,7 +126,6 @@ int dubins_path(DubinsPath* path, double q0[3], double q1[3], double rho, Dubins
 }
 
 
-
 double dubins_path_length( DubinsPath* path )
 {
     double length = 0.;
@@ -445,7 +444,7 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
 
 
 int printConfiguration(double q[3], double x, void* user_data) {
-      printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
+      //printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
 
       Path *path=(Path *)user_data;
       //double rho=1.4; //original
@@ -455,33 +454,17 @@ int printConfiguration(double q[3], double x, void* user_data) {
   }
 
 
-bool dubins_wrapper_api(Path& path)
+bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],double q1[3],double rho)
   {
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: Started" << std::endl;
     #endif
 
-    double q0[3];
-    double q1[3];
-    double rho=0.1; //0.1 is original
     double end_point_segments[6];
-    struct arc_extract three_seg[3];
  
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: stage-0" << std::endl;
     #endif
-
-    q0[0]=0;
-    q0[1]=0;
-    q0[2]=0;
-
-    // q1[0]=0.75;
-    // q1[1]=0.5;
-    // q1[2]=3.142;
-
-    q1[0]=0.8;
-    q1[1]=0.5;
-    q1[2]=3.142;
 
     DubinsPath dub_path;
     dubins_shortest_path(&dub_path,  q0,  q1,  rho);
@@ -492,12 +475,9 @@ bool dubins_wrapper_api(Path& path)
 
     dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path,end_point_segments);
 
-    dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg);
-    
-    // if(dub_path.type >=0 && dub_path.type<=3 )
-    // {
+    /*Extracting segments from dubins curve */
+    dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg,q1);
 
-    // }
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
     std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
@@ -507,13 +487,19 @@ bool dubins_wrapper_api(Path& path)
     std::cout << "Gkiri:: planPath:: End" << std::endl;
     #endif
 
+   /* Test Code for Dubins Segment Extract */
+
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].start_point.x=" << three_seg[0].start_point.x <<"three_seg[0].start_point.y" << three_seg[0].start_point.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].start_point.x=" << three_seg[1].start_point.x <<"three_seg[1].start_point.y" << three_seg[1].start_point.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].start_point.x=" << three_seg[2].start_point.x <<"three_seg[2].start_point.y" << three_seg[2].start_point.y  << std::endl;
+
 
     return true;
 
   }
 
 
-  void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg)
+  void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg,double goal[3])
   {
     #if DUBINS_CURVE
     std::cout << "Gkiri:: dubins_segments_extract:: End" << std::endl;
@@ -536,11 +522,10 @@ bool dubins_wrapper_api(Path& path)
     three_seg[2].start_point.x=end_point_segments[3];
     three_seg[2].start_point.y=end_point_segments[4];
     three_seg[2].radius=1/rho;
-    three_seg[2].end_point.x=end_point_segments[3];
-    three_seg[2].end_point.y=end_point_segments[4];
+    three_seg[2].end_point.x=goal[0];;
+    three_seg[2].end_point.y=goal[1];;
     three_seg[2].length=path->param[2];
 
-<<<<<<< HEAD
     switch(path->type)
     {
     case LSL:
@@ -581,8 +566,6 @@ bool dubins_wrapper_api(Path& path)
          break;
     }
 
-=======
->>>>>>> 0c00a04cb531d4f1ea939c45fa80796442d3b55e
 
 
   }
