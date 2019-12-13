@@ -204,7 +204,7 @@ void dubins_segment( double t, double qi[3], double qt[3], SegmentType type)
     qt[2] += qi[2];
 }
 
-int dubins_path_sample( DubinsPath* path, double t, double q[3] )
+int dubins_path_sample( DubinsPath* path, double t, double q[3] ,double end_point_segments[6])
 {
     /* tprime is the normalised variant of the parameter t */
     double tprime = t / path->rho;
@@ -243,18 +243,27 @@ int dubins_path_sample( DubinsPath* path, double t, double q[3] )
     q[1] = q[1] * path->rho + path->qi[1];
     q[2] = mod2pi(q[2]);
 
+    //Gkiri added end points updates for segments
+    end_point_segments[0]=q1[0];
+    end_point_segments[1]=q1[1];
+    end_point_segments[2]=q1[2];
+    end_point_segments[3]=q2[0];
+    end_point_segments[4]=q2[1];
+    end_point_segments[5]=q2[2];
+
     return EDUBOK;
 }
 
 int dubins_path_sample_many(DubinsPath* path, double stepSize, 
-                            DubinsPathSamplingCallback cb, void* user_data)
+                            DubinsPathSamplingCallback cb, void* user_data,double end_point_segments[6])
 {
     int retcode;
     double q[3];
+    //double end_point_segments[6];
     double x = 0.0;
     double length = dubins_path_length(path);
     while( x <  length ) {
-        dubins_path_sample( path, x, q );
+        dubins_path_sample( path, x, q ,end_point_segments);
         retcode = cb(q, x, user_data);
         if( retcode != 0 ) {
             return retcode;
@@ -266,7 +275,8 @@ int dubins_path_sample_many(DubinsPath* path, double stepSize,
 
 int dubins_path_endpoint( DubinsPath* path, double q[3] )
 {
-    return dubins_path_sample( path, dubins_path_length(path) - EPSILON, q );
+    double end_point_segments[6];
+    return dubins_path_sample( path, dubins_path_length(path) - EPSILON, q,end_point_segments );
 }
 
 int dubins_extract_subpath( DubinsPath* path, double t, DubinsPath* newpath )
@@ -455,7 +465,7 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
 
 
 int printConfiguration(double q[3], double x, void* user_data) {
-      //printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
+      printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
 
       Path *path=(Path *)user_data;
       //double rho=1.4; //original
@@ -474,6 +484,8 @@ bool dubins_wrapper_api(Path& path)
     double q0[3];
     double q1[3];
     double rho=0.1; //0.1 is original
+    double end_point_segments[6];
+    struct arc_extract three_seg[3];
  
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: stage-0" << std::endl;
@@ -498,7 +510,9 @@ bool dubins_wrapper_api(Path& path)
     printf("#x,y,theta,t\n");
     #endif
 
-    dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path);
+    dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path,end_point_segments);
+
+    dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg);
     
     // if(dub_path.type >=0 && dub_path.type<=3 )
     // {
@@ -507,6 +521,8 @@ bool dubins_wrapper_api(Path& path)
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
     std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments end_point_segments[0]=" << end_point_segments[0] <<"end_point_segments[1]=" << end_point_segments[1]<< "end_point_segments[2]=" << end_point_segments[2] <<std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments end_point_segments[3]=" << end_point_segments[3] <<"end_point_segments[4]=" << end_point_segments[4]<< "end_point_segments[5]=" << end_point_segments[5] <<std::endl;
 
     std::cout << "Gkiri:: planPath:: End" << std::endl;
     #endif
@@ -517,18 +533,33 @@ bool dubins_wrapper_api(Path& path)
   }
 
 
-  void dubins_segments_extract(DubinsPath *path)
+  void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg)
   {
     #if DUBINS_CURVE
     std::cout << "Gkiri:: dubins_segments_extract:: End" << std::endl;
     #endif
-    struct arc_extract arc;
-    arc.start_point.x=path->qi[0];
-    arc.start_point.y=path->qi[1];
 
-    
+    three_seg[0].start_point.x=path->qi[0];
+    three_seg[0].start_point.y=path->qi[1];
+    three_seg[0].radius=1/rho;
+    three_seg[0].end_point.x=end_point_segments[0];
+    three_seg[0].end_point.y=end_point_segments[1];
+    three_seg[0].length=path->param[0];
 
 
+    three_seg[1].start_point.x=end_point_segments[0];
+    three_seg[1].start_point.y=end_point_segments[1];
+    three_seg[1].radius=0;
+    three_seg[1].end_point.x=end_point_segments[3];
+    three_seg[1].end_point.y=end_point_segments[4];
+    three_seg[1].length=path->param[1];
+
+    three_seg[2].start_point.x=end_point_segments[3];
+    three_seg[2].start_point.y=end_point_segments[4];
+    three_seg[2].radius=1/rho;
+    three_seg[2].end_point.x=end_point_segments[3];
+    three_seg[2].end_point.y=end_point_segments[4];
+    three_seg[2].length=path->param[2];
 
 
 
