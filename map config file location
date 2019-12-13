@@ -1,0 +1,20 @@
+- Modify initial position of robot:
+/simulator/src/0_mindstorm_simulator/0_sim_common/launch
+sim.launch
+
+Or in console: AR_simulator_gui x:=0.5 y:=0.5 ...
+Or in after launching rviz -> 2D Pose estimate button on top
+				and move robot manually
+
+- Create new map distributions
+/simulator/src/0_mindstorm_simulator/2_lego_world/models/mindstorm_map
+map.sdf
+model.config --> to load a different map
+Polygons {x,y,z, 3 angles}
+
+- Eliminate camera in gazebo
+/simulator/src/0_mindstorm_simulator/2_lego_world/models/my_camera
+line30 --> model.sdf
+
+- 
+

@@ -1,5 +1,5 @@
 bool findRobot_api(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
-  #define FIND_ROBOT_DEBUG_PLOT 
+  //#define FIND_ROBOT_DEBUG_PLOT 
 
   // Convert color space from BGR to HSV
   cv::Mat hsv_img;

@@ -233,10 +233,12 @@ namespace student {
   bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
     //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );
 
-    std::cout << "Gkiri:: findRobot:: Started" << std::endl;
+    //std::cout << "Gkiri:: findRobot:: Started" << std::endl;
     findRobot_api(img_in, scale, triangle, x, y, theta, config_folder);
-
-
+    // Save robot parameters
+    x = x;
+    y = y;
+    theta = theta;
   }
 
 
@@ -277,6 +279,11 @@ namespace student {
     img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);
     //std::cout << "Scale: " << map_param.scale << std::endl;
 
+    //Colours of objects represented by a point.
+    //By default samples are white and robot is blue.
+    cv::Scalar victim_colour(0,255,0); //green    
+    
+
     #if DRAW_TEST   
 
     //Draw polygon
@@ -286,34 +293,34 @@ namespace student {
     // draw_polygon(poly, map_param);
 
     //Code for printing all polygons
-    //std::vector<Polygon> poly_list = obstacle_list; //for printing the original polygons
-    std::vector<Polygon> poly_list = inflated_obstacle_list; //inflated polygons
+    std::vector<Polygon> poly_list = obstacle_list; //for printing the original polygons
+    //std::vector<Polygon> poly_list = inflated_obstacle_list; //inflated polygons
     
     for (size_t i = 0; i<poly_list.size(); i++){
       poly = poly_list[i];
       draw_polygon(poly, map_param);
     }
 
-    // //Code for single point
-    // Point eg_point;
-    // eg_point.x = 0.75;
-    // eg_point.y = 0.5;
-    // draw_point(eg_point, map_param);
+    
+    //Code for single point
+    Point eg_point;
+    eg_point.x = 0.75;
+    eg_point.y = 0.5;
+    draw_point(eg_point, map_param);
 
-    //Generate random pointst
-    std::vector<Point> eg_points;    
-    for(int i=0;i<1000;i++){
-      int x_rand = rand() % 150 + 1; //Generate random sample
-      int y_rand = rand() % 100 + 1; 
-      //std::cout << x_rand << "," << y_rand << std::endl;
-      eg_points.emplace_back(x_rand,y_rand);
-    }    
-    //Add points to map image    
-    for (int i=0;i<1000;i++){
-      draw_point(eg_points[i], map_param);      
-    }
+    // //Generate random pointst
+    // std::vector<Point> eg_points;    
+    // for(int i=0;i<1000;i++){
+    //   int x_rand = rand() % 150 + 1; //Generate random sample
+    //   int y_rand = rand() % 100 + 1; 
+    //   //std::cout << x_rand << "," << y_rand << std::endl;
+    //   eg_points.emplace_back(x_rand,y_rand);
+    // }    
+    // //Add points to map image    
+    // for (int i=0;i<1000;i++){
+    //   draw_point(eg_points[i], map_param);      
+    // }
 
-    //#endif
 
     //Draw segment
 
@@ -346,8 +353,7 @@ namespace student {
     std::cout << "Arc Rotation angle: " << arc_param.rotation_angle << std::endl;
     std::cout << "Arc Angle btw cs & ce: " << arc_param.angle_cs_ce << std::endl;
 
-    #endif
-
+   
     /* Drawing a line-----------------------------------------*/
     //Transform pair of points into line_extract type
     Point pt1 = Point(0.15,0.15);
@@ -363,10 +369,20 @@ namespace student {
     //drawing line
     draw_segment(line_test,map_param);
     
+    #endif
+    // Draw robot
+    draw_robot(x,y,theta,map_param);    
+
+    //Code for victim    
+    for(int i=0;i<victim_list.size();i++){      
+      draw_victim(victim_list[i], map_param);
+    }    
+
+    //#endif
 
     //Show map image
     cv::imshow("Image",map_param.img_map);
-    cv::waitKey( 0 );
+    cv::waitKey( 0.01 );
     #endif
 
     /* Dubins Secion-------------------------------------------*/
