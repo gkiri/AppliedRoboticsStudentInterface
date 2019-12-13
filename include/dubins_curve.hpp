@@ -118,7 +118,7 @@ DubinsPathType dubins_path_type(DubinsPath* path);
  * @param q    - the configuration result
  * @returns    - non-zero if 't' is not in the correct range
  */
-int dubins_path_sample(DubinsPath* path, double t, double q[3]);
+int dubins_path_sample(DubinsPath* path, double t, double q[3],double end_point_segments[6]);
 
 /**
  * Walk along the path at a fixed sampling interval, calling the
@@ -136,7 +136,7 @@ int dubins_path_sample(DubinsPath* path, double t, double q[3]);
 int dubins_path_sample_many(DubinsPath* path, 
                             double stepSize, 
                             DubinsPathSamplingCallback cb, 
-                            void* user_data);
+                            void* user_data,double end_point_segments[6]);
 
 /**
  * Convenience function to identify the endpoint of a path
@@ -161,5 +161,7 @@ int dubins_extract_subpath(DubinsPath* path, double t, DubinsPath* newpath);
 
 bool dubins_wrapper_api(Path& path);
 
+
+void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3]);
 
 #endif
