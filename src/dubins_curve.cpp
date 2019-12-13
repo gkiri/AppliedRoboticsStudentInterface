@@ -37,7 +37,6 @@ typedef struct
 } DubinsIntermediateResults;
 
 
-
 struct arc_extract
 {
     Point start_point;
