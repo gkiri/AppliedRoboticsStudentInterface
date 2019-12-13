@@ -323,7 +323,6 @@ namespace student {
 
     /* Dubins Secion-------------------------------------------*/
 
-
     std::cout << "Before path: " << path.size() << std::endl;
     dubins_wrapper_api(path);
     std::cout << "After path: " << path.size() << std::endl;

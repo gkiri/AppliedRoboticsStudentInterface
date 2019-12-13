@@ -550,7 +550,6 @@ bool dubins_wrapper_api(Path& path)
     three_seg[0].end_point.y=end_point_segments[1];
     three_seg[0].length=path->param[0];
 
-
     three_seg[1].start_point.x=end_point_segments[0];
     three_seg[1].start_point.y=end_point_segments[1];
     three_seg[1].radius=0;//stright line
@@ -564,10 +563,6 @@ bool dubins_wrapper_api(Path& path)
     three_seg[2].end_point.x=goal[0];
     three_seg[2].end_point.y=goal[1];
     three_seg[2].length=path->param[2];
-
-    // if(path.){
-
-    // }
 
     switch(path->type)
     {

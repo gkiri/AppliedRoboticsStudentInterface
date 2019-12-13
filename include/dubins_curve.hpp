@@ -169,6 +169,7 @@ bool dubins_wrapper_api(Path& path);
  * @param three_seg - Each segment extracted and its data
  * @param goal - segmet 3 end point
  */
+
 void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3] ,double goal[3]);
 
 #endif
