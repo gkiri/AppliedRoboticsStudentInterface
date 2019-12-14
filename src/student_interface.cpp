@@ -29,7 +29,7 @@
 #define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
 #define PRINTOUT_ALL 1   //(0)Print 1by1 - (1)Print all polygons
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
-#define DRAW_TEST 1       //(0)Deactivated - (1)Draw function test
+#define DRAW_TEST 0       //(0)Deactivated - (1)Draw function test
 
 #define DUBINS_CURVE 1
 
@@ -272,17 +272,15 @@ namespace student {
     //Print polygons
     #if PRINTOUT 
     print_polygons_out(obstacle_list, inflated_obstacle_list);
-    #endif      
+    #endif  
 
-    #if VISUALIZE_MAP
-    //Visualize elements in a map image
     //Initialize map matrix and scale
     img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);
     //std::cout << "Scale: " << map_param.scale << std::endl;
 
     //Colours of objects represented by a point.
     //By default samples are white and robot is blue.
-    cv::Scalar victim_colour(0,255,0); //green    
+    //cv::Scalar victim_colour(0,255,0); //green    
     
 
     #if DRAW_TEST   
@@ -380,11 +378,7 @@ namespace student {
 
     #endif
 
-    //Show map image
-    cv::imshow("Image",map_param.img_map);
-    cv::waitKey( 0.01 );
-    #endif
-
+    
     /* Dubins Secion-------------------------------------------*/
 
     std::cout << "Before path: " << path.size() << std::endl;
@@ -400,6 +394,73 @@ namespace student {
     q1[2]=3.142;
     
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
+
+    //Visualize dubins curve test
+    line_extract dubins_line;
+
+    for(int i=0;i<3;i++){
+      switch (three_seg[i].LSR)
+      {
+      case 0: // Left arc
+        std::cout << "Left arc" << std::endl;
+        //Print values
+        std::cout << "Start point: " << three_seg[i].start_point.x 
+                                        << ", " << three_seg[i].start_point.y << std::endl;
+        std::cout << "End point: " << three_seg[i].end_point.x 
+                                        << ", " << three_seg[i].end_point.y << std::endl;
+        std::cout << "Radius: " << three_seg[i].center.x 
+                          << ", " << three_seg[i].center.y <<std::endl;
+        std::cout << "Center: " << three_seg[i].center.x 
+                          << ", " << three_seg[i].center.y <<std::endl;
+        std::cout << "Length: " << three_seg[i].LSR <<std::endl;
+        std::cout << "LSR: " << three_seg[i].LSR <<std::endl;
+                      
+        
+        break;
+      case 1: // Straight line
+        std::cout << "Straight line" << std::endl;
+        dubins_line = to_line_extract_type(three_seg[i].start_point,
+                                                three_seg[i].end_point,true);
+        //Print values
+        std::cout << "Start point: " << three_seg[i].start_point.x 
+                                        << ", " << three_seg[i].start_point.y << std::endl;
+        std::cout << "End point: " << three_seg[i].end_point.x 
+                                        << ", " << three_seg[i].end_point.y << std::endl;
+        std::cout << "Radius: " << three_seg[i].center.x 
+                          << ", " << three_seg[i].center.y << std::endl;
+        std::cout << "Center: " << three_seg[i].center.x 
+                          << ", " << three_seg[i].center.y << std::endl;
+        std::cout << "Length: " << three_seg[i].length << std::endl;
+        std::cout << "LSR: " << three_seg[i].LSR <<std::endl;
+        std::cout << "Calculated Length: " << dubins_line.length << std::endl;
+
+        draw_segment(dubins_line,map_param);
+        break;
+      case 2: // Right arc
+        std::cout << "Right arc" << std::endl;
+        //Print values
+        std::cout << "Start point: " << three_seg[i].start_point.x 
+                                        << ", " << three_seg[i].start_point.y << std::endl;
+        std::cout << "End point: " << three_seg[i].end_point.x 
+                                        << ", " << three_seg[i].end_point.y << std::endl;
+        std::cout << "Radius: " << three_seg[i].center.x 
+                          << ", " << three_seg[i].center.y << std::endl;
+        std::cout << "Center: " << three_seg[i].center.x 
+                          << ", " << three_seg[i].center.y << std::endl;
+        std::cout << "Length: " << three_seg[i].LSR <<std::endl;
+        std::cout << "LSR: " << three_seg[i].LSR <<std::endl;      
+        break;
+      
+      default:
+        std::cout << "Unknown LSR" << std::endl;
+        break;
+      }
+    }
+     #if VISUALIZE_MAP
+    //Show map image
+    cv::imshow("Image",map_param.img_map);
+    cv::waitKey( 0.01 );
+    #endif
 
 
     
