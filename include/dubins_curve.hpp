@@ -41,6 +41,7 @@ struct arc_extract
     float radius;
     Point center;
     float length;
+    int LSR;
 
 };
 
@@ -177,9 +178,16 @@ int dubins_extract_subpath(DubinsPath* path, double t, DubinsPath* newpath);
 
 //Helper functions
 
-bool dubins_wrapper_api(Path& path);
+bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double start_dubins[3],double end_dubins[3],double rho);
 
-
-void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3]);
+/**
+ * Convenience function to extract a subset of a path
+ *
+ * @param path    - an DubinsPath path
+ * @param end_point_segments       - end points of segment 1 & 2
+ * @param three_seg - Each segment extracted and its data
+ * @param goal - segmet 3 end point
+ */
+void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3] ,double goal[3]);
 
 #endif

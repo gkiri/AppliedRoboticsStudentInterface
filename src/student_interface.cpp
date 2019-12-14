@@ -254,6 +254,7 @@ namespace student {
     //Robot parameters (move to another file?)
     const double robot_length = 0.2; //(m)
     const double robot_width = 0.14; //(m)
+    struct arc_extract three_seg[3];//segment extract
 
     //Visualising the map parameters
     double map_w = 1.5; //real map width in m
@@ -386,9 +387,22 @@ namespace student {
 
     /* Dubins Secion-------------------------------------------*/
 
-
     std::cout << "Before path: " << path.size() << std::endl;
-    dubins_wrapper_api(path);
+    double q0[3];//start point
+    double q1[3];//end point
+    double rho=0.1; //0.1 is original
+    
+    q0[0]=0;//start of dubins
+    q0[1]=0;
+    q0[2]=0;
+    q1[0]=0.8;//end of dubins
+    q1[1]=0.5;
+    q1[2]=3.142;
+    
+    dubins_wrapper_api(path,three_seg,q0,q1,rho);
+
+
+    
     std::cout << "After path: " << path.size() << std::endl;
 
     return true;
