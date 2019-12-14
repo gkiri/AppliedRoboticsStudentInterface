@@ -492,14 +492,57 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
     std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].start_point.x=" << three_seg[0].start_point.x <<"three_seg[0].start_point.y" << three_seg[0].start_point.y  << std::endl;
     std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].start_point.x=" << three_seg[1].start_point.x <<"three_seg[1].start_point.y" << three_seg[1].start_point.y  << std::endl;
     std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].start_point.x=" << three_seg[2].start_point.x <<"three_seg[2].start_point.y" << three_seg[2].start_point.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].center.x=" << three_seg[0].center.x <<"three_seg[0].center.y" << three_seg[0].center.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].center.x=" << three_seg[1].center.x <<"three_seg[1].center.y" << three_seg[1].center.y  << std::endl;
+    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].center.x=" << three_seg[2].center.x <<"three_seg[2].center.y" << three_seg[2].center.y  << std::endl;
 
 
     return true;
 
   }
 
+Point find_center(Point start,Point end,float radius)
+{
+    //https://math.stackexchange.com/questions/27535/how-to-find-center-of-an-arc-given-start-point-end-point-radius-and-arc-direc
+    #if DUBINS_CURVE
+    std::cout << "Gkiri:: find_center:: " << std::endl;
+    #endif
 
-  void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg,double goal[3])
+    int epsilon=-1; //e=-1 counter-clockwise and arc goes from start to end
+    Point mid_point(0,0);
+    mid_point.x=(start.x+end.x)/2.0 ;
+    mid_point.y=(start.y+end.y)/2.0;
+
+    float distance;
+    distance=sqrt(pow((end.x-start.x),2)+pow((end.y-start.y),2));
+
+    /* 
+    n(u,v) =unit normal in the direction z1 to z0
+    n*(-v,u) =unit normal in the direction z0 to z1
+    
+    */
+    Point normal_point(0,0);//
+    normal_point.x=(end.x-start.x)/distance ;
+    normal_point.y=(end.y-start.y)/distance ;
+
+    Point normal_pointstar(0,0);
+    normal_pointstar.x= -normal_point.y;
+    normal_pointstar.y= normal_point.x ;
+
+    /*Let Distance H from midpoint to center */
+    float h;
+    h=sqrt(radius*radius - distance*distance/4);
+
+    //c=𝐦+𝜖 ℎ 𝐧∗ 
+    Point center;
+    center.x=mid_point.x + epsilon*h*normal_pointstar.x;
+    center.y=mid_point.y + epsilon*h*normal_pointstar.y;
+
+    return center;
+    
+}
+
+void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg,double goal[3])
   {
     #if DUBINS_CURVE
     std::cout << "Gkiri:: dubins_segments_extract:: End" << std::endl;
@@ -511,6 +554,8 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
     three_seg[0].end_point.x=end_point_segments[0];
     three_seg[0].end_point.y=end_point_segments[1];
     three_seg[0].length=path->param[0];
+    three_seg[0].center=find_center(three_seg[0].start_point,three_seg[0].end_point,three_seg[0].radius);
+
 
     three_seg[1].start_point.x=end_point_segments[0];
     three_seg[1].start_point.y=end_point_segments[1];
@@ -518,13 +563,17 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
     three_seg[1].end_point.x=end_point_segments[3];
     three_seg[1].end_point.y=end_point_segments[4];
     three_seg[1].length=path->param[1];
+    three_seg[1].center=find_center(three_seg[1].start_point,three_seg[1].end_point,three_seg[1].radius);
+
 
     three_seg[2].start_point.x=end_point_segments[3];
     three_seg[2].start_point.y=end_point_segments[4];
     three_seg[2].radius=1/rho;
-    three_seg[2].end_point.x=goal[0];;
-    three_seg[2].end_point.y=goal[1];;
+    three_seg[2].end_point.x=goal[0];
+    three_seg[2].end_point.y=goal[1];
     three_seg[2].length=path->param[2];
+    three_seg[2].center=find_center(three_seg[2].start_point,three_seg[2].end_point,three_seg[2].radius);
+
 
     switch(path->type)
     {
@@ -565,7 +614,6 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
     default:
          break;
     }
-
 
 
   }
