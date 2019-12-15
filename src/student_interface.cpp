@@ -337,6 +337,12 @@ namespace student {
     std::cout << "SemiCircle Rotation angle: " << semicircle_param.rotation_angle << std::endl;
     std::cout << "SemiCircle Angle btw cs & ce: " << semicircle_param.angle_cs_ce << std::endl;
 
+    //Test on center
+    Point center_test;
+    int LSR = 1;
+    center_test = find_center(semi_circle.start_point,semi_circle.end_point,semi_circle.radius, LSR);
+    std::cout << "center_test: " << center_test.x << ", " << center_test.y << std::endl;
+
     /* Drawing arc-------------------------------------------*/
     arc_extract arc;
     arc.radius = 0.2;
@@ -368,15 +374,16 @@ namespace student {
     //drawing line
     draw_segment(line_test,map_param);
     
+    
     /* Drawing robot position-----------------------------------------*/
-    draw_robot(x,y,theta,map_param);    
+    draw_robot(x,y,theta,map_param);       
 
     /* Drawing victims position and number-----------------------------*/    
     for(int i=0;i<victim_list.size();i++){      
       draw_victim(victim_list[i], map_param);
     }    
-
     #endif
+   
 
     
     /* Dubins Secion-------------------------------------------*/
@@ -384,10 +391,20 @@ namespace student {
     std::cout << "Before path: " << path.size() << std::endl;
     double q0[3];//start point
     double q1[3];//end point
-    double rho=0.1; //0.1 is original
+    double rho=0.1; //turning radius
+
+    //Robot position
+    std::cout << "Robot position: " << x << ", "<< y << ", " << theta << std::endl;
     
-    q0[0]=0;//start of dubins
-    q0[1]=0;
+    // q0[0]=0;//start of dubins
+    // q0[1]=0;
+    // q0[2]=0;
+    // q1[0]=0.8;//end of dubins
+    // q1[1]=0.5;
+    // q1[2]=3.142;
+
+    q0[0]=0.182;//start of dubins
+    q0[1]=0.2431;
     q0[2]=0;
     q1[0]=0.8;//end of dubins
     q1[1]=0.5;
@@ -408,13 +425,14 @@ namespace student {
                                         << ", " << three_seg[i].start_point.y << std::endl;
         std::cout << "End point: " << three_seg[i].end_point.x 
                                         << ", " << three_seg[i].end_point.y << std::endl;
-        std::cout << "Radius: " << three_seg[i].center.x 
-                          << ", " << three_seg[i].center.y <<std::endl;
+        std::cout << "Radius: " << three_seg[i].radius << std::endl;
         std::cout << "Center: " << three_seg[i].center.x 
                           << ", " << three_seg[i].center.y <<std::endl;
-        std::cout << "Length: " << three_seg[i].LSR <<std::endl;
+        std::cout << "Length: " << three_seg[i].length <<std::endl;
         std::cout << "LSR: " << three_seg[i].LSR <<std::endl;
-                      
+
+        draw_arc(three_seg[i], map_param);
+                             
         
         break;
       case 1: // Straight line
@@ -426,8 +444,7 @@ namespace student {
                                         << ", " << three_seg[i].start_point.y << std::endl;
         std::cout << "End point: " << three_seg[i].end_point.x 
                                         << ", " << three_seg[i].end_point.y << std::endl;
-        std::cout << "Radius: " << three_seg[i].center.x 
-                          << ", " << three_seg[i].center.y << std::endl;
+        std::cout << "Radius: " << three_seg[i].radius << std::endl;
         std::cout << "Center: " << three_seg[i].center.x 
                           << ", " << three_seg[i].center.y << std::endl;
         std::cout << "Length: " << three_seg[i].length << std::endl;
@@ -443,12 +460,13 @@ namespace student {
                                         << ", " << three_seg[i].start_point.y << std::endl;
         std::cout << "End point: " << three_seg[i].end_point.x 
                                         << ", " << three_seg[i].end_point.y << std::endl;
-        std::cout << "Radius: " << three_seg[i].center.x 
-                          << ", " << three_seg[i].center.y << std::endl;
+        std::cout << "Radius: " << three_seg[i].radius << std::endl;
         std::cout << "Center: " << three_seg[i].center.x 
                           << ", " << three_seg[i].center.y << std::endl;
-        std::cout << "Length: " << three_seg[i].LSR <<std::endl;
+        std::cout << "Length: " << three_seg[i].length <<std::endl;
         std::cout << "LSR: " << three_seg[i].LSR <<std::endl;      
+
+        draw_arc(three_seg[i], map_param);
         break;
       
       default:
