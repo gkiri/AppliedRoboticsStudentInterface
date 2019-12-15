@@ -190,4 +190,6 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double start_
  */
 void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3] ,double goal[3]);
 
+Point find_center(Point start,Point end,float radius, int LSR);
+
 #endif

@@ -198,8 +198,8 @@ int dubins_path_sample( DubinsPath* path, double t, double q[3] ,double end_poin
     }
 
     /* initial configuration */
-    qi[0] = 0.0;
-    qi[1] = 0.0;
+    qi[0] = path->qi[0];
+    qi[1] = path->qi[1];
     qi[2] = path->qi[2];
 
     /* generate the target configuration */
@@ -444,12 +444,12 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
 
 
 int printConfiguration(double q[3], double x, void* user_data) {
-      //printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
+      printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
 
       Path *path=(Path *)user_data;
       //double rho=1.4; //original
       double rho=1.4;
-      path->points.emplace_back(x, q[0], q[1], q[2],1/rho);
+      path->points.emplace_back(x, q[0], q[1], q[2],rho);
       return 0;
   }
 
@@ -471,9 +471,22 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
     
     #if DUBINS_CURVE
     printf("#x,y,theta,t\n");
-    #endif
+    #endif   
+
+    //SPAGUETI CODE --> To round to second decimal and fix lenght to meters
+    for (int i=0;i<3;i++){
+        dub_path.param[i] = dub_path.param[i]/10;
+        if (dub_path.param[i] < 0.01){
+            dub_path.param[i] = 0;
+        }
+    }
 
     dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path,end_point_segments);
+
+    // //SPAGUETI CODE
+    // dub_path.param[0] = dub_path.param[0]/10.0;
+    // dub_path.param[1] = dub_path.param[1]/10.0;
+    // dub_path.param[2] = dub_path.param[2]/10.0;
 
     /*Extracting segments from dubins curve */
     dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg,q1);
@@ -489,32 +502,55 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
 
    /* Test Code for Dubins Segment Extract */
 
-    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].start_point.x=" << three_seg[0].start_point.x <<"three_seg[0].start_point.y" << three_seg[0].start_point.y  << std::endl;
-    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].start_point.x=" << three_seg[1].start_point.x <<"three_seg[1].start_point.y" << three_seg[1].start_point.y  << std::endl;
-    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].start_point.x=" << three_seg[2].start_point.x <<"three_seg[2].start_point.y" << three_seg[2].start_point.y  << std::endl;
-    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].center.x=" << three_seg[0].center.x <<"three_seg[0].center.y" << three_seg[0].center.y  << std::endl;
-    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].center.x=" << three_seg[1].center.x <<"three_seg[1].center.y" << three_seg[1].center.y  << std::endl;
-    std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].center.x=" << three_seg[2].center.x <<"three_seg[2].center.y" << three_seg[2].center.y  << std::endl;
+    // std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].start_point.x=" << three_seg[0].start_point.x <<"three_seg[0].start_point.y" << three_seg[0].start_point.y  << std::endl;
+    // std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].start_point.x=" << three_seg[1].start_point.x <<"three_seg[1].start_point.y" << three_seg[1].start_point.y  << std::endl;
+    // std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].start_point.x=" << three_seg[2].start_point.x <<"three_seg[2].start_point.y" << three_seg[2].start_point.y  << std::endl;
+    // std::cout << "Gkiri:: planPath:: end_point_segments three_seg[0].center.x=" << three_seg[0].center.x <<"three_seg[0].center.y" << three_seg[0].center.y  << std::endl;
+    // std::cout << "Gkiri:: planPath:: end_point_segments three_seg[1].center.x=" << three_seg[1].center.x <<"three_seg[1].center.y" << three_seg[1].center.y  << std::endl;
+    // std::cout << "Gkiri:: planPath:: end_point_segments three_seg[2].center.x=" << three_seg[2].center.x <<"three_seg[2].center.y" << three_seg[2].center.y  << std::endl;
 
 
     return true;
 
   }
 
-Point find_center(Point start,Point end,float radius)
+Point find_center(Point start,Point end,float radius, int LSR)
 {
     //https://math.stackexchange.com/questions/27535/how-to-find-center-of-an-arc-given-start-point-end-point-radius-and-arc-direc
     #if DUBINS_CURVE
     std::cout << "Gkiri:: find_center:: " << std::endl;
     #endif
 
-    int epsilon=-1; //e=-1 counter-clockwise and arc goes from start to end
+    int epsilon = -1; // Arc from start to end --> e=-1 counter-clockwise (LSR = 0), e=1 clockwise (LSR = 2)
+    
+    switch (LSR)
+    {
+    case 0: // counter-clockwise
+        // epsilon = -1 by default
+        break;
+    case 1: // Straight line --> Center = 0
+        return Point(0,0); 
+        break;
+    case 2: // clockwise
+        epsilon = 1; 
+        break;
+        printf("unkown LSR");
+    default:
+
+        break;
+    }    
+
     Point mid_point(0,0);
     mid_point.x=(start.x+end.x)/2.0 ;
     mid_point.y=(start.y+end.y)/2.0;
+    std::cout << "mid: " << mid_point.x << ", " << mid_point.y << std::endl;
 
     float distance;
     distance=sqrt(pow((end.x-start.x),2)+pow((end.y-start.y),2));
+    if (distance <= 0){
+        return Point(0,0);
+    }
+    std::cout << "distance: " << distance << std::endl;
 
     /* 
     n(u,v) =unit normal in the direction z1 to z0
@@ -524,19 +560,27 @@ Point find_center(Point start,Point end,float radius)
     Point normal_point(0,0);//
     normal_point.x=(end.x-start.x)/distance ;
     normal_point.y=(end.y-start.y)/distance ;
+    std::cout << "normal point module: " << normal_point.x << ", " << normal_point.y << std::endl;
 
     Point normal_pointstar(0,0);
     normal_pointstar.x= -normal_point.y;
     normal_pointstar.y= normal_point.x ;
+    std::cout << "normal point vector: " << normal_pointstar.x << ", " << normal_pointstar.y << std::endl;
 
     /*Let Distance H from midpoint to center */
-    float h;
-    h=sqrt(radius*radius - distance*distance/4);
+    float h, h_round, sqrt_content;
+    sqrt_content = pow(radius,2) - pow(distance,2)/4;   
+    h_round = std::ceil(sqrt_content * 100.0) / 100.0; //round to the 2nd decimal
+    std::cout << "sqrt_content: " << sqrt_content << std::endl;
+    std::cout << "h_round: " << h_round << std::endl;
+    h=sqrt(h_round);   
+    std::cout << "h: " << h << std::endl;
 
     //c=𝐦+𝜖 ℎ 𝐧∗ 
     Point center;
     center.x=mid_point.x + epsilon*h*normal_pointstar.x;
     center.y=mid_point.y + epsilon*h*normal_pointstar.y;
+    std::cout << "center: " << center.x << ", " << center.y << std::endl;
 
     return center;
     
@@ -550,11 +594,10 @@ void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double
 
     three_seg[0].start_point.x=path->qi[0];
     three_seg[0].start_point.y=path->qi[1];
-    three_seg[0].radius=1/rho;
+    three_seg[0].radius=rho;
     three_seg[0].end_point.x=end_point_segments[0];
     three_seg[0].end_point.y=end_point_segments[1];
-    three_seg[0].length=path->param[0];
-    three_seg[0].center=find_center(three_seg[0].start_point,three_seg[0].end_point,three_seg[0].radius);
+    three_seg[0].length=path->param[0];    
 
 
     three_seg[1].start_point.x=end_point_segments[0];
@@ -562,17 +605,15 @@ void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double
     three_seg[1].radius=0;
     three_seg[1].end_point.x=end_point_segments[3];
     three_seg[1].end_point.y=end_point_segments[4];
-    three_seg[1].length=path->param[1];
-    three_seg[1].center=find_center(three_seg[1].start_point,three_seg[1].end_point,three_seg[1].radius);
+    three_seg[1].length=path->param[1];    
 
 
     three_seg[2].start_point.x=end_point_segments[3];
     three_seg[2].start_point.y=end_point_segments[4];
-    three_seg[2].radius=1/rho;
+    three_seg[2].radius=rho;
     three_seg[2].end_point.x=goal[0];
     three_seg[2].end_point.y=goal[1];
-    three_seg[2].length=path->param[2];
-    three_seg[2].center=find_center(three_seg[2].start_point,three_seg[2].end_point,three_seg[2].radius);
+    three_seg[2].length=path->param[2];    
 
 
     switch(path->type)
@@ -602,18 +643,22 @@ void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double
          three_seg[1].LSR=R_SEG;
          three_seg[2].LSR=L_SEG;
 
-         three_seg[1].radius=1/rho;//R
+         three_seg[1].radius=rho;//R
          break;
     case RLR:
         three_seg[0].LSR=R_SEG;//zero for L
         three_seg[1].LSR=L_SEG;
         three_seg[2].LSR=R_SEG;
 
-        three_seg[1].radius=1/rho;
+        three_seg[1].radius=rho;
         break;
     default:
          break;
     }
 
+    //Calculate center
+    three_seg[0].center=find_center(three_seg[0].start_point,three_seg[0].end_point,three_seg[0].radius,three_seg[0].LSR);
+    three_seg[1].center=find_center(three_seg[1].start_point,three_seg[1].end_point,three_seg[1].radius,three_seg[1].LSR);
+    three_seg[2].center=find_center(three_seg[2].start_point,three_seg[2].end_point,three_seg[2].radius,three_seg[2].LSR);
 
   }
