@@ -1,7 +1,7 @@
 #include "dubins_curve.hpp"
 
 
-#define EPSILON (10e-10)
+#define EPSILON (10e-10)//(10e-10)
 
 
 #define DUBINS_CURVE 1
@@ -190,6 +190,11 @@ int dubins_path_sample( DubinsPath* path, double t, double q[3] ,double end_poin
     double qi[3]; /* The translated initial configuration */
     double q1[3]; /* end-of segment 1 */
     double q2[3]; /* end-of segment 2 */
+
+    double temp_q1[3]={0,0,0};
+    double temp_q2[3]={0,0,0};
+    double temp_q3[3]={0,0,0};
+
     const SegmentType* types = DIRDATA[path->type];
     double p1, p2;
 
@@ -198,40 +203,61 @@ int dubins_path_sample( DubinsPath* path, double t, double q[3] ,double end_poin
     }
 
     /* initial configuration */
-    qi[0] = path->qi[0];
-    qi[1] = path->qi[1];
+    qi[0] = 0;//path->qi[0];
+    qi[1] = 0;//path->qi[1];
     qi[2] = path->qi[2];
 
     /* generate the target configuration */
     p1 = path->param[0];
     p2 = path->param[1];
-    dubins_segment( p1,      qi,    q1, types[0] );
-    dubins_segment( p2,      q1,    q2, types[1] );
+    
+    std::cout << "Gkiri:: dubins_path_sample param[0]=" << p1 <<" param[1]=" << p2 <<std::endl;
+
+    dubins_segment( p1,      qi,    q1, types[0] );//this is for updating q1
+    std::cout << "Gkiri:: dubins_path_sample q1[0]=" << q1[0] <<" q1[1]=" << q1[1] <<std::endl;
+
+    dubins_segment( p2,      q1,    q2, types[1] );//this is for updating q2
+    std::cout << "Gkiri:: dubins_path_sample q2[0]=" << q2[0] <<" q2[1]=" << q2[1] <<std::endl;
+
     if( tprime < p1 ) {
+        std::cout << "Gkiri:: 11111111111111111111111111111111111111111111111111111111111" << std::endl;
         dubins_segment( tprime, qi, q, types[0] );
     }
     else if( tprime < (p1+p2) ) {
+        std::cout << "Gkiri:: 222222222222222222222222222222222222222222222222222222222222" << std::endl;
         dubins_segment( tprime-p1, q1, q,  types[1] );
     }
     else {
+        std::cout << "Gkiri:: 3333333333333333333333333333333333333333333333333333333333333333333333" << std::endl;
         dubins_segment( tprime-p1-p2, q2, q,  types[2] );
     }
+
+
+    std::cout << "Gkiri:: dubins_path_sample temp_q1[0]=" << temp_q1[0] <<" temp_q1[1]=" << temp_q1[1] <<std::endl;
+    std::cout << "Gkiri:: dubins_path_sample temp_q2[0]=" << temp_q2[0] <<" temp_q2[1]=" << temp_q2[1] <<std::endl;
+    std::cout << "Gkiri:: dubins_path_sample temp_q3[0]=" << temp_q3[0] <<" temp_q3[1]=" << temp_q3[1] <<std::endl;
 
     /* scale the target configuration, translate back to the original starting point */
     q[0] = q[0] * path->rho + path->qi[0];
     q[1] = q[1] * path->rho + path->qi[1];
     q[2] = mod2pi(q[2]);
 
+    std::cout << "Gkiri:: dubins_path_sample final samples q[0]=" << q[0] <<" q[1]=" << q[1] <<std::endl;
+
     //Gkiri added end points updates for segments
-    end_point_segments[0]=q1[0];
-    end_point_segments[1]=q1[1];
-    end_point_segments[2]=q1[2];
-    end_point_segments[3]=q2[0];
-    end_point_segments[4]=q2[1];
-    end_point_segments[5]=q2[2];
+    end_point_segments[0]=q1[0]* path->rho + path->qi[0];
+    end_point_segments[1]=q1[1]* path->rho + path->qi[1];
+    end_point_segments[2]=mod2pi(q1[2]);
+    end_point_segments[3]=q2[0]* path->rho + path->qi[0];//end_point_segments[0];
+    end_point_segments[4]=q2[1]* path->rho + path->qi[1];//end_point_segments[1];
+    end_point_segments[5]=mod2pi(q2[2]);
+    
+    std::cout << "Gkiri:: dubins_path_sample end_point_segments[0]=" << end_point_segments[0] <<" end_point_segments[1]=" << end_point_segments[1] <<std::endl;
+    std::cout << "Gkiri:: dubins_path_sample end_point_segments[3]=" << end_point_segments[3] <<" end_point_segments[4]=" << end_point_segments[4] <<std::endl;
 
     return EDUBOK;
 }
+
 
 int dubins_path_sample_many(DubinsPath* path, double stepSize, 
                             DubinsPathSamplingCallback cb, void* user_data,double end_point_segments[6])
@@ -243,10 +269,11 @@ int dubins_path_sample_many(DubinsPath* path, double stepSize,
     double length = dubins_path_length(path);
     while( x <  length ) {
         dubins_path_sample( path, x, q ,end_point_segments);
-        retcode = cb(q, x, user_data);
+        retcode = cb(q, x, user_data,path);
         if( retcode != 0 ) {
             return retcode;
         }
+
         x += stepSize;
     }
     return 0;
@@ -437,18 +464,41 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
 }
 
 
-
-
 //Helper functions
 
+int printConfiguration(double q[3], double x, void* user_data ,DubinsPath* dub_path) {
+    printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
 
+    Path *path=(Path *)user_data;
+    //double rho=1.4; //original
+    double rho=1.4;
+    
+    //Implement rho check for LSR
+    // switch(dub_path->type)
+    // {
+    // case LSL:
+    //     //if(dub_path->param[0]/10.0  )
 
-int printConfiguration(double q[3], double x, void* user_data) {
-      printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
+    //     break;
+    // case RSL:
 
-      Path *path=(Path *)user_data;
-      //double rho=1.4; //original
-      double rho=1.4;
+    //     break;
+    // case LSR:
+
+    //     break;
+    // case RSR:
+
+    //     break;
+    // case LRL:
+
+    //      break;
+    // case RLR:
+
+    //     break;
+    // default:
+    //      break;
+    // } 
+
       path->points.emplace_back(x, q[0], q[1], q[2],rho);
       return 0;
   }
@@ -474,26 +524,25 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double q0[3],
     #endif   
 
     //SPAGUETI CODE --> To round to second decimal and fix lenght to meters
-    for (int i=0;i<3;i++){
-        dub_path.param[i] = dub_path.param[i]/10;
-        if (dub_path.param[i] < 0.01){
-            dub_path.param[i] = 0;
-        }
-    }
+    DubinsPath dub_path_algo;
+    dub_path_algo=dub_path;
 
+    // for (int i=0;i<3;i++){
+    //     dub_path.param[i] = dub_path.param[i]/10;
+    //     if (dub_path.param[i] < 0.01){
+    //         //dub_path.param[i] = 0;
+    //     }
+    // }
+    int update_points;//to update dubins points
+    update_points=1;
     dubins_path_sample_many(&dub_path,  0.01, printConfiguration, &path,end_point_segments);
-
-    // //SPAGUETI CODE
-    // dub_path.param[0] = dub_path.param[0]/10.0;
-    // dub_path.param[1] = dub_path.param[1]/10.0;
-    // dub_path.param[2] = dub_path.param[2]/10.0;
 
     /*Extracting segments from dubins curve */
     dubins_segments_extract(&dub_path, end_point_segments,rho,three_seg,q1);
 
     #if DUBINS_CURVE
     std::cout << "Gkiri:: planPath:: dubPath" <<  "q[0]" <<dub_path.qi[0]  << "q[1]" <<dub_path.qi[1] << "q[2]" <<dub_path.qi[2] << std::endl;
-    std::cout << "Gkiri:: planPath:: dubPath params[0]" << dub_path.param[0] <<"params[1]" << dub_path.param[1]<< "params[2]" << dub_path.param[2] <<std::endl;
+    std::cout << "Gkiri:: planPath:: dubPath params[0]=" << dub_path.param[0]/10.0 <<" params[1]=" << dub_path.param[1]/10.0<< " params[2]=" << dub_path.param[2] <<std::endl;
     std::cout << "Gkiri:: planPath:: end_point_segments end_point_segments[0]=" << end_point_segments[0] <<"end_point_segments[1]=" << end_point_segments[1]<< "end_point_segments[2]=" << end_point_segments[2] <<std::endl;
     std::cout << "Gkiri:: planPath:: end_point_segments end_point_segments[3]=" << end_point_segments[3] <<"end_point_segments[4]=" << end_point_segments[4]<< "end_point_segments[5]=" << end_point_segments[5] <<std::endl;
 
@@ -527,12 +576,13 @@ Point find_center(Point start,Point end,float radius, int LSR)
     {
     case 0: // counter-clockwise
         // epsilon = -1 by default
+        epsilon = 1; 
         break;
     case 1: // Straight line --> Center = 0
         return Point(0,0); 
         break;
     case 2: // clockwise
-        epsilon = 1; 
+        //epsilon = 1; 
         break;
         printf("unkown LSR");
     default:

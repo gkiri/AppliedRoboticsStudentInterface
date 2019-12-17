@@ -395,19 +395,12 @@ namespace student {
 
     //Robot position
     std::cout << "Robot position: " << x << ", "<< y << ", " << theta << std::endl;
-    
-    // q0[0]=0;//start of dubins
-    // q0[1]=0;
-    // q0[2]=0;
-    // q1[0]=0.8;//end of dubins
-    // q1[1]=0.5;
-    // q1[2]=3.142;
 
-    q0[0]=0.182;//start of dubins
-    q0[1]=0.2431;
+    q0[0]=0.45;//start of dubins
+    q0[1]=0.60;
     q0[2]=0;
-    q1[0]=0.8;//end of dubins
-    q1[1]=0.5;
+    q1[0]=1.25;//end of dubins
+    q1[1]=0.75;
     q1[2]=3.142;
     
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
