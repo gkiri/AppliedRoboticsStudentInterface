@@ -315,8 +315,7 @@ namespace student {
 
     //Robot position
     std::cout << "Robot position: " << x << ", "<< y << ", " << theta << std::endl;
-    
-    
+   
     //Dubins test
     #if DUBINS_TEST
     // q0[0]=0;//start of dubins
@@ -332,6 +331,7 @@ namespace student {
     q1[0]=0.8;//end of dubins
     q1[1]=0.3;
     q1[2]=0;
+
     
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
 
