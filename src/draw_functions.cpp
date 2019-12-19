@@ -4,7 +4,7 @@
 #include <vector>
 #include <math.h>
 
-//Map object colours
+//Map object colours - BGR
 cv::Scalar robot_colour(255,0,0);   //blue
 cv::Scalar sample_colour(255,255,255);  //white
 cv::Scalar victim_colour(0,255,0);  //green
@@ -24,6 +24,8 @@ struct arc_param{
 };
 int TO_CM = 100;    //Transform from m to cms
 
+/* Initialize map-------------------------------------------*/
+
 img_map_def initialize_img_map(double map_w, double map_h, double img_map_w){
     // Initialize the map parameters for the visual representation of points, dubins curves
     // and polygons 
@@ -38,6 +40,9 @@ img_map_def initialize_img_map(double map_w, double map_h, double img_map_w){
     return result;
 }
 
+
+/* Change coordinates of a point-------------------------------------------*/
+
 cv::Point coord_map_to_img(cv::Point point_in_map_coord, img_map_def img_map_def){
     //Return point in image coordinates from a point in map coordinates
     cv::Point result;
@@ -46,6 +51,9 @@ cv::Point coord_map_to_img(cv::Point point_in_map_coord, img_map_def img_map_def
     
     return result;
 }
+
+
+/* Draw a point-------------------------------------------*/
 
 void draw_point(Point point, img_map_def img_map_def,
                         cv::Scalar colour = sample_colour){
@@ -66,6 +74,9 @@ void draw_point(Point point, img_map_def img_map_def,
     circle(img_map_def.img_map, point_scaled, radius, colour, -1, 8, 0);
 }
 
+
+/* Draw a polygon-------------------------------------------*/
+
 void draw_polygon(Polygon poly, img_map_def img_map_def, cv::Scalar colour = poly_colour){    
     std::vector<std::vector<cv::Point>> v_poly_scaled; 
     std::vector<cv::Point> poly_scaled;   
@@ -79,6 +90,9 @@ void draw_polygon(Polygon poly, img_map_def img_map_def, cv::Scalar colour = pol
     v_poly_scaled = {poly_scaled};  //fillpoly works with vectors of polygons
     fillPoly(img_map_def.img_map, v_poly_scaled, colour);
 }
+
+
+/* Calculate arc parameters for cv::ellipse function ---------------------------------*/
 
 arc_param calculate_arc_drawing_angles(arc_extract arc){
     // Taking center as the origin of our coordinates system  
@@ -113,6 +127,9 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
     return result;    
 }
 
+
+/* Draw an arc-------------------------------------------*/
+
 void draw_arc(arc_extract arc, img_map_def img_map_def){   
     // Draw an arc given the visual parameter of a map and the parameters of an arc
     arc_param arc_angles = calculate_arc_drawing_angles(arc);        
@@ -133,12 +150,19 @@ void draw_arc(arc_extract arc, img_map_def img_map_def){
     // cv::ellipse(img_map_def.img_map, rRect, cv::Scalar(255, 255, 255),1,15);
 }
 
-line_extract to_line_extract_type(Point pt1, Point pt2, bool calc_length=false){
-    //Transform a pair of Point type into a line_extract type
+
+/* Extract arc_extract parameters from pair of Points ------------------------*/
+
+arc_extract to_arc_extract_type(Point pt1, Point pt2, bool calc_length=true){
+    //Transform a pair of Point type into a arc_extract type
     // calc_length - (1) Calculate length (0) Do not, by default
-    line_extract result;
+    arc_extract result;
     result.start_point = pt1;
     result.end_point = pt2;
+    result.radius = 0;
+    result.center = Point(0,0);
+    result.LSR = 1;
+
     if (calc_length){
         result.length = sqrt(pow(pt1.x - pt2.x,2) + pow(pt1.y - pt2.y,2));
     }
@@ -149,19 +173,39 @@ line_extract to_line_extract_type(Point pt1, Point pt2, bool calc_length=false){
     return result;    
 }
 
-void draw_segment(line_extract segment, img_map_def img_map_def){
+
+/* Draw a line-------------------------------------------*/
+
+void draw_line(arc_extract line, img_map_def img_map_def){
     cv::Point start_pt_scaled, end_pt_scaled;
     //Scale points for visualizing
-    start_pt_scaled.x = segment.start_point.x*img_map_def.scale*TO_CM;
-    start_pt_scaled.y = segment.start_point.y*img_map_def.scale*TO_CM;
-    end_pt_scaled.x = segment.end_point.x*img_map_def.scale*TO_CM;
-    end_pt_scaled.y = segment.end_point.y*img_map_def.scale*TO_CM;
+    start_pt_scaled.x = line.start_point.x*img_map_def.scale*TO_CM;
+    start_pt_scaled.y = line.start_point.y*img_map_def.scale*TO_CM;
+    end_pt_scaled.x = line.end_point.x*img_map_def.scale*TO_CM;
+    end_pt_scaled.y = line.end_point.y*img_map_def.scale*TO_CM;
     //Change of coordinate system (Img(0,0)--> left top corner, Map(0,0) left down corner)
     start_pt_scaled = coord_map_to_img(start_pt_scaled, img_map_def);
     end_pt_scaled = coord_map_to_img(end_pt_scaled, img_map_def);
 
     cv::line(img_map_def.img_map, start_pt_scaled, end_pt_scaled, path_colour,1,16,0);
 }
+
+
+/* Draw one of the segment (left curve, right curve or arc)---------------------------*/
+void draw_dubins_segment(arc_extract dubins_segment, img_map_def img_map_def){
+    if(dubins_segment.LSR == 1){   //Line
+        draw_line(dubins_segment, img_map_def);
+    }
+    else if(dubins_segment.LSR == 0 || dubins_segment.LSR == 2){  //Left or Right arc
+        draw_arc(dubins_segment, img_map_def);
+    }
+    else{
+        printf("draw_dubins_segment ERROR: Unknown LSR");
+    }
+}
+
+
+/* Draw robot position-------------------------------------------*/
 
 void draw_robot(float robot_x, float robot_y, float robot_theta, img_map_def img_map_def, 
                             cv::Scalar colour = robot_colour, bool show_direction=false){
@@ -183,6 +227,9 @@ void draw_robot(float robot_x, float robot_y, float robot_theta, img_map_def img
     }                  
 }
 
+
+/* Draw victim position and number -------------------------------------------*/
+
 void draw_victim(std::pair<int,Polygon> victim, img_map_def img_map_def, 
                         bool show_contour = false){
     
@@ -196,7 +243,7 @@ void draw_victim(std::pair<int,Polygon> victim, img_map_def img_map_def,
     centroid_y = 0;    
     Polygon victim_poly = victim.second;
 
-    std::cout << "victim number: " << victim.first << std::endl;
+    //std::cout << "victim number: " << victim.first << std::endl;
 
     //Calculate centroid  
     float n_points = victim_poly.size();
@@ -207,7 +254,7 @@ void draw_victim(std::pair<int,Polygon> victim, img_map_def img_map_def,
       //std::cout << "Centroid sum: " << centroid_x << ", " << centroid_y << std::endl;   
     }
     centroid = Point(centroid_x/n_points, centroid_y/n_points);
-    std::cout << "Centroid: " << centroid_x/n_points << ", " << centroid_y/n_points << std::endl;
+    //std::cout << "Centroid: " << centroid_x/n_points << ", " << centroid_y/n_points << std::endl;
 
     if(show_contour){
         draw_polygon(victim_poly, img_map_def, victim_colour);
@@ -227,6 +274,123 @@ void draw_victim(std::pair<int,Polygon> victim, img_map_def img_map_def,
     cv::putText(img_map_def.img_map, victim_number, abs_number_label_scaled,
                          0,0.8,victim_colour,1,16,false);
 
+}
+
+
+/* Draw test-------------------------------------------*/
+
+//show all the drawing functions in action in a single image.
+void draw_test(std::vector<Polygon> poly_list, float x, 
+              float y, float theta, std::vector<std::pair<int,Polygon>> victim_list,
+              img_map_def map_param ){
+
+
+    /* Drawing polygons-------------------------------------------*/
+
+    Polygon poly;              
+    // //Code for drawing a single polygon
+    // poly = poly_list[0];
+    // draw_polygon(poly, map_param);
+
+    //Code for printing all polygons   
+    for (size_t i = 0; i<poly_list.size(); i++){
+      poly = poly_list[i];
+      draw_polygon(poly, map_param);
+    }
+
+    
+    /* Drawing points-------------------------------------------*/
+
+    //Code for single point
+    Point eg_point;
+    eg_point.x = 0.75;
+    eg_point.y = 0.5;
+    draw_point(eg_point, map_param);
+
+    // //Generate random pointst
+    // std::vector<Point> eg_points;    
+    // for(int i=0;i<1000;i++){
+    //   int x_rand = rand() % 150 + 1; //Generate random sample
+    //   int y_rand = rand() % 100 + 1; 
+    //   //std::cout << x_rand << "," << y_rand << std::endl;
+    //   eg_points.emplace_back(x_rand,y_rand);
+    // }    
+    // //Add points to map image    
+    // for (int i=0;i<1000;i++){
+    //   draw_point(eg_points[i], map_param);      
+    // }
+
+
+    /* Drawing semicircle-------------------------------------------*/
+    arc_extract semi_circle;
+    semi_circle.start_point = Point(0.1,0.5);
+    semi_circle.end_point = Point(0.3,0.5);
+    semi_circle.radius = 0.1;
+    semi_circle.center = Point(0.2,0.5);
+    semi_circle.length = 15;  
+    semi_circle.LSR = 0;
+
+    //draw_arc(semi_circle, map_param);
+    draw_dubins_segment(semi_circle, map_param);
+
+    // Test on calculated arc angles
+    // arc_param semicircle_param;
+    // semicircle_param = calculate_arc_drawing_angles(semi_circle);
+    // std::cout << "SemiCircle Rotation angle: " << semicircle_param.rotation_angle << std::endl;
+    // std::cout << "SemiCircle Angle btw cs & ce: " << semicircle_param.angle_cs_ce << std::endl;
+
+    //Test on center
+    // Point center_test;
+    // int LSR = 1;
+    // center_test = find_center(semi_circle.start_point,semi_circle.end_point,semi_circle.radius, LSR);
+    // std::cout << "center_test: " << center_test.x << ", " << center_test.y << std::endl;
+
+    /* Drawing arc-------------------------------------------*/
+    arc_extract arc;
+    arc.radius = 0.2;
+    arc.center = Point(0.9,0.3);
+    arc.start_point = Point(arc.center.x - arc.radius, arc.center.y);
+    arc.end_point = Point(arc.center.x, arc.center.y + arc.radius);    
+    arc.length = 15;  
+    arc.LSR = 0;
+
+    //draw_arc(arc, map_param);
+    draw_dubins_segment(arc, map_param);
+    
+
+    // Test on calculated arc angles
+    // arc_param arc_param;
+    // arc_param = calculate_arc_drawing_angles(arc);
+    // std::cout << "Arc Rotation angle: " << arc_param.rotation_angle << std::endl;
+    // std::cout << "Arc Angle btw cs & ce: " << arc_param.angle_cs_ce << std::endl;
+
+   
+    /* Drawing a line-----------------------------------------*/    
+    Point pt1 = Point(0.15,0.15);
+    Point pt2 = Point(0.90,0.90);
+    arc_extract line_test;
+    //Transform pair of points into line_extract type
+    line_test = to_arc_extract_type(pt1,pt2,true);
+
+    // Test on to_arc_extract_type
+    // std::cout << "start_point: " << line_test.start_point.x << ", " 
+    //           << line_test.start_point.y << std::endl;
+    // std::cout << "end_point: " << line_test.end_point.x << ", " 
+    //           << line_test.end_point.y << std::endl;
+    // std::cout << "lenght: " << line_test.length << std::endl;
+
+    //drawing line
+    //draw_line(line_test,map_param);
+    draw_dubins_segment(line_test,map_param);
+    
+    
+    /* Drawing robot position-----------------------------------------*/
+    draw_robot(x,y,theta,map_param);       
+
+    /* Drawing victims position and number-----------------------------*/    
+    for(int i=0;i<victim_list.size();i++){      
+      draw_victim(victim_list[i], map_param);
+    }    
 }
 
 

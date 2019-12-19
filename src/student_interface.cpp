@@ -26,12 +26,9 @@
 #include "draw_functions.cpp"
 
 //Unit test and printouts variables
-#define PRINTOUT 0        //Print out polygons (0 -no, 1 -yes)
-#define PRINTOUT_ALL 1   //(0)Print 1by1 - (1)Print all polygons
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
-#define DRAW_TEST 0       //(0)Deactivated - (1)Draw function test
-
 #define DUBINS_CURVE 1
+#define DUBINS_TEST 1
 
 namespace student {
 
@@ -249,8 +246,7 @@ namespace student {
                 const std::string& config_folder)
 
   { 
-    //std::cout << "Gkiri::planPath " << std::endl;
-
+    /* Parameter Secion-------------------------------------------*/
     //Robot parameters (move to another file?)
     const double robot_length = 0.2; //(m)
     const double robot_width = 0.14; //(m)
@@ -262,131 +258,55 @@ namespace student {
     double img_map_w = 720; //image map width in pixels
     //image map height is calculated through the other three parameters
 
-    //Inflate polygons
-    double OFFSET = sqrt(pow(robot_length/2,2) + pow(robot_width/2,2)); 
-                              //Radius of circle approximating robot shape (m)  
+
+    /* Initialize map image -------------------------------------------*/
+
+    //Initialize map matrix and scale
+    img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);
+    //std::cout << "Scale: " << map_param.scale << std::endl; 
+
+
+    /* Inflate polygons -------------------------------------------*/
+    //Radius of circle approximating robot shape (m) 
+    double OFFSET = sqrt(pow(robot_length/2,2) + pow(robot_width/2,2));                               
     std::vector<Polygon> inflated_obstacle_list;
     //Inflate polygon function --> Return std::vector<Polygon>
     inflated_obstacle_list = inflate_polygons(obstacle_list, OFFSET);
 
-    //Print polygons
-    #if PRINTOUT 
-    print_polygons_out(obstacle_list, inflated_obstacle_list);
-    #endif  
-
-    //Initialize map matrix and scale
-    img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);
-    //std::cout << "Scale: " << map_param.scale << std::endl;
-
-    //Colours of objects represented by a point.
-    //By default samples are white and robot is blue.
-    //cv::Scalar victim_colour(0,255,0); //green    
-    
-
-    #if DRAW_TEST   
-
-    //Draw polygon
-    Polygon poly;
-    // //Code for drawing a single polygon
-    // poly = obstacle_list[0];
-    // draw_polygon(poly, map_param);
-
-    //Code for printing all polygons
-    std::vector<Polygon> poly_list = obstacle_list; //for printing the original polygons
-    //std::vector<Polygon> poly_list = inflated_obstacle_list; //inflated polygons
-    
-    for (size_t i = 0; i<poly_list.size(); i++){
-      poly = poly_list[i];
-      draw_polygon(poly, map_param);
-    }
+    //Print polygons    
+    //print_polygons_out(obstacle_list, inflated_obstacle_list);
 
     
-    //Code for single point
-    Point eg_point;
-    eg_point.x = 0.75;
-    eg_point.y = 0.5;
-    draw_point(eg_point, map_param);
+    /* Draw test-------------------------------------------*/
+    //Print an example of th drawing functions in a single image
+    //draw_test(obstacle_list,x,y,theta,victim_list,map_param);
 
-    // //Generate random pointst
-    // std::vector<Point> eg_points;    
-    // for(int i=0;i<1000;i++){
-    //   int x_rand = rand() % 150 + 1; //Generate random sample
-    //   int y_rand = rand() % 100 + 1; 
-    //   //std::cout << x_rand << "," << y_rand << std::endl;
-    //   eg_points.emplace_back(x_rand,y_rand);
-    // }    
-    // //Add points to map image    
-    // for (int i=0;i<1000;i++){
-    //   draw_point(eg_points[i], map_param);      
-    // }
+    //dubin drawing test
+    arc_extract dt[2];
+    //line
+    dt[0].start_point = Point (0.456287, 0.599802);
+    dt[0].end_point = Point (1.24375, 0.550198);
+    dt[0].LSR = 1;
 
+    //arc
+    dt[1].start_point = Point (1.24375, 0.550198);
+    dt[1].end_point = Point (1.25, 0.75);
+    dt[1].radius = 0.1;
+    dt[1].center = Point(1.34683, 0.646974);
+    dt[1].LSR = 0;
 
-    //Draw segment
+    std::cout << "x pre: " <<  dt[1].center.x << std::endl;
+    draw_dubins_segment(dt[0],map_param);
+    draw_dubins_segment(dt[1],map_param);
+    draw_point(dt[1].center,map_param);
+    std::cout << "x pos " << dt[1].center.x << std::endl;
 
-    /* Drawing semicircle-------------------------------------------*/
-    arc_extract semi_circle;
-    semi_circle.start_point = Point(0.1,0.5);
-    semi_circle.end_point = Point(0.3,0.5);
-    semi_circle.radius = 0.1;
-    semi_circle.center = Point(0.2,0.5);
-    semi_circle.length = 15;  
-
-    draw_arc(semi_circle, map_param);
-    arc_param semicircle_param;
-    semicircle_param = calculate_arc_drawing_angles(semi_circle);
-    std::cout << "SemiCircle Rotation angle: " << semicircle_param.rotation_angle << std::endl;
-    std::cout << "SemiCircle Angle btw cs & ce: " << semicircle_param.angle_cs_ce << std::endl;
-
-    //Test on center
-    Point center_test;
-    int LSR = 1;
-    center_test = find_center(semi_circle.start_point,semi_circle.end_point,semi_circle.radius, LSR);
-    std::cout << "center_test: " << center_test.x << ", " << center_test.y << std::endl;
-
-    /* Drawing arc-------------------------------------------*/
-    arc_extract arc;
-    arc.radius = 0.2;
-    arc.start_point = Point(arc.center.x - arc.radius, arc.center.y);
-    arc.end_point = Point(arc.center.x, arc.center.y + arc.radius);
-    
-    arc.center = Point(0.9,0.3);
-    arc.length = 15;  
-
-    draw_arc(arc, map_param);
-    arc_param arc_param;
-    arc_param = calculate_arc_drawing_angles(arc);
-    std::cout << "Arc Rotation angle: " << arc_param.rotation_angle << std::endl;
-    std::cout << "Arc Angle btw cs & ce: " << arc_param.angle_cs_ce << std::endl;
-
-   
-    /* Drawing a line-----------------------------------------*/    
-    Point pt1 = Point(0.15,0.15);
-    Point pt2 = Point(0.90,0.90);
-    line_extract line_test;
-    //Transform pair of points into line_extract type
-    line_test = to_line_extract_type(pt1,pt2,true);
-    std::cout << "start_point: " << line_test.start_point.x << ", " 
-              << line_test.start_point.y << std::endl;
-    std::cout << "end_point: " << line_test.end_point.x << ", " 
-              << line_test.end_point.y << std::endl;
-    std::cout << "lenght: " << line_test.length << std::endl;
-
-    //drawing line
-    draw_segment(line_test,map_param);
+    arc_param curve_angles = calculate_arc_drawing_angles(dt[1]);
+    std::cout << "Curve Rotation angle: " << curve_angles.rotation_angle << std::endl;
+    std::cout << "Curve Angle btw cs & ce: " << curve_angles.angle_cs_ce << std::endl;
     
     
-    /* Drawing robot position-----------------------------------------*/
-    draw_robot(x,y,theta,map_param);       
-
-    /* Drawing victims position and number-----------------------------*/    
-    for(int i=0;i<victim_list.size();i++){      
-      draw_victim(victim_list[i], map_param);
-    }    
-    #endif
-   
-
-    
-    /* Dubins Secion-------------------------------------------*/
+    /* Dubins Section-------------------------------------------*/
 
     std::cout << "Before path: " << path.size() << std::endl;
     double q0[3];//start point
@@ -395,18 +315,28 @@ namespace student {
 
     //Robot position
     std::cout << "Robot position: " << x << ", "<< y << ", " << theta << std::endl;
+   
+    //Dubins test
+    #if DUBINS_TEST
+    // q0[0]=0;//start of dubins
+    // q0[1]=0;
+    // q0[2]=0;
+    // q1[0]=0.8;//end of dubins
+    // q1[1]=0.5;
+    // q1[2]=3.142;
 
-    q0[0]=0.45;//start of dubins
-    q0[1]=0.60;
+    q0[0]=0;//start of dubins
+    q0[1]=0;
     q0[2]=0;
-    q1[0]=1.25;//end of dubins
-    q1[1]=0.75;
-    q1[2]=3.142;
+    q1[0]=0.8;//end of dubins
+    q1[1]=0.3;
+    q1[2]=0;
+
     
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
 
     //Visualize dubins curve test
-    line_extract dubins_line;
+    arc_extract dubins_line;
 
     for(int i=0;i<3;i++){
       switch (three_seg[i].LSR)
@@ -424,13 +354,13 @@ namespace student {
         std::cout << "Length: " << three_seg[i].length <<std::endl;
         std::cout << "LSR: " << three_seg[i].LSR <<std::endl;
 
-        draw_arc(three_seg[i], map_param);
+        draw_dubins_segment(three_seg[i], map_param);
                              
         
         break;
       case 1: // Straight line
         std::cout << "Straight line" << std::endl;
-        dubins_line = to_line_extract_type(three_seg[i].start_point,
+        dubins_line = to_arc_extract_type(three_seg[i].start_point,
                                                 three_seg[i].end_point,true);
         //Print values
         std::cout << "Start point: " << three_seg[i].start_point.x 
@@ -444,7 +374,7 @@ namespace student {
         std::cout << "LSR: " << three_seg[i].LSR <<std::endl;
         std::cout << "Calculated Length: " << dubins_line.length << std::endl;
 
-        draw_segment(dubins_line,map_param);
+        draw_dubins_segment(dubins_line,map_param);
         break;
       case 2: // Right arc
         std::cout << "Right arc" << std::endl;
@@ -459,7 +389,7 @@ namespace student {
         std::cout << "Length: " << three_seg[i].length <<std::endl;
         std::cout << "LSR: " << three_seg[i].LSR <<std::endl;      
 
-        draw_arc(three_seg[i], map_param);
+        draw_dubins_segment(three_seg[i], map_param);
         break;
       
       default:
@@ -467,12 +397,15 @@ namespace student {
         break;
       }
     }
-     #if VISUALIZE_MAP
+    #endif
+
+
+    /* Map visualization -------------------------------------------*/
+    #if VISUALIZE_MAP
     //Show map image
     cv::imshow("Image",map_param.img_map);
     cv::waitKey( 0.01 );
     #endif
-
 
     
     std::cout << "After path: " << path.size() << std::endl;
