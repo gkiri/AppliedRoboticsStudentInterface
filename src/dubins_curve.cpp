@@ -526,17 +526,16 @@ Point find_center(Point start,Point end,float radius, int LSR)
     switch (LSR)
     {
     case 0: // counter-clockwise
-        // epsilon = -1 by default
+        //epsilon = -1;
         break;
     case 1: // Straight line --> Center = 0
         return Point(0,0); 
         break;
-    case 2: // clockwise
+    case 2: 
         epsilon = 1; 
-        break;
-        printf("unkown LSR");
+        break;        
     default:
-
+        printf("unkown LSR");
         break;
     }    
 
@@ -570,10 +569,10 @@ Point find_center(Point start,Point end,float radius, int LSR)
     /*Let Distance H from midpoint to center */
     float h, h_round, sqrt_content;
     sqrt_content = pow(radius,2) - pow(distance,2)/4;   
-    h_round = std::ceil(sqrt_content * 100.0) / 100.0; //round to the 2nd decimal
+    //h_round = std::ceil(sqrt_content * 100.0) / 100.0; //round to the 2nd decimal
     std::cout << "sqrt_content: " << sqrt_content << std::endl;
-    std::cout << "h_round: " << h_round << std::endl;
-    h=sqrt(h_round);   
+    //std::cout << "h_round: " << h_round << std::endl;
+    h=sqrt(sqrt_content);   
     std::cout << "h: " << h << std::endl;
 
     //c=𝐦+𝜖 ℎ 𝐧∗ 
