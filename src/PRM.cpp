@@ -1,80 +1,117 @@
 #include <cstdlib>
 #include <iostream>
 #include <cfloat>
-#include<algorithm> 
+#include <algorithm> 
 
 #include "PRM.h"
 
-PRM::PRM(std::vector<Polygon>& polygons_list)
+PRM::PRM(std::vector<Polygon> polygons_list)
 {
-  // Make sure that the random generator has been initialize
-
   for (size_t j = 0; j<polygons_list.size(); j++){  
-    obstacle_list.push_back(polygons_list[j]);
+      obstacle_list.push_back(polygons_list[j]);
   }
 
-
 }
+
 
 PRM::~PRM()
 {
 
 }
 
-// void PRM::generate_random_points(std::vector<Point> random_points,int size)
-// {
 
-//     std::cout <<"Random Sampling in Map start st" <<  std::endl;
+/* Draw Point in Polygon Test -------------------------------------------*/
+bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
+{
+    std::vector<cv::Point> contour;
+    Polygon obstacle;
+    cv::Point cv_point_temp;
 
-//     /* Generate random pointst */
-//     for(int i=0;i<size;i++){
-//       float x_rand = (rand() / (double) RAND_MAX) * 1.50; //Generate random sample
-//       float y_rand = (rand() / (double) RAND_MAX) * 1.00;
+    cv::Point2f test_pt;
+	  test_pt.x = pt.x*100*720/150;
+	  test_pt.y = pt.y*100*576/100;
 
-//       std::cout <<"Random Sampling in Map" << x_rand << "," << y_rand << std::endl;
+    for (size_t j = 0; j<cv_poly_list.size(); j++){  
 
-//       random_points.emplace_back(x_rand,y_rand);
-//     }
+        obstacle=cv_poly_list[j];
+        contour.clear();//vector clearing for next test
 
-// }
+        for (size_t k = 0; k<obstacle.size(); k++){  
 
-// bool PRM::filter_samples_of_obstaclespace(Point p , std::vector<Polygon> inflated_obstacle_list)
-// {
-//     //https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/17490923#17490923
-//     bool isInside = false;
-//      float minX ,maxX ,minY,maxY;
+            cv_point_temp.x=obstacle[k].x*100*720/150;//img_map_w*x_ob/map_w
+            cv_point_temp.y=obstacle[k].y*100*576/100;
+            contour.push_back(cv_point_temp);
 
-//     for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
+        }//inner for loop
 
-//       minX = inflated_obstacle_list[i][0].x, maxX = inflated_obstacle_list[i][0].x;
-//       minY = inflated_obstacle_list[i][0].y, maxY = inflated_obstacle_list[i][0].y;
-      
-      
-//       for (int n = 1; n < inflated_obstacle_list[i].size(); n++) {
-//           Point q = inflated_obstacle_list[i][n];
-//           minX = std::min(q.x, minX);
-//           maxX = std::max(q.x, maxX);
-//           minY = std::min(q.y, minY);
-//           maxY = std::max(q.y, maxY);
-//       }//inner forloop
+        int result=cv::pointPolygonTest(contour, test_pt, false);
+        double dist=cv::pointPolygonTest(contour, test_pt, true);
+
+        switch(result)
+        {
+            case 1:  //1 = (point lies inside polygon)
+
+                //std::cout << "Gkiri:case 111111111 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
+                return true;
+                break;
+            case 0:  //0 (point lies on edge of polygon)
+
+                //std::cout << "Gkiri:case 00000000 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
+                return true;
+                break;
+            case -1:   //-1 (point lies outside polygon)
+
+                //std::cout << "Gkiri:case -1-1-1-1-1-1-1 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
+                if((dist< 0.0 && dist > -10.0))
+                {
+                    return true;//Point outside polygon but bit closer to edge so remove this with some threshold distance   
+                }
+                break;
+            default:
+                //std::cout << "ERROR from function" << std::endl ;
+                break;
+        } 
+
+       // std::cout << "Gkiri:point_polygon Outside polygon -----------------result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y <<  std::endl;
+        
+    }//outer loop
+
+    return false;//false = point doesnot lie in polygon
+
+}
 
 
-//       if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) {
-//         return false;
-//       }
+void PRM::generate_random_points(double cspace_length,double cspace_width, int N)
+{
 
-//       for ( int u = 0, v = inflated_obstacle_list[u].size() - 1 ; u < inflated_obstacle_list[u].size() ; v = u++ )
-//       {
-//           if ( ( inflated_obstacle_list[i][u].y > p.y ) != ( inflated_obstacle_list[i][v].y > p.y ) && \
-//            p.x < ( inflated_obstacle_list[i][v].x - inflated_obstacle_list[i][u].x ) * ( p.y - inflated_obstacle_list[i][u].y ) / ( inflated_obstacle_list[i][v].y - inflated_obstacle_list[i][u].y ) + inflated_obstacle_list[i][u].x )
-//           {
-//               isInside = !isInside;
-//           }
-//       }
+    std::cout <<"Random Sampling in Map start st" <<  std::endl;
+    Point test_pt;
+    int count=0;  
+
+    /* Generate random pointst */
+    for(int i=0;i<N;i++){
+        float x_rand = (rand() / (double) RAND_MAX) * cspace_length; //Generate random sample
+        float y_rand = (rand() / (double) RAND_MAX) * cspace_width;
+
+        std::cout <<"Random Sampling in Map" << x_rand << "," << y_rand << std::endl;
+
+        test_pt.x=x_rand;
+        test_pt.y=y_rand;
+
+        if(!point_liesin_polygon(test_pt ,  obstacle_list)){ //Global obstacle list
+            //draw_point(random_points[z], *map_param); 
+            free_space_points.emplace_back(test_pt);
+            count++;
+            std::cout << "Gkiri :: Motion sample After count= " << count << std::endl; 
+        }
+
+    }//end for loop
+
+}
 
 
-//     }//outer forloop
+ std::vector<Point> PRM:: get_free_space_points()
+{
 
-//     return isInside;
-
-// }
+    return free_space_points;
+ }

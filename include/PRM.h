@@ -4,14 +4,21 @@
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
-
 class  PRM {
 
 public:
 
-    PRM(std::vector<Polygon>& polygons_list);
+    PRM(std::vector<Polygon> polygons_list);
 
     ~PRM();
+
+
+    /*Function to check Point lies in polygon */
+    bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list);
+
+    /*Function to return free space points */
+    std::vector<Point> get_free_space_points();
+
     
     /**
      * Generate random point inside configuration space of map
