@@ -25,6 +25,6 @@ class AABB
 
             AABB(Vector location, std::vector<Vector> vertices);
 
-            void findMinMax(std::vector<Vector> vertices):
+            void findMinMax(std::vector<Vector> vertices);
 
-}
+};

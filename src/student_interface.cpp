@@ -25,6 +25,8 @@
 
 #include "draw_functions.cpp"
 
+//#include "collision_detection_bounding_box.cpp"
+
 //Unit test and printouts variables
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 1
@@ -246,7 +248,7 @@ namespace student {
                 const std::string& config_folder)
 
   { 
-    /* Parameter Secion-------------------------------------------*/
+    /* Parameter Section-------------------------------------------*/
     //Robot parameters (move to another file?)
     const double robot_length = 0.2; //(m)
     const double robot_width = 0.14; //(m)
@@ -304,6 +306,11 @@ namespace student {
     arc_param curve_angles = calculate_arc_drawing_angles(dt[1]);
     std::cout << "Curve Rotation angle: " << curve_angles.rotation_angle << std::endl;
     std::cout << "Curve Angle btw cs & ce: " << curve_angles.angle_cs_ce << std::endl;
+
+    /*AABB test--------------------------------------*/
+    //Print an example of bounding box for the two objects' collision detection
+	  
+ 
     
     
     /* Dubins Section-------------------------------------------*/
