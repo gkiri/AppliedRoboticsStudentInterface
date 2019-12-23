@@ -269,7 +269,7 @@ int dubins_path_sample_many(DubinsPath* path, double stepSize,
     double length = dubins_path_length(path);
     while( x <  length ) {
         dubins_path_sample( path, x, q ,end_point_segments);
-        retcode = cb(q, x, user_data,path);
+        retcode = cb(q, x, user_data,path,end_point_segments);
         if( retcode != 0 ) {
             return retcode;
         }
@@ -466,40 +466,151 @@ int dubins_word(DubinsIntermediateResults* in, DubinsPathType pathType, double o
 
 //Helper functions
 
-int printConfiguration(double q[3], double x, void* user_data ,DubinsPath* dub_path) {
+int printConfiguration(double q[3], double x, void* user_data ,DubinsPath* dub_path,double end_point_segments[6]) {
     printf("%f,%f,%f,%f\n", q[0], q[1], q[2], x);
 
     Path *path=(Path *)user_data;
-    //double rho=1.4; //original
-    double rho=1.4;
+    double rho=10;
     
-    //Implement rho check for LSR
-    // switch(dub_path->type)
-    // {
-    // case LSL:
-    //     //if(dub_path->param[0]/10.0  )
+    switch(dub_path->type)
+    {
+    case LSL:
 
-    //     break;
-    // case RSL:
+        if((q[0] <= end_point_segments[0] && q[1] <= end_point_segments[1]))
+        {
+            std::cout << "Gkiri:: LSL 1st arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],-rho);
 
-    //     break;
-    // case LSR:
+        }
+        else if((q[0] >= end_point_segments[0] && q[1] >= end_point_segments[1]) && (q[0] <= end_point_segments[3] && q[1] <= end_point_segments[4]))
+        {
+            std::cout << "Gkiri:: LSL 2nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],0);
+        }
+        else
+        {   
+            std::cout << "Gkiri:: LSL 3nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
 
-    //     break;
-    // case RSR:
+        break;
 
-    //     break;
-    // case LRL:
+    case RSL:
 
-    //      break;
-    // case RLR:
+        if((q[0] <= end_point_segments[0] && q[1] <= end_point_segments[1]))
+        {
+            std::cout << "Gkiri:: LSL 1st arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],-rho);
 
-    //     break;
-    // default:
-    //      break;
-    // } 
+        }
+        else if((q[0] >= end_point_segments[0] && q[1] >= end_point_segments[1]) && (q[0] <= end_point_segments[3] && q[1] <= end_point_segments[4]))
+        {
+            std::cout << "Gkiri:: LSL 2nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],0);
+        }
+        else
+        {   
+            std::cout << "Gkiri:: LSL 3nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
 
-      path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        break;
+
+    case LSR:
+
+        if((q[0] <= end_point_segments[0] && q[1] <= end_point_segments[1]))
+        {
+            std::cout << "Gkiri:: LSL 1st arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],-rho);
+
+        }
+        else if((q[0] >= end_point_segments[0] && q[1] >= end_point_segments[1]) && (q[0] <= end_point_segments[3] && q[1] <= end_point_segments[4]))
+        {
+            std::cout << "Gkiri:: LSL 2nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],0);
+        }
+        else
+        {   
+            std::cout << "Gkiri:: LSL 3nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
+
+        break;
+
+    case RSR:
+
+        if((q[0] <= end_point_segments[0] && q[1] <= end_point_segments[1]))
+        {
+            std::cout << "Gkiri:: LSL 1st arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],-rho);
+
+        }
+        else if((q[0] >= end_point_segments[0] && q[1] >= end_point_segments[1]) && (q[0] <= end_point_segments[3] && q[1] <= end_point_segments[4]))
+        {
+            std::cout << "Gkiri:: LSL 2nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],0);
+        }
+        else
+        {   
+            std::cout << "Gkiri:: LSL 3nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
+
+        break;
+
+    case LRL:
+
+        if((q[0] <= end_point_segments[0] && q[1] <= end_point_segments[1]))
+        {
+            std::cout << "Gkiri:: LSL 1st arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],-rho);
+
+        }
+        else if((q[0] >= end_point_segments[0] && q[1] >= end_point_segments[1]) && (q[0] <= end_point_segments[3] && q[1] <= end_point_segments[4]))
+        {
+            std::cout << "Gkiri:: LSL 2nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
+        else
+        {   
+            std::cout << "Gkiri:: LSL 3nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
+
+        break;
+        
+    case RLR:
+
+        if((q[0] <= end_point_segments[0] && q[1] <= end_point_segments[1]))
+        {
+            std::cout << "Gkiri:: LSL 1st arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],-rho);
+
+        }
+        else if((q[0] >= end_point_segments[0] && q[1] >= end_point_segments[1]) && (q[0] <= end_point_segments[3] && q[1] <= end_point_segments[4]))
+        {
+            std::cout << "Gkiri:: LSL 2nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
+        else
+        {   
+            std::cout << "Gkiri:: LSL 3nd arc " << std::endl;
+            path->points.emplace_back(x, q[0], q[1], q[2],rho);
+        }
+
+        break;
+
+    default:
+         break;
+    } 
+
+
+    std::cout << "Gkiri::-------LSL:: q[0]=" << q[0] << "end_point_segments[0]= " << end_point_segments[0] << std::endl;
+    std::cout << "Gkiri::-------LSL:: q[1]=" << q[1] << "end_point_segments[1]= " << end_point_segments[1] << std::endl;
+
+    std::cout << "Gkiri::-------LSL:: q[3]=" << q[3] << "end_point_segments[3]= " << end_point_segments[3] << std::endl;
+    std::cout << "Gkiri::-------LSL:: q[4]=" << q[4] << "end_point_segments[4]= " << end_point_segments[4] << std::endl;
+
       return 0;
   }
 
