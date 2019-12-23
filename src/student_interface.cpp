@@ -287,7 +287,7 @@ namespace student {
     //draw_test(obstacle_list,x,y,theta,victim_list,map_param);
 
     /***********************Gkiri arc_draw_test Unit Testing*************************/
-    UT_arc_draw_test(&map_param);
+    //UT_arc_draw_test(&map_param);
     /*****************************************************************************/
     
     /* Dubins Section-------------------------------------------*/
