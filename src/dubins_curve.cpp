@@ -637,6 +637,13 @@ Point find_center(Point start,Point end,float radius, int LSR)
     
 }
 
+float distance_points(Point start,Point end)
+{
+    float distance;
+    distance=sqrt(pow((end.x-start.x),2)+pow((end.y-start.y),2));
+    return distance;
+}
+
 void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract *three_seg,double goal[3])
   {
     #if DUBINS_CURVE
@@ -711,5 +718,28 @@ void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double
     three_seg[0].center=find_center(three_seg[0].start_point,three_seg[0].end_point,three_seg[0].radius,three_seg[0].LSR);
     three_seg[1].center=find_center(three_seg[1].start_point,three_seg[1].end_point,three_seg[1].radius,three_seg[1].LSR);
     three_seg[2].center=find_center(three_seg[2].start_point,three_seg[2].end_point,three_seg[2].radius,three_seg[2].LSR);
+
+    //Handling small distance cases
+    float min_dist=0.1;
+    float dist;
+    for(int k=0;k<3;k++)
+    {
+        dist=distance_points(three_seg[k].start_point,three_seg[k].end_point);
+        if(dist<min_dist){
+            three_seg[k].end_point.x=three_seg[k].start_point.x;
+            three_seg[k].end_point.y=three_seg[k].start_point.y ;
+            three_seg[k].center={0.0,0.0};
+            three_seg[k].radius=0.0;
+
+            if(k!=2){//Avoiding over buffer
+                three_seg[k+1].start_point.x =three_seg[k].end_point.x;
+                three_seg[k+1].start_point.y =three_seg[k].end_point.y; 
+            }           
+
+        }
+
+    }
+
+
 
   }
