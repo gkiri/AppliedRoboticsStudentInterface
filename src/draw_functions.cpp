@@ -1,6 +1,10 @@
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
+#include "opencv2/videoio.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+
 #include <vector>
 #include <math.h>
 
@@ -394,3 +398,102 @@ void draw_test(std::vector<Polygon> poly_list, float x,
 }
 
 
+/* Draw Point in Polygon Test -------------------------------------------*/
+bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
+{
+    std::vector<cv::Point> contour;
+    Polygon obstacle;
+    cv::Point cv_point_temp;
+
+    cv::Point2f test_pt;
+	test_pt.x = pt.x*100*720/150;
+	test_pt.y = pt.y*100*576/100;
+
+    for (size_t j = 0; j<cv_poly_list.size(); j++){  
+
+        obstacle=cv_poly_list[j];
+        contour.clear();//vector clearing for next test
+
+        for (size_t k = 0; k<obstacle.size(); k++){  
+
+            cv_point_temp.x=obstacle[k].x*100*720/150;//img_map_w*x_ob/map_w
+            cv_point_temp.y=obstacle[k].y*100*576/100;
+            contour.push_back(cv_point_temp);
+
+        }//inner for loop
+
+        int result=cv::pointPolygonTest(contour, test_pt, false);
+        double dist=cv::pointPolygonTest(contour, test_pt, true);
+
+        switch(result)
+        {
+            case 1:  //1 = (point lies inside polygon)
+
+                std::cout << "Gkiri:case 111111111 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
+                return true;
+                break;
+            case 0:  //0 (point lies on edge of polygon)
+
+                std::cout << "Gkiri:case 00000000 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
+                return true;
+                break;
+            case -1:   //-1 (point lies outside polygon)
+
+                std::cout << "Gkiri:case -1-1-1-1-1-1-1 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
+                if((dist< 0.0 && dist > -10.0))
+                {
+                    return true;//Point outside polygon but bit closer to edge so remove this with some threshold distance   
+                }
+                break;
+            default:
+                std::cout << "ERROR from function" << std::endl ;
+                break;
+        } 
+
+        std::cout << "Gkiri:point_polygon Outside polygon -----------------result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y <<  std::endl;
+        
+    }//outer loop
+
+    return false;//false = point doesnot lie in polygon
+
+}
+
+
+/*   Visualise PRM motion planning */
+
+void draw_motion_planning(const std::vector<Polygon>& obstacle_list,img_map_def *map_param)
+{
+    Polygon poly;
+    std::vector<Polygon> poly_list = obstacle_list; //for printing the original polygons
+    //std::vector<Polygon> poly_list = inflated_obstacle_list; //inflated polygons
+    
+    std::cout <<"draw_polygon in Map start st" <<  std::endl;
+    for (size_t i = 0; i<poly_list.size(); i++){
+      poly = poly_list[i];
+      draw_polygon(poly, *map_param);
+    }
+
+    std::cout <<"Random Sampling in Map start st" <<  std::endl;
+    /* Generate random pointst */
+    std::vector<Point> random_points;    
+    for(int i=0;i<1000;i++){
+      float x_rand = (rand() / (double) RAND_MAX) * 1.50; //Generate random sample
+      float y_rand = (rand() / (double) RAND_MAX) * 1.00;
+
+      std::cout <<"Random Sampling in Map" << x_rand << "," << y_rand << std::endl;
+      random_points.emplace_back(x_rand,y_rand);
+    }
+
+    int count=0;  
+    for (int z=0;z<1000;z++){
+
+        if(!point_liesin_polygon(random_points[z] ,  obstacle_list)) 
+        {
+            draw_point(random_points[z], *map_param); 
+            count++;
+            std::cout << "Gkiri :: Motion sample After count= " << count <<std::endl; 
+        }
+           
+    }
+
+}
