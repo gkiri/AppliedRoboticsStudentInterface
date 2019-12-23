@@ -93,7 +93,7 @@ void UT_dubins_curve_test(struct arc_extract *three_seg,img_map_def *map_param)
 }
 
 
-void arc_draw_test(img_map_def *map_param)
+void UT_arc_draw_test(img_map_def *map_param)
 {
     //dubin drawing test
     arc_extract dt[2];
