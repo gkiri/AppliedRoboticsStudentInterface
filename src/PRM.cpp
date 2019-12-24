@@ -109,9 +109,33 @@ void PRM::generate_random_points(double cspace_length,double cspace_width, int N
 
 }
 
+void PRM::global_planner(Point start,Point goal){
 
- std::vector<Point> PRM:: get_free_space_points()
+    //input --> std::pair<Point, std::pair<Point ,Point > > prm_graph;
+    //output --> std::vector<Point> global_planner_path;
+}
+
+//@Ambike
+void PRM::local_planner(){
+    //implement local planner here
+}
+
+
+/*Returns for unit tests --------------------------------------*/
+std::vector<Point> PRM:: get_free_space_points()
 {
-
     return free_space_points;
- }
+}
+
+std::vector<Point> PRM:: get_global_planner_path(){
+    return global_planner_path;
+}
+
+//@Ambike
+std::vector<std::pair<Point, std::vector<Point> >> PRM::get_prm_graph(){
+    return prm_graph;
+}
+
+
+
+

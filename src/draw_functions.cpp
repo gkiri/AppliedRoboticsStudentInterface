@@ -281,7 +281,7 @@ void draw_victim(std::pair<int,Polygon> victim, img_map_def img_map_def,
 }
 
 
-/* Draw test-------------------------------------------*/
+/* Draw tests-------------------------------------------*/
 
 //show all the drawing functions in action in a single image.
 void draw_test(std::vector<Polygon> poly_list, float x, 

@@ -1,3 +1,102 @@
+#include "student_image_elab_interface.hpp"
+#include "student_planning_interface.hpp"
+
+#include <vector>
+/************Input variables generation for Unit Testing**********************/
+Point add_points(Point pt1,Point pt2){
+  Point result;
+  result.x = pt1.x + pt2.x;
+  result.y = pt1.y + pt2.y;
+
+  return result;
+}
+
+Point sub_points(Point pt1,Point pt2){
+  Point result;
+  result.x = pt1.x - pt2.x;
+  result.y = pt1.y - pt2.y;
+
+  return result;
+}
+
+/*Generate graph example*/
+std::vector<std::pair<Point, std::vector<Point> >> generate_graph_test(){
+  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;
+  std::pair<Point, std::vector<Point>> adj_list;
+  std::vector<Point> edges_list;
+  Point next_edge;
+  //std::pair<Point,Point > next_point;
+  Point start_point = Point(0.1,0.1);
+  int rows = 9; 
+  int cols = 14; 
+  Point x_step = Point(0.1,0);
+  Point y_step = Point(0,0.1);
+  
+  //Initilize first point
+  Point actual_point;
+  for(int r=0;r<rows;r++){  //loop through rows
+    actual_point.y = start_point.y + r*y_step.y; //go up 1 row     
+    for(int c=0;c<cols;c++){
+      edges_list.clear(); //reset edges vector
+      // Next point
+      actual_point.x = start_point.x + c*x_step.x; //go right 1 col     
+      //std::cout << "Actual point: " << actual_point.x << ", " << actual_point.y << std::endl;
+      //Check left point
+      if(actual_point.x - x_step.x >= start_point.x){      
+        next_edge = sub_points(actual_point,x_step);
+        edges_list.push_back(next_edge);
+        //std::cout << "------------ left: " << next_edge.x << ", " << next_edge.y << std::endl;        
+      }
+      //Check up point
+      if(actual_point.y + y_step.y <= start_point.y + y_step.y*(rows - 1)){
+        next_edge = add_points(actual_point,y_step);
+        edges_list.push_back(next_edge);
+        //std::cout << "------------ up: " << next_edge.x << ", " << next_edge.y << std::endl;  
+      }
+      //Check right point
+      if(actual_point.x + x_step.x <= start_point.x + x_step.x*(cols - 1)){
+        next_edge = add_points(actual_point,x_step);
+        edges_list.push_back(next_edge);
+        //std::cout << "------------ right: " << next_edge.x << ", " << next_edge.y << std::endl;  
+      }
+      //Check down point
+      if(actual_point.y - y_step.y >= start_point.y){
+        next_edge = sub_points(actual_point,y_step);
+        edges_list.push_back(next_edge);   
+        //std::cout << "------------ down: " << next_edge.x << ", " << next_edge.y << std::endl;       
+      }
+    //Add all vertexes
+      adj_list = std::make_pair(actual_point,edges_list);
+      // std::cout << "prm_graph element " << c + r*cols << ": " << std::endl;
+      // Point V = adj_list.first;
+      // std::cout << "V: " <<  V.x << ", " << V.y << "; E: ";
+      // std::vector<Point> E_list = adj_list.second;
+      // for (int i=0;i<E_list.size();i++){
+      //    std::cout << "(" <<  E_list[i].x << ", " << E_list[i].y << "), ";
+      // }      
+      // std::cout << std::endl;
+      prm_graph_test.push_back(adj_list);
+    }   
+  }
+  std::cout << "graph size: " << prm_graph_test.size() << std::endl;
+
+  return prm_graph_test;  
+}
+
+// @Ambike
+/*Generate points example (from graph)*/
+std::vector<Point> generate_free_space_points_test (std::vector<std::pair<Point, 
+                                                      std::vector<Point> >> prm_graph_test){
+  std::vector<Point> result;
+  for(int i=0;i<prm_graph_test.size();i++){
+    result.push_back(prm_graph_test[i].first); //first element of pair --> V
+  }
+
+  return result;
+}
+
+
+
 
 /* **********************Gkiri PRM space Unit Testing*************************/
 void UT_sample_generation(std::vector<Polygon> obstacle_list ,img_map_def *map_param)
@@ -21,6 +120,92 @@ void UT_sampling_motion_plan(std::vector<Polygon> obstacle_list ,img_map_def *ma
     //draw_motion_planning(obstacle_list,&map_param);
     //draw_motion_planning(inflated_obstacle_list,&map_param);
 
+}
+
+// @Ambike
+void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
+  // Set variables for your unit test
+  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test; //Output  
+  prm_graph_test = generate_graph_test();
+  std::vector<Point> free_space_points_test = generate_free_space_points_test(prm_graph_test);
+
+  //Call your implementation on PRM.cpp
+  PRM obj(obstacle_list);  
+  obj.local_planner(); //Implement your local planner in PRM.cpp
+
+  //Retrieve the output of your function
+  std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
+
+  //****************************************************************************
+  //********Drawing and printing the result of your local planner*************** 
+  //draw polygons
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+    draw_polygon(obstacle_list[i], *map_param);
+  }
+  //draw graph
+  std::pair<Point, std::vector<Point>> graph_node;
+  Point V;
+  std::vector<Point> E; 
+  arc_extract edge_line;
+  Point E_point;
+  for(int i=0; i<prm_graph_test.size(); i++){
+    //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
+    graph_node = prm_graph_test[i];
+    V = graph_node.first; //Vertex
+    std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+    E = graph_node.second; //Edges
+    //Draw edges    
+    for(int j=0;j<E.size();j++){ 
+      std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+      edge_line = to_arc_extract_type(V,E[j],true);
+      draw_line(edge_line, *map_param);
+    }
+    //Draw vertex
+    draw_point(V, *map_param, cv::Scalar(255,0,0));
+  }
+
+}
+
+void UT_global_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
+  //Start and goal parameters
+  Point start = Point(0.1,0.1);
+  Point goal = Point(1.3,0.8);
+  //input graph: prm_graph
+  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;
+
+  //Draw start and goal
+  draw_point(start, *map_param, cv::Scalar(0,255,0));
+  draw_point(goal, *map_param, cv::Scalar(0,255,0));
+
+  //std::vector<std::pair<Point, std::vector<Point> >>
+  prm_graph_test = generate_graph_test();
+
+  //draw graph
+  std::pair<Point, std::vector<Point>> graph_node;
+  Point V;
+  std::vector<Point> E; 
+  arc_extract edge_line;
+  Point E_point;
+  for(int i=0; i<prm_graph_test.size(); i++){
+    //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
+    graph_node = prm_graph_test[i];
+    V = graph_node.first; //Vertex
+    std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+    E = graph_node.second; //Edges
+    //Draw edges    
+    for(int j=0;j<E.size();j++){ 
+      std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+      edge_line = to_arc_extract_type(V,E[j],true);
+      draw_line(edge_line, *map_param);
+    }
+    //Draw vertex
+    draw_point(V, *map_param, cv::Scalar(255,0,0));   
+
+  //GLOBAL PLANNER
+  // PRM obj(obstacle_list);  
+  // obj.global_planner(start,goal);
+  //std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
+  }
 }
 
 
