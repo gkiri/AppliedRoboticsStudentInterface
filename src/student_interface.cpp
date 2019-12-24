@@ -33,7 +33,7 @@
 //Unit test and printouts variables
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 1
-#define DUBINS_TEST 1
+#define DUBINS_TEST 0
 
 namespace student {
 
@@ -269,7 +269,8 @@ namespace student {
 
     /* Inflate polygons -------------------------------------------*/
     //Radius of circle approximating robot shape (m) 
-    double OFFSET = sqrt(pow(robot_length/2,2) + pow(robot_width/2,2));                               
+    //double OFFSET = sqrt(pow(robot_length/2,2) + pow(robot_width/2,2)); //more restrictive case, diagonal of robot
+    double OFFSET = 0.2/2; // less restrictive case --> length of robot                           
     std::vector<Polygon> inflated_obstacle_list;
     //Inflate polygon function --> Return std::vector<Polygon>
     inflated_obstacle_list = inflate_polygons(obstacle_list, OFFSET);
@@ -278,9 +279,22 @@ namespace student {
     //print_polygons_out(obstacle_list, inflated_obstacle_list);
 
     /* **********************Gkiri PRM space Unit Testing*************************/
-    UT_sample_generation(obstacle_list ,&map_param);
+    //UT_sample_generation(inflated_obstacle_list ,&map_param);
     /*****************************************************************************/
+    
+    // //Draw original polygons on top of inflated ones
+    // for (size_t i = 0; i<obstacle_list.size(); i++){
+    //   draw_polygon(obstacle_list[i], map_param, cv::Scalar(255,0,0));
+    // }
 
+  /*****************Alvaro PRM global planner Unit testing *************************/
+    //UT_global_planner(inflated_obstacle_list, &map_param);
+  /*****************************************************************************/
+
+  /*****************Ambike PRM local planner Unit testing **********************/
+    UT_local_planner(inflated_obstacle_list, &map_param);
+  /*****************************************************************************/ 
+    
     
     /* Draw test-------------------------------------------*/
     //Print an example of th drawing functions in a single image
@@ -309,7 +323,7 @@ namespace student {
     q1[2]=0;
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
     /* **********************Gkiri UT_dubins_curve_test space Unit Testing*************************/
-    UT_dubins_curve_test(three_seg,&map_param);
+    //UT_dubins_curve_test(three_seg,&map_param);
     /*********************************************************************************************/
     #endif
 

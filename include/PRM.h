@@ -18,6 +18,10 @@ public:
 
     /*Function to return free space points */
     std::vector<Point> get_free_space_points();
+    std::vector<Point> get_global_planner_path(); 
+    //@Ambike
+    std::vector<std::pair<Point, std::vector<Point> >> get_prm_graph();    
+
 
     
     /**
@@ -62,12 +66,14 @@ public:
 
 private:
 
-    std::pair<Point, std::pair<Point ,Point > > prm_graph; //G(V,E)
-
+    std::vector<std::pair<Point, std::vector<Point> >> prm_graph; //G(V,E)
     std::vector<Point> free_space_points;
     std::vector<Polygon> obstacle_list;  //Store this in costructor
     std::vector<Point> global_planner_path;//
 
     //Path dubins_planner_path;//
+
+    //Return functions
+    
 
 };
