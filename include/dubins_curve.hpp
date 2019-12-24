@@ -67,7 +67,7 @@ struct line_extract
  * @note the user_data parameter is forwarded from the caller
  * @note return non-zero to denote sampling should be stopped
  */
-typedef int (*DubinsPathSamplingCallback)(double q[3], double t, void* user_data,DubinsPath* path);
+typedef int (*DubinsPathSamplingCallback)(double q[3], double t, void* user_data,DubinsPath* path,double end_point_segments[6]);
 
 /**
  * Generate a path from an initial configuration to

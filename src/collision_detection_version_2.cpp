@@ -1,11 +1,9 @@
-#pragma once
 
+#include<iostream>
 #include <vector>
 #include <cmath>
 
-#include "student_image_elab_interface.hpp"
-#include "student_planning_interface.hpp"
-#include "Vector2.hpp"
+//#include "dubins_curve.hpp"
 
 namespace IntersectionFunctions
 {
@@ -19,7 +17,7 @@ namespace IntersectionFunctions
 		}
 
 		void InsertSolution(Vector2 v)
-		{
+		{ 
 			points.push_back(v);
 		}
 
@@ -32,7 +30,22 @@ namespace IntersectionFunctions
 	int PrivateLineToCircleIntersection(Vector2 vertex1, Vector2 vertex2,
 					    Vector2 circlePosition, float radius,
 					    Vector2 & solution1, Vector2 & solution2)
-	{
+	{   
+		{
+			arc_extract arcStruct;
+			arcStruct.start_point = vertex1;
+			arcStruct.end_point = vertex2;
+			arcStruct.radius = radius;
+			arcStruct.centre = circlePosition;
+			{if (arcStruct.LSR = 0)  //0 is clockwise i.e., L
+			  return 0;
+			  else if (arcStruct.LSR = 2)  //2 is counter-clockwise i.e., R
+			  return 2;
+			  else return 1; //1 is straight i.e., S
+			  
+			}
+
+		}
 		// Vector from point 1 to point 2
 		Vector2 vertex1to2 = vertex2 - vertex1;
 		// Vector from point 1 to the circle's center
@@ -107,6 +120,29 @@ namespace IntersectionFunctions
 	bool PrivateLineToLineIntersection(Vector2 vertex1, Vector2 vertex2,
 					   Vector2 vertex3, Vector2 vertex4, float & r, float & s)
 	{
+		{
+			arcStruct lineseg1;
+			lineseg1.start_point = vertex1;
+			lineseg1.end_point = vertex2;
+			{if (arcStruct.LSR = 0)  //0 is clockwise i.e., L
+			  return 0;
+			  else if (arcStruct.LSR = 2)  //2 is counter-clockwise i.e., R
+			  return 2;
+			  else return 1; //1 is straight i.e., S
+			}
+
+
+		}{
+			arcStruct lineseg2;
+			lineseg2.start_point = vertex3;
+			lineseg2.end_point = vertex4;
+			{if (arcStruct.LSR = 0)  //0 is clockwise i.e., L
+			  return 0;
+			  else if (arcStruct.LSR = 2)  //2 is counter-clockwise i.e., R
+			  return 2;
+			  else return 1; //1 is straight i.e., S
+			}
+		}
 		float d;
 		//Make sure the lines aren't parallel
 		Vector2 vertex1to2 = vertex2 - vertex1;
