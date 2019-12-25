@@ -134,7 +134,7 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
 
 /* Draw an arc-------------------------------------------*/
 
-void draw_arc(arc_extract arc, img_map_def img_map_def){   
+void draw_arc(arc_extract arc, img_map_def img_map_def, cv::Scalar colour = path_colour){   
     // Draw an arc given the visual parameter of a map and the parameters of an arc
     arc_param arc_angles = calculate_arc_drawing_angles(arc);        
     double start_angle = 180 + arc_angles.angle_cs_ce;
@@ -148,7 +148,7 @@ void draw_arc(arc_extract arc, img_map_def img_map_def){
     double radius_scaled = arc.radius*img_map_def.scale*TO_CM; 
 
     cv::ellipse(img_map_def.img_map, center_scaled, cv::Size(radius_scaled, radius_scaled), 
-               arc_angles.rotation_angle, start_angle, end_angle, path_colour,1,15,0);
+               arc_angles.rotation_angle, start_angle, end_angle, colour,1,15,0);
 
     // cv::RotatedRect rRect = cv::RotatedRect(cv::Point2f(50,50), cv::Size2f(40,30), 30);
     // cv::ellipse(img_map_def.img_map, rRect, cv::Scalar(255, 255, 255),1,15);
@@ -180,7 +180,7 @@ arc_extract to_arc_extract_type(Point pt1, Point pt2, bool calc_length=true){
 
 /* Draw a line-------------------------------------------*/
 
-void draw_line(arc_extract line, img_map_def img_map_def){
+void draw_line(arc_extract line, img_map_def img_map_def, cv::Scalar colour = path_colour){
     cv::Point start_pt_scaled, end_pt_scaled;
     //Scale points for visualizing
     start_pt_scaled.x = line.start_point.x*img_map_def.scale*TO_CM;
@@ -191,7 +191,7 @@ void draw_line(arc_extract line, img_map_def img_map_def){
     start_pt_scaled = coord_map_to_img(start_pt_scaled, img_map_def);
     end_pt_scaled = coord_map_to_img(end_pt_scaled, img_map_def);
 
-    cv::line(img_map_def.img_map, start_pt_scaled, end_pt_scaled, path_colour,1,16,0);
+    cv::line(img_map_def.img_map, start_pt_scaled, end_pt_scaled, colour,1,16,0);
 }
 
 

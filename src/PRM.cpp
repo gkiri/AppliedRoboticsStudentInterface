@@ -4,6 +4,7 @@
 #include <algorithm> 
 
 #include "PRM.h"
+#include "a_star.cpp"
 
 PRM::PRM(std::vector<Polygon> polygons_list)
 {
@@ -110,9 +111,12 @@ void PRM::generate_random_points(double cspace_length,double cspace_width, int N
 }
 
 void PRM::global_planner(Point start,Point goal){
-
     //input --> std::pair<Point, std::pair<Point ,Point > > prm_graph;
     //output --> std::vector<Point> global_planner_path;
+
+    //Call astar
+    global_planner_path = globalplanner::astar(prm_graph, start, goal);
+
 }
 
 //@Ambike
@@ -134,6 +138,11 @@ std::vector<Point> PRM:: get_global_planner_path(){
 //@Ambike
 std::vector<std::pair<Point, std::vector<Point> >> PRM::get_prm_graph(){
     return prm_graph;
+}
+
+/*Set for unit tests---------------------------------------------*/
+void PRM::set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test){
+    prm_graph = prm_graph_test;
 }
 
 

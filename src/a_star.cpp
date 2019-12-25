@@ -1,3 +1,12 @@
+/*******************************************************************************
+*                                                                              *
+* Author    :  Alvaro Rubio Gomez                                              *
+* Version   :  1.0                                                             *
+*                                                                              *
+*  TBC                                                                         * 
+*                                                                              *
+*******************************************************************************/
+
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
@@ -13,25 +22,12 @@ namespace globalplanner{
             double h;
             double f;                       
 
-            Node(){
-                // parent = nullptr;
-                // position = Point(0,0);
-                // g = 0; //G is the distance between the current node and the start node.
-                // h = 0; //H is the heuristic : estimated distance from the current node to the end node.
-                // f = 0; //F is the total cost of the node. F= G + H
+            Node(){                
             }
 
             ~Node(){
 
-            }
-            // //Init node parameters from two points
-            // void init_node(Node* par, Point pos){
-            //     parent = par;
-            //     position = pos;                 
-            //     g = 0; //G is the distance between the current node and the start node.
-            //     h = 0; //H is the heuristic : estimated distance from the current node to the end node.
-            //     f = 0; //F is the total cost of the node. F= G + H                          
-            // }
+            }           
             //Create node
             Node *create_node(Node* par, Point pos){
                 Node *result = new Node;
@@ -42,25 +38,7 @@ namespace globalplanner{
                 result->f = 0; //F is the total cost of the node. F= G + H 
 
                 return result;
-            }
-            // Node create_node(Node* par, Point pos){
-            //     Node result;
-            //     result.parent = par;
-            //     result.position = pos;
-            //     result.g = 0; //G is the distance between the current node and the start node.
-            //     result.h = 0; //H is the heuristic : estimated distance from the current node to the end node.
-            //     result.f = 0; //F is the total cost of the node. F= G + H 
-
-            //     return result;
-            // }
-            //Set one node equal to another
-            // void eq(Node *N){
-            //     parent = N->parent;
-            //     position = N->position;
-            //     g = N->g;
-            //     h = N->h;
-            //     f= N->f;
-            // }            
+            }                      
             //check if one node is equal to another
             bool ifeq(Node *N){
                 float epsilon = 0.00001;
@@ -71,22 +49,11 @@ namespace globalplanner{
     };  
 
     //Check if one Point is equal to another
-    // bool ifeq_point(Point pt1, Point pt2){
-    //     return pt1.x == pt2.x && pt1.y == pt2.y ? true:false;
-    // }
     bool ifeq_point(Point pt1, Point pt2){
         float epsilon = 0.00001;
-        std::cout << "IFEQ x " << pt1.x << ", " << pt2.x << std::endl;
-        std::cout << "IFEQ y " << pt1.y << ", " << pt2.y << std::endl;
-        if(std::fabs(pt1.x - pt2.x) < epsilon && std::fabs(pt1.y - pt2.y) < epsilon){            
-            std::cout << "true "  << std::endl;
-            return true;        
-        }
-        else{
-            std::cout << "false "  << std::endl;
-            return false;
-        }
-    }
+        return std::fabs(pt1.x - pt2.x) < epsilon && std::fabs(pt1.y - pt2.y) < epsilon 
+                    ? true:false;
+    }   
 
     std::vector<Point> astar(std::vector<std::pair<Point, std::vector<Point> >> graph, 
                                     Point start, Point end){
@@ -138,43 +105,19 @@ namespace globalplanner{
         // } else{
         //     std::cout << "False" << std::endl;
         // }
-
-
-        //TO MODIFY
+        
         //Initialize both open and closed list
         std::vector<Node*> open_list;  //include adjacent nodes that has to be evaluated (f value)
         std::vector<Node*> closed_list;  //include nodes from the open_list which has been evaluated (lowest f value)
        
         //Add the start node
-        open_list.push_back(start_node);
-        // std::cout << "open0 pos: " << open_list[0]->position.x << ", " << open_list[0]->position.y << std::endl;
-        // std::cout << "pen0 ADDRESS: " << open_list[0] << std::endl;
-        // std::cout << "open0 PARENT: " << open_list[0]->parent << std::endl;
+        open_list.push_back(start_node); 
         
 
-        //Loop until you find the end
-        // //******DELETE TEMP*************
-        // int loop = 0;
-        // while(loop == 0){
-        //     loop = 1;
-        // //******DELETE TEMP*************
-        //std::cout << "open list size: " << open_list.size() << std::endl;
-        while (open_list.size() > 0){ 
-            //std::cout << "open list size: " << open_list.size() << std::endl;
-            // for(int i=0;i<open_list.size();i++){ 
-            //     std::cout << "start open list node parent: " << open_list[i]->parent->position.x << ", " << open_list[i]->parent->position.y << std::endl; 
-            //     std::cout << "open list parent address: " << open_list[i]->parent << std::endl;                
-            //     std::cout << "start open list node pos: " << open_list[i]->position.x << ", " << open_list[i]->position.y << std::endl;
-            // }          
-            //Get the current node
-            // std::cout << "open0 pos: " << open_list[0]->position.x << ", " << open_list[0]->position.y << std::endl;
-            // std::cout << "pen0 ADDRESS: " << open_list[0] << std::endl;
-            // std::cout << "open0 PARENT: " << open_list[0]->parent << std::endl;
-            current_node = open_list[0]; //current node = open_list[0] //TO MODIFy            
-            //std::cout << "current node parent: " << current_node->parent->position.x << ", " << current_node->parent->position.y << std::endl;
-            //std::cout << "current node parent adress: " << current_node->parent << std::endl;
-            std::cout << "current node pos: " << current_node->position.x << ", " << current_node->position.y << std::endl;
-            
+        //Loop until you find the end        
+        while (open_list.size() > 0){                    
+            //Get the current node            
+            current_node = open_list[0];           
             current_index = 0;           
             for(int index=0;index<open_list.size();index++){ //search for the minimum f value among all nodes in open_list
                 if (open_list[index]->f < current_node->f){
@@ -184,66 +127,45 @@ namespace globalplanner{
             }
 
             //Pop current (lowest f value node) off open list, add to closed list
-            open_list.erase(open_list.begin() + current_index);
-            // std::cout << "open list size: " << open_list.size() << std::endl;
+            open_list.erase(open_list.begin() + current_index);            
             closed_list.push_back(current_node);
 
             //Found the goal
             if(current_node->ifeq(end_node)){
-                current = current_node;                      
-                std::cout << "Found goal parent: " << current->parent->position.x << ", " << current->parent->position.y << std::endl;
-                std::cout << "Found goal position: " << current->position.x << ", " << current->position.y << std::endl;
+                current = current_node;               
                 while (!current->ifeq(start_node)){
-                    path.insert(path.begin(), current->position); //add mid points of A* path
-                    //std::cout << "path: " << current->position.x << ", " << current->position.y << std::endl;
-                    current = current->parent;
-                    //std::cout << "current parent pos: " << current->position.x << ", " << current->position.y << std::endl;
+                    path.insert(path.begin(), current->position); //add mid points of A* path                    
+                    current = current->parent;                    
                 }
                 path.insert(path.begin(), current->position); //add start point
-                //std::cout << "path: " << current->position.x << ", " << current->position.y << std::endl;
-
+                
                 return path; //return path
             }
             //Generate children
-            std::vector<Node*> children;  //TO MODIFY
+            std::vector<Node*> children;  
 
             //Check adjacent nodes (edges)
 
             //find index of current node inside the graph
             graph_index = 0;            
-            for (Point p : V_vector){
-                // std::cout << "Index: " << graph_index << std::endl; 
-                // std::cout << "p: " << p.x << ", " << p.y << std::endl;
-                // std::cout << "FINDING V: " << current_node->position.x << ", " << current_node->position.y << std::endl;
-                if(ifeq_point(p, current_node->position)){
-                    //std::cout << "FOUND V" << std::endl;
-                    break;
+            for (Point p : V_vector){                
+                if(ifeq_point(p, current_node->position)){                    
+                    break; //Found
                 }else{
                 graph_index++;
                 }
             }
-            if(graph_index >= E_vector.size()){
-                std::cout << "V not found" << graph_index << std::endl;
-                // for(int i=0;i<V_vector.size();i++){                    
-                //     std::cout << "V_vector: " << V_vector[i].x << ", " << V_vector[i].y << std::endl;
-                // }                
-                return path;
-            }else{
-            std::cout << "Index: " << graph_index << std::endl;
+            if(graph_index >= E_vector.size()){   
+                std::cout << "V not found: " << std::endl;                           
+                return path; //Error
             }
 
             //Loop through edges for current node
-            current_node_edges = E_vector[graph_index];
-            std::cout << "Nº of edges: " << current_node_edges.size() << std::endl;
-            std::cout << "Edge 0: " << current_node_edges[0].x << ", " 
-                        << current_node_edges[0].y << std::endl;
+            current_node_edges = E_vector[graph_index];            
             for(int i=0;i<current_node_edges.size();i++){
-                //create new node
-                //new_node.init_node(&current_node,current_node_edges[i]);
+                //create new node                
                 new_node = new_node->create_node(current_node,current_node_edges[i]);
-                // std::cout << "New node parent: " << new_node->parent->position.x << ", " << new_node->parent->position.y << std::endl;
-                // std::cout << "New node pos: " << new_node->position.x << ", " << new_node->position.y << std::endl;
-                
+               
                 //Append
                 children.push_back(new_node);
             }
@@ -266,9 +188,7 @@ namespace globalplanner{
                                     + pow(children[i]->position.y-end_node->position.y,2));
                     // F: G + H
                     children[i]->f = children[i]->g + children[i]->h;
-                    // std::cout << "f,g,h child node: " << children[i]->f << ", " 
-                    //             << children[i]->g << ", " << children[i]->h << std::endl;
-
+                    
                     //Child is already in open list
                     next_child = false; //reset flag 
                     for (Node *open_list_node : open_list){ 
@@ -282,9 +202,7 @@ namespace globalplanner{
                     }
                     if(!next_child){
                         //Add the child to the open list
-                        open_list.push_back(children[i]);
-                        std::cout << "open list node parent: " << children[i]->parent->position.x << ", " << children[i]->parent->position.y << std::endl;
-                        std::cout << "open list node pos: " << children[i]->position.x << ", " << children[i]->position.y << std::endl;
+                        open_list.push_back(children[i]);                       
                     }
                 }
 

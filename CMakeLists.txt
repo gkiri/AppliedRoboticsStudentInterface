@@ -21,7 +21,7 @@ add_library(student SHARED
    src/dubins_curve.cpp
    src/clipper.cpp
    src/collision_detection_bounding_box.cpp
-   
+   src/PRM.cpp
 )
 
 target_link_libraries(student

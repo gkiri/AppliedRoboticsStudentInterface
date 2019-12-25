@@ -16,11 +16,16 @@ public:
     /*Function to check Point lies in polygon */
     bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list);
 
-    /*Function to return free space points */
+    /*Function to return private variables*/
     std::vector<Point> get_free_space_points();
     std::vector<Point> get_global_planner_path(); 
     //@Ambike
-    std::vector<std::pair<Point, std::vector<Point> >> get_prm_graph();    
+    std::vector<std::pair<Point, std::vector<Point> >> get_prm_graph();
+
+    /*Functions to set private variables*/
+    void set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test);
+
+  
 
 
     
