@@ -288,11 +288,11 @@ namespace student {
     // }
 
   /*****************Alvaro PRM global planner Unit testing *************************/
-    //UT_global_planner(inflated_obstacle_list, &map_param);
+    UT_global_planner(inflated_obstacle_list, &map_param);
   /*****************************************************************************/
 
   /*****************Ambike PRM local planner Unit testing **********************/
-    UT_local_planner(inflated_obstacle_list, &map_param);
+    //UT_local_planner(inflated_obstacle_list, &map_param);
   /*****************************************************************************/ 
     
     

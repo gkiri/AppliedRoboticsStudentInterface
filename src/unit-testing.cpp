@@ -125,12 +125,12 @@ void UT_sampling_motion_plan(std::vector<Polygon> obstacle_list ,img_map_def *ma
 // @Ambike
 void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   // Set variables for your unit test
+  PRM obj(obstacle_list);
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test; //Output  
   prm_graph_test = generate_graph_test();
   std::vector<Point> free_space_points_test = generate_free_space_points_test(prm_graph_test);
-
-  //Call your implementation on PRM.cpp
-  PRM obj(obstacle_list);  
+  
+  //Call your implementation on PRM.cpp    
   obj.local_planner(); //Implement your local planner in PRM.cpp
 
   //Retrieve the output of your function
@@ -167,19 +167,18 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
 }
 
 void UT_global_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
-  //Start and goal parameters
+  //Set variables for unit test
+  PRM obj(obstacle_list);
   Point start = Point(0.1,0.1);
   Point goal = Point(1.3,0.8);
-  //input graph: prm_graph
-  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;
-
-  //Draw start and goal
-  draw_point(start, *map_param, cv::Scalar(0,255,0));
-  draw_point(goal, *map_param, cv::Scalar(0,255,0));
-
-  //std::vector<std::pair<Point, std::vector<Point> >>
+  //Point goal = Point(0.3,0.1);
+  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;  
   prm_graph_test = generate_graph_test();
+  obj.set_prm_graph(prm_graph_test);  //set prm_graph with the test one
+  prm_graph_test = obj.get_prm_graph(); //retrieve to check it was saved correctly
 
+  //****************************************************************************
+  //********Drawing and printing the initial prm graph and star/goal************
   //draw graph
   std::pair<Point, std::vector<Point>> graph_node;
   Point V;
@@ -199,13 +198,29 @@ void UT_global_planner(std::vector<Polygon> obstacle_list, img_map_def *map_para
       draw_line(edge_line, *map_param);
     }
     //Draw vertex
-    draw_point(V, *map_param, cv::Scalar(255,0,0));   
-
-  //GLOBAL PLANNER
-  // PRM obj(obstacle_list);  
-  // obj.global_planner(start,goal);
-  //std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
+    draw_point(V, *map_param, cv::Scalar(255,0,0)); 
   }
+  //Draw start and goal
+  draw_point(start, *map_param, cv::Scalar(0,255,0));
+  draw_point(goal, *map_param, cv::Scalar(0,255,0));  
+
+  //****************************************************************************
+  //********Global planner******************************************************    
+  obj.global_planner(start,goal);
+  std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
+
+  // //****************************************************************************
+  // //********Drawing and printing the global planner path************************
+  for(int i=0;i<global_planner_path.size();i++){
+    //draw_point(global_planner_path[i], *map_param, cv::Scalar(0,255,0));
+    //Draw path
+    if(i<global_planner_path.size()-1){         
+      edge_line = to_arc_extract_type(global_planner_path[i],global_planner_path[i+1],true);
+      draw_line(edge_line, *map_param, cv::Scalar(0,255,0));    
+    }
+    std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
+  }
+  
 }
 
 
