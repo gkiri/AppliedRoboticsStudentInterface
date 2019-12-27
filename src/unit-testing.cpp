@@ -177,7 +177,7 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
     //Draw vertex
     draw_point(V, *map_param, cv::Scalar(255,0,0));
   }
-  }
+  
 }
 
 void UT_global_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
@@ -309,37 +309,37 @@ void UT_dubins_curve_test(struct arc_extract *three_seg,img_map_def *map_param)
 
 void UT_arc_draw_test(img_map_def *map_param)
 {
-    //dubin drawing test
-    arc_extract dt[3];
-    //line
-    dt[0].start_point = Point (0.456287, 0.599802);
-    dt[0].end_point = Point (1.24375, 0.550198);
-    dt[0].LSR = 1;
+  //dubin drawing test
+  arc_extract dt[3];
+  //line
+  dt[0].start_point = Point (0.456287, 0.599802);
+  dt[0].end_point = Point (1.24375, 0.550198);
+  dt[0].LSR = 1;
 
-    //arc left
-    dt[1].start_point = Point (1.24375, 0.550198);
-    dt[1].end_point = Point (1.25, 0.75);
-    dt[1].radius = 0.1;
-    dt[1].center = Point(1.24683, 0.646974);
-    dt[1].LSR = 0;
+  //arc left
+  dt[1].start_point = Point (1.24375, 0.550198);
+  dt[1].end_point = Point (1.25, 0.75);
+  dt[1].radius = 0.1;
+  dt[1].center = Point(1.24683, 0.646974);
+  dt[1].LSR = 0;
 
-    //arc right
-    dt[2].start_point = Point (1.24375, 0.550198);
-    dt[2].end_point = Point (1.25, 0.75);
-    dt[2].radius = 0.1;
-    dt[2].center = Point(1.34683, 0.646974);
-    dt[2].LSR = 2;
+  //arc right
+  dt[2].start_point = Point (1.24375, 0.550198);
+  dt[2].end_point = Point (1.25, 0.75);
+  dt[2].radius = 0.1;
+  dt[2].center = Point(1.34683, 0.646974);
+  dt[2].LSR = 2;
 
-    std::cout << "x pre: " <<  dt[1].center.x << std::endl;
-    draw_dubins_segment(dt[0],*map_param);
-    draw_dubins_segment(dt[1],*map_param);
-    draw_dubins_segment(dt[2],*map_param, cv::Scalar(255,0,0)); //blue right arc
-    draw_point(dt[1].center,*map_param);
-    std::cout << "x pos " << dt[1].center.x << std::endl;
+  std::cout << "x pre: " <<  dt[1].center.x << std::endl;
+  draw_dubins_segment(dt[0],*map_param);
+  draw_dubins_segment(dt[1],*map_param);
+  draw_dubins_segment(dt[2],*map_param, cv::Scalar(255,0,0)); //blue right arc
+  draw_point(dt[1].center,*map_param);
+  std::cout << "x pos " << dt[1].center.x << std::endl;
 
-    arc_param curve_angles = calculate_arc_drawing_angles(dt[1]);
-    std::cout << "Curve Rotation angle: " << curve_angles.rotation_angle << std::endl;
-    std::cout << "Curve Angle btw cs & ce: " << curve_angles.angle_cs_ce << std::endl;
+  arc_param curve_angles = calculate_arc_drawing_angles(dt[1]);
+  std::cout << "Curve Rotation angle: " << curve_angles.rotation_angle << std::endl;
+  std::cout << "Curve Angle btw cs & ce: " << curve_angles.angle_cs_ce << std::endl;
 
 
 }
