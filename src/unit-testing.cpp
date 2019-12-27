@@ -126,15 +126,26 @@ void UT_sampling_motion_plan(std::vector<Polygon> obstacle_list ,img_map_def *ma
 void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   // Set variables for your unit test
   PRM obj(obstacle_list);
-  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test; //Output  
+  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test; //Output 
+  // Generate free_space_points_test example
   prm_graph_test = generate_graph_test();
   std::vector<Point> free_space_points_test = generate_free_space_points_test(prm_graph_test);
-  
+  // Save example points inside private variable of PRM.cpp
+  obj.set_free_space_points(free_space_points_test);
+
+  // //TEST FOR DRAWING THE SAVED POINTS// --> @AR: tested
+  // std::vector<Point> free_space_points_test_saved;
+  // free_space_points_test_saved = obj.get_free_space_points(); //retrieve
+  // for(Point p:free_space_points_test_saved){
+  //   draw_point(p,*map_param);
+  // }
+
   //Call your implementation on PRM.cpp    
   obj.local_planner(); //Implement your local planner in PRM.cpp
-
+  
   //Retrieve the output of your function
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
+
 
   //****************************************************************************
   //********Drawing and printing the result of your local planner*************** 
@@ -148,9 +159,9 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
   std::vector<Point> E; 
   arc_extract edge_line;
   Point E_point;
-  for(int i=0; i<prm_graph_test.size(); i++){
+  for(int i=0; i<prm_graph.size(); i++){
     //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
-    graph_node = prm_graph_test[i];
+    graph_node = prm_graph[i];
     V = graph_node.first; //Vertex
     std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
     E = graph_node.second; //Edges
@@ -296,22 +307,30 @@ void UT_dubins_curve_test(struct arc_extract *three_seg,img_map_def *map_param)
 void UT_arc_draw_test(img_map_def *map_param)
 {
     //dubin drawing test
-    arc_extract dt[2];
+    arc_extract dt[3];
     //line
     dt[0].start_point = Point (0.456287, 0.599802);
     dt[0].end_point = Point (1.24375, 0.550198);
     dt[0].LSR = 1;
 
-    //arc
+    //arc left
     dt[1].start_point = Point (1.24375, 0.550198);
     dt[1].end_point = Point (1.25, 0.75);
     dt[1].radius = 0.1;
-    dt[1].center = Point(1.34683, 0.646974);
+    dt[1].center = Point(1.24683, 0.646974);
     dt[1].LSR = 0;
+
+    //arc right
+    dt[2].start_point = Point (1.24375, 0.550198);
+    dt[2].end_point = Point (1.25, 0.75);
+    dt[2].radius = 0.1;
+    dt[2].center = Point(1.34683, 0.646974);
+    dt[2].LSR = 2;
 
     std::cout << "x pre: " <<  dt[1].center.x << std::endl;
     draw_dubins_segment(dt[0],*map_param);
     draw_dubins_segment(dt[1],*map_param);
+    draw_dubins_segment(dt[2],*map_param, cv::Scalar(255,0,0)); //blue right arc
     draw_point(dt[1].center,*map_param);
     std::cout << "x pos " << dt[1].center.x << std::endl;
 

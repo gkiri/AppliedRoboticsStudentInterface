@@ -24,7 +24,7 @@ public:
 
     /*Functions to set private variables*/
     void set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test);
-
+    void set_free_space_points(std::vector<Point> free_space_points_test);
   
 
 

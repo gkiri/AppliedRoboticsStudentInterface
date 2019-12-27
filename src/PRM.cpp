@@ -120,8 +120,19 @@ void PRM::global_planner(Point start,Point goal){
 }
 
 //@Ambike
-void PRM::local_planner(){
+void PRM::local_planner(){    
+    //****************************************************************************
+    //**Example of creating a simple graph of a single vertex and 3 edges*********
+    //Example variables    
+    std::pair<Point, std::vector<Point> > graph_example_element;
+    Point Vertex_ex_1 = Point(0.1,0.1);
+    std::vector<Point> Edges_ex_1 = {Point(0.4,0.2),Point(0.7,0.5),Point(0.1,0.3)};
+    //Save into graph    
+    graph_example_element = std::make_pair(Vertex_ex_1, Edges_ex_1);    
+    prm_graph.push_back(graph_example_element);
+    //****************************************************************************  
     //implement local planner here
+      
 }
 
 
@@ -143,6 +154,11 @@ std::vector<std::pair<Point, std::vector<Point> >> PRM::get_prm_graph(){
 /*Set for unit tests---------------------------------------------*/
 void PRM::set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test){
     prm_graph = prm_graph_test;
+}
+
+//@Ambike
+void PRM::set_free_space_points(std::vector<Point> free_space_points_test){
+    free_space_points = free_space_points_test;
 }
 
 
