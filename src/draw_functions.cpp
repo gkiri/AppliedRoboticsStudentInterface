@@ -111,7 +111,11 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
     rotation_angle = abs(atan((arc.start_point.y - arc.end_point.y)
                                     /(arc.start_point.x - arc.end_point.x))*RAD2DEG);
 
-    //ADD SIGN DEPENDING OF TURN DIRECTION
+    //Sign depending on turning direction: Left(LSR=0) > 0 , Right(LSR=2) < 0
+    if(arc.LSR == 2){ // Right
+        rotation_angle = - rotation_angle;
+    }
+    //else - Left by default
 
     // dist_center_mid = sqrt(pow(arc.radius,2) - (pow(arc.start_point.x - arc.end_point.x,2) +
     //                             pow(arc.start_point.y - arc.end_point.y,2))/4);    
@@ -196,12 +200,13 @@ void draw_line(arc_extract line, img_map_def img_map_def, cv::Scalar colour = pa
 
 
 /* Draw one of the segment (left curve, right curve or arc)---------------------------*/
-void draw_dubins_segment(arc_extract dubins_segment, img_map_def img_map_def){
+void draw_dubins_segment(arc_extract dubins_segment, img_map_def img_map_def, 
+                                                    cv::Scalar colour = path_colour){
     if(dubins_segment.LSR == 1){   //Line
-        draw_line(dubins_segment, img_map_def);
+        draw_line(dubins_segment, img_map_def, colour);
     }
     else if(dubins_segment.LSR == 0 || dubins_segment.LSR == 2){  //Left or Right arc
-        draw_arc(dubins_segment, img_map_def);
+        draw_arc(dubins_segment, img_map_def, colour);
     }
     else{
         printf("draw_dubins_segment ERROR: Unknown LSR");
