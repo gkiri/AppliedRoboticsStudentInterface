@@ -6,6 +6,7 @@
 #include "PRM.h"
 #include "a_star.cpp"
 
+
 PRM::PRM(std::vector<Polygon> polygons_list)
 {
   for (size_t j = 0; j<polygons_list.size(); j++){  
@@ -132,17 +133,16 @@ void PRM::local_planner(){
     prm_graph.push_back(graph_example_element);
     //****************************************************************************  
     //implement local planner here
-      
 }
 
 
 /*Returns for unit tests --------------------------------------*/
-std::vector<Point> PRM:: get_free_space_points()
+std::vector<Point> PRM::get_free_space_points()
 {
     return free_space_points;
 }
 
-std::vector<Point> PRM:: get_global_planner_path(){
+std::vector<Point> PRM::get_global_planner_path(){
     return global_planner_path;
 }
 

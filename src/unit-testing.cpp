@@ -130,6 +130,7 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
   // Generate free_space_points_test example
   prm_graph_test = generate_graph_test();
   std::vector<Point> free_space_points_test = generate_free_space_points_test(prm_graph_test);
+
   // Save example points inside private variable of PRM.cpp
   obj.set_free_space_points(free_space_points_test);
 
@@ -155,10 +156,12 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
   }
   //draw graph
   std::pair<Point, std::vector<Point>> graph_node;
+  std::vector<Point> free_space_points;
   Point V;
   std::vector<Point> E; 
   arc_extract edge_line;
   Point E_point;
+  
   for(int i=0; i<prm_graph.size(); i++){
     //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
     graph_node = prm_graph[i];
@@ -174,7 +177,7 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
     //Draw vertex
     draw_point(V, *map_param, cv::Scalar(255,0,0));
   }
-
+  }
 }
 
 void UT_global_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
