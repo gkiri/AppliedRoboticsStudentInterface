@@ -22,6 +22,7 @@ add_library(student SHARED
    src/clipper.cpp
    src/collision_detection_bounding_box.cpp
    src/PRM.cpp
+   src/collision_detection_v3.cpp
 )
 
 target_link_libraries(student
