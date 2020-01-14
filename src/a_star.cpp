@@ -72,7 +72,7 @@ namespace globalplanner{
         //Initialize vertex and edges vector
         for(int i=0;i<graph.size();i++){
             V_vector.push_back(graph[i].first); //Vertex
-            std::cout << "V_vector: " << V_vector[i].x << ", " << V_vector[i].y << std::endl;
+            //std::cout << "V_vector: " << V_vector[i].x << ", " << V_vector[i].y << std::endl;
             E_vector.push_back(graph[i].second); //Edges            
         }            
 
