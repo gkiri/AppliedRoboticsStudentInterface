@@ -4,6 +4,9 @@
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
+
+#include "dubins_curve.hpp"
+
 class  PRM {
 
 public:
@@ -25,7 +28,9 @@ public:
     /*Functions to set private variables*/
     void set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test);
     void set_free_space_points(std::vector<Point> free_space_points_test);
-  
+
+    /*variables for testing purposes*/
+    std::vector<arc_extract> final_path_draw;  
 
 
     
@@ -67,6 +72,12 @@ public:
     void global_planner(Point start,Point goal);
 
 
+    /**
+     * Generates a vector of dubin's segments by connecting nodes in glopal_planner_path
+     *  
+     * @param final_path - vector of dubin's segments 
+     * @output - updates to final_path by reference
+     */
     void dubins_planner(Path& final_path);
 
 private:

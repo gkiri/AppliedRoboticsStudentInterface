@@ -288,30 +288,42 @@ namespace student {
     // }
 
   /*****************Alvaro PRM global planner Unit testing *************************/
-    //UT_global_planner(inflated_obstacle_list, &map_param);
+    //UT_global_planner(inflated_obstacle_list, &map_param);    
   /*****************************************************************************/
 
   /*****************Ambike PRM local planner Unit testing **********************/
-    UT_local_planner(inflated_obstacle_list, &map_param);
+    //UT_local_planner(inflated_obstacle_list, &map_param);
   /*****************************************************************************/ 
+
+  /*****************Alvaro dubins path Unit testing *************************/
+    UT_dubins_path(inflated_obstacle_list, &map_param);    
+  /*****************************************************************************/
+
+    
+
     
     
     /* Draw test-------------------------------------------*/
     //Print an example of th drawing functions in a single image
     //draw_test(obstacle_list,x,y,theta,victim_list,map_param);
 
+    /*****************Alvaro PRM ellipse and draw Unit testing *************************/
+    //UT_cv_elipse_test(&map_param);
+    //UT_draw_arc_test(&map_param);
+     /*****************************************************************************/
+
     /***********************Gkiri arc_draw_test Unit Testing*************************/
     //UT_arc_draw_test(&map_param);
     /*****************************************************************************/
     
     /* Dubins Section-------------------------------------------*/
-    std::cout << "Before path: " << path.size() << std::endl;
+    //std::cout << "Before path: " << path.size() << std::endl;
     double q0[3];//start point
     double q1[3];//end point
     double rho=0.1; //turning radius
 
     //Robot position
-    std::cout << "Robot position: " << x << ", "<< y << ", " << theta << std::endl;
+    //std::cout << "Robot position: " << x << ", "<< y << ", " << theta << std::endl;
     //Dubins test
     #if DUBINS_TEST
 
@@ -334,7 +346,7 @@ namespace student {
     cv::waitKey( 0.01 );
     #endif
     
-    std::cout << "After path: " << path.size() << std::endl;
+    //std::cout << "After path: " << path.size() << std::endl;
     return true;
 
   }

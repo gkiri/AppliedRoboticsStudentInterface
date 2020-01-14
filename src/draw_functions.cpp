@@ -23,10 +23,18 @@ struct img_map_def{
 };
 //Struct for ellipse calculations
 struct arc_param{
-    double rotation_angle;
-    double angle_cs_ce;
+    double start_angle;
+    double end_angle;
 };
+
 int TO_CM = 100;    //Transform from m to cms
+
+/* Safe acos function -------------------------------------*/
+double SafeAcos (double x){
+  if (x < -1.0) x = -1.0 ;
+  else if (x > 1.0) x = 1.0 ;
+  return acos (x) ;
+}
 
 /* Initialize map-------------------------------------------*/
 
@@ -98,64 +106,116 @@ void draw_polygon(Polygon poly, img_map_def img_map_def, cv::Scalar colour = pol
 
 /* Calculate arc parameters for cv::ellipse function ---------------------------------*/
 
-arc_param calculate_arc_drawing_angles(arc_extract arc){
-    // Taking center as the origin of our coordinates system  
-    // angle_cs_ce --> Angle btw the start-end point segment and the center-start_point segment
-    //                 or ,equivalently, the center-end_point segment.
-    // rotation_angle --> Rotation of ellipse w.r.t x-axis (>0 clockwise)    
-    double rotation_angle, angle_cs_ce;
-    double dist_center_mid; //distance btw center and mid point of star-end point segment
-    double RAD2DEG = 180.0/M_PI; 
+arc_param calculate_arc_drawing_angles(arc_extract arc){   
     
-    // Rotation angle in absolute value, then apply sign depending on left or right curvature
-    rotation_angle = abs(atan((arc.start_point.y - arc.end_point.y)
-                                    /(arc.start_point.x - arc.end_point.x))*RAD2DEG);
+    double RAD2DEG = 180.0/M_PI;
+    double start_angle, end_angle;
+    double alpha, beta;
+    double s_x,s_y,e_x,e_y; //start and end point copies
+    double d_x, d_y; //diff btw start point and center in x and y coordinates
 
-    //Sign depending on turning direction: Left(LSR=0) > 0 , Right(LSR=2) < 0
-    if(arc.LSR == 2){ // Right
-        rotation_angle = - rotation_angle;
+    //Retrieve start and end point
+    s_x = arc.start_point.x;
+    s_y = arc.start_point.y;
+    e_x = arc.end_point.x;
+    e_y = arc.end_point.y;
+    
+    // Calculate alpha = angle btw start and end point
+    alpha = (arc.length/arc.radius)*RAD2DEG;    
+    //std::cout << "ALPHA:"<< alpha << std::endl;    
+    
+    // Check for cases (location of start point relative to the end point)
+    // Case 1: s.x > e.x (clockwise)
+    if(s_x > e_x){
+        //Calculate beta = angle of start point wrt to (0,+x) axis, being the center or arc the origin.
+        beta = 0;
+        d_x = s_x - arc.center.x;
+        d_y = s_y - arc.center.y;               
+        //Determine quadrant (Q)
+        if(d_x >= 0){ // Q1,Q4 or +-90
+            beta = SafeAcos(d_x/arc.radius)*RAD2DEG;                    
+        }
+        else if(d_x < 0){ // Q2,Q3
+            beta = SafeAcos(-d_x/arc.radius) + 90;
+        }
+        if(d_y > 0){ //Q1,Q2
+            beta = -beta;            
+        }
+        // d_y = 0 -> beta = 0 (by default)
+        // OR beta = 180 -> s_x = e_x because s_x !< e_x and then there is no arc
+        //d_y < 0 -> beta=beta -> Q3,Q4        
+        //std::cout << "BETA:"<< beta << std::endl;
+
+        //Check for sign of turn
+        if(arc.LSR == 2){ //Right
+            start_angle = beta;
+            end_angle = start_angle + alpha;
+        }
+        else if(arc.LSR == 0){ //Left
+            start_angle = 360 + beta;
+            end_angle = start_angle - alpha;
+        }
+    }    
+
+    // Case 2: s.x < e.x (counter-clockwise)
+    if(s_x < e_x){
+        //End point becomes the start point due to how cv::ellipse works
+        s_x = e_x;
+        s_y = e_y;
+        //Calculate beta = angle of start point wrt to (0,+x) axis, being the center or arc the origin.
+        beta = 0;
+        d_x = s_x - arc.center.x;
+        d_y = s_y - arc.center.y;
+        //Determine quadrant (Q)
+        if(d_x >= 0){ // Q1,Q4 or +-90
+            beta = SafeAcos(d_x/arc.radius)*RAD2DEG;            
+        }
+        else if(d_x < 0){ // Q2,Q3
+            beta = SafeAcos(-d_x/arc.radius)*RAD2DEG + 90;
+        }
+        if(d_y > 0){ //Q1,Q2
+            beta = -beta;
+        }
+        //else if(d_y < 0){beta=beta;} //Q3,Q4
+        //std::cout << "BETA:"<< beta << std::endl;
+        
+        //Check for sign of turn - Notice the order is the inverse one
+        if(arc.LSR == 0){ //Left
+            start_angle = beta;
+            end_angle = start_angle + alpha;
+        }
+        else if(arc.LSR == 2){ //Right
+            start_angle = 360 + beta;
+            end_angle = start_angle - alpha;
+        }
     }
-    //else - Left by default
 
-    // dist_center_mid = sqrt(pow(arc.radius,2) - (pow(arc.start_point.x - arc.end_point.x,2) +
-    //                             pow(arc.start_point.y - arc.end_point.y,2))/4);    
-    double xs_xe = pow(arc.start_point.x - arc.end_point.x,2);
-    double ys_ye = pow(arc.start_point.y - arc.end_point.y,2);
-    double sqrt_content = pow(arc.radius,2) - (xs_xe + ys_ye)/4;
-    if (sqrt_content <= 0){ //avoid errors of negative numbers close to 0
-        sqrt_content = 0;
-    } 
-    dist_center_mid = sqrt(sqrt_content);    
-    //std::cout << "distance to midpoint: " << dist_center_mid << std::endl;
+    std::cout << "START,END ANGLE:"<< start_angle << "," << end_angle << std::endl;
     
-    angle_cs_ce = asin(dist_center_mid/arc.radius)*RAD2DEG;
-    
-    arc_param result = {rotation_angle, angle_cs_ce};
+    arc_param result = {start_angle, end_angle};
 
-    return result;    
+    return result;        
 }
 
 
 /* Draw an arc-------------------------------------------*/
 
 void draw_arc(arc_extract arc, img_map_def img_map_def, cv::Scalar colour = path_colour){   
-    // Draw an arc given the visual parameter of a map and the parameters of an arc
-    arc_param arc_angles = calculate_arc_drawing_angles(arc);        
-    double start_angle = 180 + arc_angles.angle_cs_ce;
-    double end_angle = 360 - arc_angles.angle_cs_ce;
+    if(arc.radius != 0){
+        // Draw an arc given the visual parameter of a map and the parameters of an arc
+        arc_param arc_angles = calculate_arc_drawing_angles(arc);        
 
-    cv::Point center_scaled;
-    center_scaled.x = arc.center.x*img_map_def.scale*TO_CM;
-    center_scaled.y = arc.center.y*img_map_def.scale*TO_CM;
-    //Change of coordinate system (Img(0,0)--> left top corner, Map(0,0) left down corner)
-    center_scaled = coord_map_to_img(center_scaled, img_map_def);
-    double radius_scaled = arc.radius*img_map_def.scale*TO_CM; 
-
-    cv::ellipse(img_map_def.img_map, center_scaled, cv::Size(radius_scaled, radius_scaled), 
-               arc_angles.rotation_angle, start_angle, end_angle, colour,1,15,0);
-
-    // cv::RotatedRect rRect = cv::RotatedRect(cv::Point2f(50,50), cv::Size2f(40,30), 30);
-    // cv::ellipse(img_map_def.img_map, rRect, cv::Scalar(255, 255, 255),1,15);
+        cv::Point center_scaled;
+        center_scaled.x = arc.center.x*img_map_def.scale*TO_CM;
+        center_scaled.y = arc.center.y*img_map_def.scale*TO_CM;
+        //Change of coordinate system (Img(0,0)--> left top corner, Map(0,0) left down corner)
+        center_scaled = coord_map_to_img(center_scaled, img_map_def);
+        double radius_scaled = arc.radius*img_map_def.scale*TO_CM; 
+        
+        cv::ellipse(img_map_def.img_map, center_scaled, cv::Size(radius_scaled, radius_scaled), 
+                0, arc_angles.start_angle, arc_angles.end_angle, colour,1,15,0);
+      
+    }
 }
 
 

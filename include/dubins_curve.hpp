@@ -45,13 +45,13 @@ struct arc_extract
 
 };
 
-struct line_extract
-{
-    Point start_point;
-    Point end_point;
-    float length;
+// struct line_extract @Alvaro NOT USED ANYMORE
+// {
+//     Point start_point;
+//     Point end_point;
+//     float length;
 
-};
+// };
 
 #define EDUBOK        (0)   /* No error */
 #define EDUBCOCONFIGS (1)   /* Colocated configurations */
@@ -190,6 +190,6 @@ bool dubins_wrapper_api(Path& path,struct arc_extract three_seg[3],double start_
  */
 void dubins_segments_extract(DubinsPath *path, double *end_point_segments,double rho,struct arc_extract three_seg[3] ,double goal[3]);
 
-Point find_center(Point start,Point end,float radius, int LSR);
+Point find_center(Point start,Point end,float radius,float length,int LSR);
 
 #endif

@@ -1,3 +1,5 @@
+
+
 #include <cstdlib>
 #include <iostream>
 #include <cfloat>
@@ -133,6 +135,52 @@ void PRM::local_planner(){
     prm_graph.push_back(graph_example_element);
     //****************************************************************************  
     //implement local planner here
+    
+}
+
+void PRM::dubins_planner(Path& final_path){
+    //Inputs: global_planner_path, prm_graph
+    //Outputs: vector of dubin's segments --> final_path
+    int node_pos = 0;
+    bool repath; 
+    int N = 0;   
+    int maxIter = 50; // number of maximum iterations to repath
+
+    //For dubins
+    Path path;
+    struct arc_extract three_seg[3];
+    double rho=0.05;    //@Alvaro: DANGER!!! DUPLICATED VALUE IN student_interface.cpp
+    double q0[3],q1[3];
+    Point goal = global_planner_path.back();
+    std::cout << "GOAL point:" << goal.x << ", " << goal.y << std::endl;
+    while(!globalplanner::ifeq_point(global_planner_path[node_pos], global_planner_path.back())){ //while goal is not reached
+        repath = true; //flag for collision detected
+        while(repath && N < maxIter){
+            //Set values for dubins
+            std::cout << "Node number " << node_pos << ":" << std::endl;
+            q0[0] = global_planner_path[node_pos].x;
+            q0[1] = global_planner_path[node_pos].y;
+            q0[2] = 0;
+            q1[0] = global_planner_path[node_pos + 1].x;
+            q1[1] = global_planner_path[node_pos + 1].y;
+            q1[2] = 0;
+
+           //Calculate best enter angles
+            std::cout << "---> Start: (" << q0[0] << "," << q0[1] << "), End: (" 
+                            << q1[0] << "," << q1[1] << ")" << std::endl;
+            //calculate dubin's segments between actual node and the following
+            dubins_wrapper_api(path, three_seg, q0, q1, rho);
+            //Push segments for drawing purposes
+            for(int i=0; i<3; i++){
+                final_path_draw.push_back(three_seg[i]);
+            }            
+            //Push to final_path
+            // TBD        
+            repath = false; //set flag to no collision
+            node_pos++; //next node
+        }
+    }
+
 }
 
 
