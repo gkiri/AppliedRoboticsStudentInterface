@@ -567,3 +567,322 @@ void UT_draw_arc_test(img_map_def *map_param){
   
   draw_arc(dt, *map_param); 
 }
+
+
+///////////////////////Collision workspace///////////////////////////////
+void UT_line_line_collision(img_map_def *map_param){
+
+
+  Point a,b,c,d,X;
+  bool intersection;
+  // a.x=0.1;
+  // a.y=0.1;
+  // b.x=0.5;
+  // b.y=0.5;
+  // c.x=0.5;
+  // c.y=0.1;
+  // d.x=0.1;
+  // d.y=0.5;
+
+  a.x=0.1;
+  a.y=0.1;
+  b.x=0.5;
+  b.y=0.5;
+  c.x=0.2;
+  c.y=0.2;
+  d.x=0.8;
+  d.y=0.8;
+  
+  intersection=linelineIntersection(a,b,c,d,&X);
+  if(intersection)
+  {
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT_line_line_collision True Intersected "  <<  std::endl;
+
+  }else
+  {
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT_line_line_collision False Intersected "  <<  std::endl;
+  }
+  
+  draw_point(a, *map_param); 
+  draw_point(b, *map_param); 
+  draw_point(c, *map_param); 
+  draw_point(d, *map_param); 
+  draw_point(X, *map_param); 
+
+}
+
+//Test Case-2
+void UT_line_circle_collision(img_map_def *map_param){
+
+  Point X1,X2;
+  double a,b,c,r;
+  int intersection;
+  std::vector<Point> X;
+
+  cv::Point2f center,point_scaled; 
+  // a.x=0.1;
+  // a.y=0.1;
+  // b.x=0.5;
+  // b.y=0.5;
+  // c.x=0.5;
+  // c.y=0.1;
+  // d.x=0.1;
+  // d.y=0.5;
+
+  a=0.6;
+  b=0.8;
+  c=0.5;
+
+  r=0.3;
+  
+  intersection=linecircleIntersection(r,a,b,c,X);
+  if(intersection==1)
+  {
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT_line_line_collision Tangent "  <<  std::endl;
+
+  }else if(intersection==0)
+  {
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT_line_line_collision False Intersected "  <<  std::endl;
+  }
+  else if(intersection==2)
+  {
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT_line_line_collision Point Intersection"  <<  std::endl;
+  }
+  else{
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT_line_line_collision Unknown "  <<  std::endl;
+  }
+  
+
+
+    center.x=0.5;
+    center.y=0.5;
+
+    point_scaled.x = map_param->scale*center.x*TO_CM;
+    point_scaled.y = map_param->scale*center.y*TO_CM;
+
+    r = map_param->scale*r*TO_CM;
+    //cv::circle(*map_param,center,r);
+    point_scaled = coord_map_to_img(point_scaled, *map_param);
+    //circle( map_param->img_map, point_scaled, r, cv::Scalar( 255, 255, 255 ), 1, 8 );
+
+    circle( map_param->img_map, point_scaled, r, cv::Scalar( 0, 0, 255 ), 1, 8 );
+
+
+    arc_extract dt;
+    //line
+    // dt.start_point = Point (a*0.456287, b*0.599802);
+    // dt.end_point = Point (a*1.24375, b*0.650198);
+
+    dt.start_point = Point (0, 0);
+    dt.end_point = Point (0.9, 0.9);
+    dt.LSR = 1;
+
+    draw_line(dt, *map_param, cv::Scalar(0,255,0));  
+
+}
+
+// lineArcIntersection(Point Line_Start,Point Line_End,Point Arc_Start,Point Arc_End,double r,Point center)
+void UT_line_arc_collision(img_map_def *map_param){
+
+  Point Line_Start, Line_End, Arc_Start, Arc_End,center;
+  double r ;
+  std::vector<Point> cal_points;
+
+  Line_Start.x=0;
+  Line_Start.y=0;
+  Line_End.x=0.8;
+  Line_End.y=0.9;
+
+
+    /*Intersection */
+  // Arc_Start.x=0.3;
+  // Arc_Start.y=0.7;
+  // Arc_End.x=1;
+  // Arc_End.y=0.3;
+  // center.x=0.5;
+  // center.y=0.5;
+  // r=0.3;
+
+  /*NO Intersection */
+  // Arc_Start.x=0.1;
+  // Arc_Start.y=0.8;
+  // Arc_End.x=0.3;
+  // Arc_End.y=0.6;
+  // center.x=0.2;
+  // center.y=0.5;
+  // r=0.15;
+
+  /* small curve*/
+  Arc_Start.x=0.6;
+  Arc_Start.y=0.3;
+  Arc_End.x=0.3;
+  Arc_End.y=0.6;
+  center.x=0.3;
+  center.y=0.3;
+  r=0.3;
+
+
+  arc_extract dt;
+
+  dt.start_point = Line_Start;
+  dt.end_point = Line_End;
+  dt.LSR = 1;
+
+  draw_line(dt, *map_param, cv::Scalar(0,255,0));  
+
+  arc_extract curve;
+  curve.start_point = Arc_Start;
+  curve.end_point = Arc_End;
+  curve.LSR = 2;
+  curve.center=center;
+  curve.radius=r;
+  draw_arc(curve, *map_param);
+
+  bool intersect=lineArcIntersection(Line_Start,Line_End,Arc_Start,Arc_End, r, center,cal_points);
+
+  if(intersect){
+    draw_point(cal_points[0], *map_param); 
+    draw_point(cal_points[1], *map_param,cv::Scalar(255,0,0)); //Blue Point
+    draw_point(cal_points[2], *map_param); 
+  }
+  
+}
+
+void UT_Bounding_Box(std::vector<Polygon> obstacle_list,img_map_def *map_param){
+
+  Polygon input;
+  Polygon output;
+
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+
+        input=obstacle_list[i];
+        Construct_Bounding_Box(input , output);
+        draw_polygon(output, *map_param);
+        output.clear();//clear pushback of output vector ref
+  }
+
+}
+
+
+/*Checking BoundingBox vs line  */
+void UT_Bounding_Box_line_check(std::vector<Polygon> obstacle_list,img_map_def *map_param){
+
+  Polygon input;
+  Polygon output;
+  std::vector<Polygon> Box_list;
+  bool Intersection;
+  struct arc_extract line_seg;
+  // line_seg.start_point.x=0;//origin to TopRight
+  // line_seg.start_point.y=0;
+  // line_seg.end_point.x=1.0;
+  // line_seg.end_point.y=0.5;
+  // line_seg.start_point.x=0.2;//TOPLEFT to Bottom right
+  // line_seg.start_point.y=0.85;
+  // line_seg.end_point.x=1.0;
+  // line_seg.end_point.y=0.1;
+  line_seg.start_point.x=0.0;//flat line
+  line_seg.start_point.y=0.5;
+  line_seg.end_point.x=1.0;
+  line_seg.end_point.y=0.5;
+  
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+
+        input=obstacle_list[i];
+        Construct_Bounding_Box(input , output);
+        draw_polygon(output, *map_param);
+        output.clear();//clear pushback of output vector ref
+  }
+  draw_line(line_seg, *map_param);
+
+  Build_All_Bounding_Box(obstacle_list,Box_list);//make boxes
+  Intersection=Process_Box_line_check(Box_list,line_seg);
+  if(Intersection)
+      std::cout <<"Gkiri:UT_Bounding_Box_line_check line-line INTERSECTION  " << std::endl;
+  else
+      std::cout <<"Gkiri:UT_Bounding_Box_line_check line-line NO INTERSECTION  " << std::endl;
+
+}
+
+
+/*Checking BoundingBox vs Arc  */
+void UT_Bounding_Box_arc_check(std::vector<Polygon> obstacle_list,img_map_def *map_param){
+
+  Polygon input;
+  Polygon output;
+  std::vector<Polygon> Box_list;
+  bool Intersection;
+  struct arc_extract arc_seg;
+  Point Arc_Start, Arc_End, center;
+  double r ;
+
+
+  // /* small curve-middle of obstacles*/
+  // Arc_Start.x=0.95;
+  // Arc_Start.y=0.5;
+  // Arc_End.x=0.7;
+  // Arc_End.y=0.4;
+  // center.x=0.5;
+  // center.y=0.5;
+  // r=0.15;
+
+  /* small curve-bottom of obstacles*/
+  /* perfect paper calc curve*/
+  Arc_Start.x=0.6;
+  Arc_Start.y=0.3;
+  Arc_End.x=0.3;
+  Arc_End.y=0.6;
+  center.x=0.3;
+  center.y=0.3;
+  r=0.3;
+
+
+  // Arc_Start.x=0.2;
+  // Arc_Start.y=0.4;
+  // Arc_End.x=0.2;
+  // Arc_End.y=0.4;
+  // center.x=0.2;
+  // center.y=0.2;
+  // r=0.2;
+
+  arc_seg.start_point = Arc_Start;
+  arc_seg.end_point = Arc_End;
+  arc_seg.LSR = 2;
+  arc_seg.center=center;
+  arc_seg.radius=r;
+  draw_arc(arc_seg, *map_param);
+  
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+
+        input=obstacle_list[i];
+        Construct_Bounding_Box(input , output);
+        draw_polygon(output, *map_param);
+        output.clear();//clear pushback of output vector ref
+  }
+
+  Build_All_Bounding_Box(obstacle_list,Box_list);//make boxes
+  Intersection=Process_Box_arc_check(Box_list,arc_seg);
+  if(Intersection)
+      std::cout <<"Gkiri:UT_Bounding_Box_line_check line-arc INTERSECTION  " << std::endl;
+  else
+      std::cout <<"Gkiri:UT_Bounding_Box_line_check line-arc NO INTERSECTION  " << std::endl;
+
+}
+
+
+/*Checking BoundingBox vs Dubins 3 segments */
+void UT_Bounding_Box_dubins_check(std::vector<Polygon> obstacle_list,struct arc_extract *three_seg,img_map_def *map_param){
+
+  Polygon input;
+  Polygon output;
+  
+  Highlevel_Box_dubins_check(obstacle_list,three_seg);
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+
+        input=obstacle_list[i];
+        Construct_Bounding_Box(input , output);
+        draw_polygon(output, *map_param);
+        output.clear();//clear pushback of output vector ref
+  }
+
+}
+

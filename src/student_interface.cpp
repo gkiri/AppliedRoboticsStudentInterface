@@ -27,7 +27,7 @@
 
 #include "PRM.h"
 
-
+#include <collision_detection.hpp>
 #include "unit-testing.cpp"
 
 //Unit test and printouts variables
@@ -293,10 +293,19 @@ namespace student {
 
   /*****************Ambike PRM local planner Unit testing **********************/
     //UT_local_planner(inflated_obstacle_list, &map_param);
+  /* **********************Ambikeya Line-Line Collision Unit Testing*************************/
+    //UT_line_line_collision(&map_param);
+    //UT_line_circle_collision(&map_param);
+
+  /*****************GkiriCollision Unit testing **********************/
+    //UT_line_arc_collision(&map_param);
+    //UT_Bounding_Box(obstacle_list,&map_param);
+    //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
+    UT_Bounding_Box_arc_check(obstacle_list,&map_param);
   /*****************************************************************************/ 
 
   /*****************Alvaro dubins path Unit testing *************************/
-    UT_dubins_path(inflated_obstacle_list, &map_param);    
+    //UT_dubins_path(inflated_obstacle_list, &map_param);    
   /*****************************************************************************/
 
     
@@ -336,6 +345,7 @@ namespace student {
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
     /* **********************Gkiri UT_dubins_curve_test space Unit Testing*************************/
     //UT_dubins_curve_test(three_seg,&map_param);
+    //UT_Bounding_Box_dubins_check(obstacle_list,three_seg,&map_param);
     /*********************************************************************************************/
     #endif
 
