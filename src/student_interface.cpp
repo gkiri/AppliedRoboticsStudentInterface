@@ -240,7 +240,8 @@ namespace student {
     if(!res1) std::cout << "processObstacles return false" << std::endl;
     const bool res2 = processGate(hsv_img, scale, gate);
     if(!res2) std::cout << "processGate return false" << std::endl;
-    const bool res3 = processVictims(hsv_img, scale, victim_list);
+    //const bool res3 = processVictims(hsv_img, scale, victim_list);
+    const bool res3 = processVictims_student(img_in,hsv_img, scale, victim_list,config_folder);
     if(!res3) std::cout << "processVictims return false" << std::endl;
 
     return res1 && res2 && res3;
@@ -301,6 +302,10 @@ namespace student {
     // for (size_t i = 0; i<obstacle_list.size(); i++){
     //   draw_polygon(obstacle_list[i], map_param, cv::Scalar(255,0,0));
     // }
+
+    for (size_t i = 0; i<victim_list.size(); i++){
+      draw_polygon(victim_list[i].second, map_param, cv::Scalar(255,0,0));
+    }
 
   /*****************Alvaro PRM global planner Unit testing *************************/
     //UT_global_planner(inflated_obstacle_list, &map_param);    
