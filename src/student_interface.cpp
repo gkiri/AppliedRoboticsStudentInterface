@@ -28,7 +28,10 @@
 #include "PRM.h"
 
 #include <collision_detection.hpp>
+
 #include "unit-testing.cpp"
+
+#include "process_map.cpp"
 
 //Unit test and printouts variables
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
@@ -227,9 +230,21 @@ namespace student {
 
 
   bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
-    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );  
-    //cv::Mat dst_mat;
-    //cv::cvtColor(img_in, dst_mat, COLOR_BGR2HSV);
+
+    std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
+    // Convert color space from BGR to HSV
+    cv::Mat hsv_img;
+    cv::cvtColor(img_in, hsv_img, cv::COLOR_BGR2HSV);
+
+    const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
+    if(!res1) std::cout << "processObstacles return false" << std::endl;
+    const bool res2 = processGate(hsv_img, scale, gate);
+    if(!res2) std::cout << "processGate return false" << std::endl;
+    const bool res3 = processVictims(hsv_img, scale, victim_list);
+    if(!res3) std::cout << "processVictims return false" << std::endl;
+
+    return res1 && res2 && res3;
+
   }
 
   bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
