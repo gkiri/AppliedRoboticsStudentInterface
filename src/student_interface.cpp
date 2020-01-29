@@ -287,16 +287,19 @@ namespace student {
     //   draw_polygon(obstacle_list[i], map_param, cv::Scalar(255,0,0));
     // }
 
-  /*****************Alvaro PRM global planner Unit testing *************************/
-    //UT_global_planner(inflated_obstacle_list, &map_param);    
+  /*****************Alvaro PRM local planner Unit testing **********************/
+    UT_local_planner(inflated_obstacle_list, &map_param);
+    //UT_KDTree(&map_param);
   /*****************************************************************************/
 
-  /*****************Ambike PRM local planner Unit testing **********************/
-    //UT_local_planner(inflated_obstacle_list, &map_param);
-  /*****************************************************************************/ 
+  /*****************Alvaro PRM global planner Unit testing *************************/
+    UT_global_planner(inflated_obstacle_list, &map_param);    
+  /*****************************************************************************/
+ 
 
   /*****************Alvaro dubins path Unit testing *************************/
-    UT_dubins_path(inflated_obstacle_list, &map_param);    
+    //UT_dubins_path(inflated_obstacle_list, &map_param);  
+    //UT_compute_triangle_angles(&map_param);
   /*****************************************************************************/
 
     

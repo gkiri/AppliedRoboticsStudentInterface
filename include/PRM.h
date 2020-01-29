@@ -13,8 +13,7 @@ public:
 
     PRM(std::vector<Polygon> polygons_list);
 
-    ~PRM();
-
+    ~PRM();    
 
     /*Function to check Point lies in polygon */
     bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list);
@@ -30,7 +29,8 @@ public:
     void set_free_space_points(std::vector<Point> free_space_points_test);
 
     /*variables for testing purposes*/
-    std::vector<arc_extract> final_path_draw;  
+    std::vector<arc_extract> final_path_draw;
+    std::vector<Point> knn_draw;
 
 
     
@@ -80,16 +80,12 @@ public:
      */
     void dubins_planner(Path& final_path);
 
+
 private:
 
     std::vector<std::pair<Point, std::vector<Point> >> prm_graph; //G(V,E)
     std::vector<Point> free_space_points;
     std::vector<Polygon> obstacle_list;  //Store this in costructor
-    std::vector<Point> global_planner_path;//
-
-    //Path dubins_planner_path;//
-
-    //Return functions
-    
-
+    std::vector<Point> global_planner_path;// 
+       
 };
