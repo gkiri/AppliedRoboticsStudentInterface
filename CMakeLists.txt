@@ -22,6 +22,8 @@ add_library(student SHARED
    src/clipper.cpp
    src/PRM.cpp
    src/collision_detection.cpp
+   src/Utils.cpp
+   src/KDTree.cpp
 )
 
 target_link_libraries(student

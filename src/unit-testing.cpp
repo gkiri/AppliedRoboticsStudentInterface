@@ -3,6 +3,8 @@
 
 #include <vector>
 
+//#include "Utils.hpp"
+
 /************Input variables generation for Unit Testing**********************/
 Point add_points(Point pt1,Point pt2){
   Point result;
@@ -123,15 +125,15 @@ void UT_sampling_motion_plan(std::vector<Polygon> obstacle_list ,img_map_def *ma
 
 }
 
-// @Ambike
+
 void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   // Set variables for your unit test
   PRM obj(obstacle_list);
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test; //Output 
+
   // Generate free_space_points_test example
   prm_graph_test = generate_graph_test();
   std::vector<Point> free_space_points_test = generate_free_space_points_test(prm_graph_test);
-
   // Save example points inside private variable of PRM.cpp
   obj.set_free_space_points(free_space_points_test);
 
@@ -142,7 +144,7 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
   //   draw_point(p,*map_param);
   // }
 
-  //Call your implementation on PRM.cpp    
+  //Call your implementation on PRM.cpp  
   obj.local_planner(); //Implement your local planner in PRM.cpp
   
   //Retrieve the output of your function
@@ -152,9 +154,9 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
   //****************************************************************************
   //********Drawing and printing the result of your local planner*************** 
   //draw polygons
-  for (size_t i = 0; i<obstacle_list.size(); i++){
-    draw_polygon(obstacle_list[i], *map_param);
-  }
+  // for (size_t i = 0; i<obstacle_list.size(); i++){
+  //   draw_polygon(obstacle_list[i], *map_param);
+  // }
   //draw graph
   std::pair<Point, std::vector<Point>> graph_node;
   std::vector<Point> free_space_points;
@@ -167,11 +169,11 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
     //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
     graph_node = prm_graph[i];
     V = graph_node.first; //Vertex
-    std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+    //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
     E = graph_node.second; //Edges
     //Draw edges    
     for(int j=0;j<E.size();j++){ 
-      std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+      //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
       edge_line = to_arc_extract_type(V,E[j],true);
       draw_line(edge_line, *map_param);
     }
@@ -187,34 +189,36 @@ void UT_global_planner(std::vector<Polygon> obstacle_list, img_map_def *map_para
   Point start = Point(0.1,0.1);
   Point goal = Point(1.3,0.8);
   //Point goal = Point(0.3,0.1);
-  std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;  
-  prm_graph_test = generate_graph_test();
-  obj.set_prm_graph(prm_graph_test);  //set prm_graph with the test one
-  prm_graph_test = obj.get_prm_graph(); //retrieve to check it was saved correctly
 
-  //****************************************************************************
-  //********Drawing and printing the initial prm graph and star/goal************
-  //draw graph
-  std::pair<Point, std::vector<Point>> graph_node;
-  Point V;
-  std::vector<Point> E; 
+  // //TEST VARIABLES
+  //std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;  
+  // prm_graph_test = generate_graph_test();
+  // obj.set_prm_graph(prm_graph_test);  //set prm_graph with the test one
+  // prm_graph_test = obj.get_prm_graph(); //retrieve to check it was saved correctly
+
+  // //****************************************************************************
+  // //********Drawing and printing the initial prm graph and star/goal************
+  // //draw graph
+  // std::pair<Point, std::vector<Point>> graph_node;
+  // Point V;
+  // std::vector<Point> E; 
   arc_extract edge_line;
-  Point E_point;
-  for(int i=0; i<prm_graph_test.size(); i++){
-    //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
-    graph_node = prm_graph_test[i];
-    V = graph_node.first; //Vertex
-    std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
-    E = graph_node.second; //Edges
-    //Draw edges    
-    for(int j=0;j<E.size();j++){ 
-      std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
-      edge_line = to_arc_extract_type(V,E[j],true);
-      draw_line(edge_line, *map_param);
-    }
-    //Draw vertex
-    draw_point(V, *map_param, cv::Scalar(255,0,0)); 
-  }
+  // Point E_point;
+  // for(int i=0; i<prm_graph_test.size(); i++){
+  //   //std::cout << "prm raph size: " << prm_graph_test.size() << std::endl;
+  //   graph_node = prm_graph_test[i];
+  //   V = graph_node.first; //Vertex
+  //   std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+  //   E = graph_node.second; //Edges
+  //   //Draw edges    
+  //   for(int j=0;j<E.size();j++){ 
+  //     std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+  //     edge_line = to_arc_extract_type(V,E[j],true);
+  //     draw_line(edge_line, *map_param);
+  //   }
+  //   //Draw vertex
+  //   draw_point(V, *map_param, cv::Scalar(255,0,0)); 
+  // }
   //Draw start and goal
   draw_point(start, *map_param, cv::Scalar(0,255,0));
   draw_point(goal, *map_param, cv::Scalar(0,255,0));  
@@ -249,9 +253,12 @@ void UT_dubins_path(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   Point start = Point(0.1,0.1);
   Point goal = Point(1.3,0.8);
   //Point goal = Point(0.3,0.1);
+
+  //TEST VARIABLES
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test;  
   prm_graph_test = generate_graph_test();
   obj.set_prm_graph(prm_graph_test);  //set prm_graph with the test one
+
   //Global planner
   obj.global_planner(start,goal);
   std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
@@ -281,66 +288,66 @@ void UT_dubins_path(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   arc_extract dubins_path_seg;
   for(int i=0; i<obj.final_path_draw.size(); i++){
     dubins_path_seg = obj.final_path_draw[i]; //retrieve three_segments
-    std::cout << "Dubins_path_" << i << std::endl;
+    //std::cout << "Dubins_path_" << i << std::endl;
   
     //Draw
     draw_dubins_segment(dubins_path_seg, *map_param);
-    //Print
-    switch (dubins_path_seg.LSR)
-    {
-    case 0: // Left arc
-        if(dubins_path_seg.length > 0.000001){
-          std::cout << " => Left arc" << std::endl;
-          //Print values
-          std::cout << "---->Start point: " << dubins_path_seg.start_point.x 
-                                          << ", " << dubins_path_seg.start_point.y << std::endl;
-          std::cout << "---->End point: " << dubins_path_seg.end_point.x 
-                                          << ", " << dubins_path_seg.end_point.y << std::endl;
-          std::cout << "---->Radius: " << dubins_path_seg.radius << std::endl;
-          std::cout << "---->Center: " << dubins_path_seg.center.x 
-                          << ", " << dubins_path_seg.center.y <<std::endl;
-          std::cout << "---->Length: " << dubins_path_seg.length <<std::endl;
-          std::cout << "---->LSR: " << dubins_path_seg.LSR <<std::endl;
-        }      
-        break;
+    // //Print
+    // switch (dubins_path_seg.LSR)
+    // {
+    // case 0: // Left arc
+    //     if(dubins_path_seg.length > 0.000001){
+    //       std::cout << " => Left arc" << std::endl;
+    //       //Print values
+    //       std::cout << "---->Start point: " << dubins_path_seg.start_point.x 
+    //                                       << ", " << dubins_path_seg.start_point.y << std::endl;
+    //       std::cout << "---->End point: " << dubins_path_seg.end_point.x 
+    //                                       << ", " << dubins_path_seg.end_point.y << std::endl;
+    //       std::cout << "---->Radius: " << dubins_path_seg.radius << std::endl;
+    //       std::cout << "---->Center: " << dubins_path_seg.center.x 
+    //                       << ", " << dubins_path_seg.center.y <<std::endl;
+    //       std::cout << "---->Length: " << dubins_path_seg.length <<std::endl;
+    //       std::cout << "---->LSR: " << dubins_path_seg.LSR <<std::endl;
+    //     }      
+    //     break;
 
-    case 1: // Straight line
-        if(dubins_path_seg.length > 0.000001){
-          std::cout << " => Straight line" << std::endl;                                          
-          //Print values
-          std::cout << "---->Start point: " << dubins_path_seg.start_point.x 
-                                          << ", " << dubins_path_seg.start_point.y << std::endl;
-          std::cout << "---->End point: " << dubins_path_seg.end_point.x 
-                                          << ", " << dubins_path_seg.end_point.y << std::endl;
-          std::cout << "---->Radius: " << dubins_path_seg.radius << std::endl;
-          std::cout << "---->Center: " << dubins_path_seg.center.x 
-                          << ", " << dubins_path_seg.center.y << std::endl;
-          std::cout << "---->Length: " << dubins_path_seg.length << std::endl;
-          std::cout << "---->LSR: " << dubins_path_seg.LSR <<std::endl;
-          //std::cout << "Calculated Length: " << dubins_line.length << std::endl;
-        }
-        break;
+    // case 1: // Straight line
+    //     if(dubins_path_seg.length > 0.000001){
+    //       std::cout << " => Straight line" << std::endl;                                          
+    //       //Print values
+    //       std::cout << "---->Start point: " << dubins_path_seg.start_point.x 
+    //                                       << ", " << dubins_path_seg.start_point.y << std::endl;
+    //       std::cout << "---->End point: " << dubins_path_seg.end_point.x 
+    //                                       << ", " << dubins_path_seg.end_point.y << std::endl;
+    //       std::cout << "---->Radius: " << dubins_path_seg.radius << std::endl;
+    //       std::cout << "---->Center: " << dubins_path_seg.center.x 
+    //                       << ", " << dubins_path_seg.center.y << std::endl;
+    //       std::cout << "---->Length: " << dubins_path_seg.length << std::endl;
+    //       std::cout << "---->LSR: " << dubins_path_seg.LSR <<std::endl;
+    //       //std::cout << "Calculated Length: " << dubins_line.length << std::endl;
+    //     }
+    //     break;
 
-    case 2: // Right arc
-        if(dubins_path_seg.length > 0.000001){
-          std::cout << " => Right arc" << std::endl;
-          //Print values
-          std::cout << "---->Start point: " << dubins_path_seg.start_point.x 
-                                          << ", " << dubins_path_seg.start_point.y << std::endl;
-          std::cout << "---->End point: " << dubins_path_seg.end_point.x 
-                                          << ", " << dubins_path_seg.end_point.y << std::endl;
-          std::cout << "---->Radius: " << dubins_path_seg.radius << std::endl;
-          std::cout << "---->Center: " << dubins_path_seg.center.x 
-                          << ", " << dubins_path_seg.center.y << std::endl;
-          std::cout << "---->Length: " << dubins_path_seg.length <<std::endl;
-          std::cout << "---->LSR: " << dubins_path_seg.LSR <<std::endl;
-        }       
-        break;
+    // case 2: // Right arc
+    //     if(dubins_path_seg.length > 0.000001){
+    //       std::cout << " => Right arc" << std::endl;
+    //       //Print values
+    //       std::cout << "---->Start point: " << dubins_path_seg.start_point.x 
+    //                                       << ", " << dubins_path_seg.start_point.y << std::endl;
+    //       std::cout << "---->End point: " << dubins_path_seg.end_point.x 
+    //                                       << ", " << dubins_path_seg.end_point.y << std::endl;
+    //       std::cout << "---->Radius: " << dubins_path_seg.radius << std::endl;
+    //       std::cout << "---->Center: " << dubins_path_seg.center.x 
+    //                       << ", " << dubins_path_seg.center.y << std::endl;
+    //       std::cout << "---->Length: " << dubins_path_seg.length <<std::endl;
+    //       std::cout << "---->LSR: " << dubins_path_seg.LSR <<std::endl;
+    //     }       
+    //     break;
     
-    default:
-        std::cout << "Unknown LSR" << std::endl;
-        break;
-    }
+    // default:
+    //     std::cout << "Unknown LSR" << std::endl;
+    //     break;
+    // }
   }
   //****************************************************************************
 
@@ -360,6 +367,41 @@ void UT_dubins_path(std::vector<Polygon> obstacle_list, img_map_def *map_param){
 
 
 /*----------------------------- Dubins section--------------------------------*/
+
+void UT_compute_triangle_angles(img_map_def *map_param){
+  triangle_angles t_angles;
+  double RAD2DEG = 180.0/M_PI;
+  Point qs,qm,qe;
+  //equilateral triangle pointing up (60,60,60)
+  // qs = Point(0.1,0.1);  
+  // qe = Point(0.9,0.1);
+  // qm = Point(0.5,0.793);
+  //equilateral triangle pointing down (60,60,60)
+  // qs = Point(0.1,0.793);
+  // qe = Point(0.9,0.793);  
+  // qm = Point(0.5,0.1);
+  //Rectangular triangle (90,45,45)
+  qs = Point(0.1,0.1);
+  qe = Point(0.5,0.1);  
+  qm = Point(0.1,0.5);
+   
+  //draw triangle
+  arc_extract t_edges[3];
+  t_edges[0] = to_arc_extract_type(qs,qm,true);
+  t_edges[1] = to_arc_extract_type(qs,qe,true);
+  t_edges[2] = to_arc_extract_type(qe,qm,true);
+
+  for(int i=0;i<3;i++){
+    draw_line(t_edges[i],*map_param);
+  }
+
+  //compute angles
+  t_angles = compute_triangle_angles(qs,qe,qm);
+  std::cout << "beta1,beta2,beta3: " << (int)(t_angles.beta_1*RAD2DEG) << ","
+      << (int)(t_angles.beta_2*RAD2DEG) << "," << (int)(t_angles.beta_3*RAD2DEG) << std::endl;  
+}
+
+
 void UT_dubins_curve_test(struct arc_extract *three_seg,img_map_def *map_param)
 {
     //Visualize dubins curve test
@@ -567,6 +609,7 @@ void UT_draw_arc_test(img_map_def *map_param){
   
   draw_arc(dt, *map_param); 
 }
+
 
 
 ///////////////////////Collision workspace///////////////////////////////
@@ -886,3 +929,70 @@ void UT_Bounding_Box_dubins_check(std::vector<Polygon> obstacle_list,struct arc_
 
 }
 
+
+void UT_KDTree(img_map_def *map_param){
+  //Generate free_space_points
+  std::vector<std::pair<Point, std::vector<Point> >> graph_test = generate_graph_test();
+  std::vector<Point> free_space_points_test = generate_free_space_points_test(graph_test);
+
+  //Variables
+  double rad = .01; //max distance
+  Point Pt_eg = Point(0.85,0.25);
+  
+  //Convert sample points to point_t
+  point_t pt_t;
+  pointVec pt_t_points;
+  for(Point Pt : free_space_points_test){
+      pt_t = Point_to_point_t(Pt);
+      pt_t_points.push_back(pt_t);
+  }
+  //Create tree
+  KDTree tree(pt_t_points);
+
+  //Convert to point_t
+  pt_t = Point_to_point_t(Pt_eg);    
+
+  //nearest points     
+  auto nearest_point = tree.nearest_point(pt_t);    
+
+  //neighborhood points     
+  auto neighborhood_points = tree.neighborhood_points(pt_t, rad);    
+
+  //Convert back to Points 
+  //Neighbors  
+  Point Pt;
+  std::vector<Point> Pt_points;
+  for(point_t pt_t : neighborhood_points){
+      Pt = point_t_to_Point(pt_t);
+      Pt_points.push_back(Pt);
+  }
+  //print
+  std::cout << "neighbors" << std::endl;
+  std::cout << "size: " << Pt_points.size() << std::endl;
+  for (Point b : Pt_points) {
+      std::cout << b.x << "," << b.y << std::endl;
+  } 
+
+  //empty test
+  if(!Pt_points.size()){printf("empty test sucessful\n");}
+
+  //Nearest
+  Pt = point_t_to_Point(nearest_point);
+  //print
+  std::cout << "nearest" << std::endl; 
+  std::cout << Pt.x << "," << Pt.y << std::endl;
+
+  //Draw
+  //All points
+  for(Point p:free_space_points_test){
+    draw_point(p,*map_param);
+  }
+  //Neighborhood points (red)
+  for(int i=0;i<Pt_points.size();i++){
+    if(i!=0){ //neighbors     
+      draw_point(Pt_points[i], *map_param, cv::Scalar(0,0,255));  
+    }    
+  }
+  //Nearest point (green)
+  draw_point(Pt, *map_param, cv::Scalar(0,255,0)); //nearest
+}

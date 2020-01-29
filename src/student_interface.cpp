@@ -321,11 +321,25 @@ namespace student {
     //UT_line_arc_collision(&map_param);
     //UT_Bounding_Box(obstacle_list,&map_param);
     //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
-    UT_Bounding_Box_arc_check(obstacle_list,&map_param);
+    //UT_Bounding_Box_arc_check(obstacle_list,&map_param);
   /*****************************************************************************/ 
 
   /*****************Alvaro dubins path Unit testing *************************/
     //UT_dubins_path(inflated_obstacle_list, &map_param);    
+
+  /*****************Alvaro PRM local planner Unit testing **********************/
+    //UT_local_planner(inflated_obstacle_list, &map_param);
+    //UT_KDTree(&map_param);
+  /*****************************************************************************/
+
+  /*****************Alvaro PRM global planner Unit testing *************************/
+    //UT_global_planner(inflated_obstacle_list, &map_param);    
+  /*****************************************************************************/
+ 
+
+  /*****************Alvaro dubins path Unit testing *************************/
+    //UT_dubins_path(inflated_obstacle_list, &map_param);  
+    //UT_compute_triangle_angles(&map_param);
   /*****************************************************************************/
 
     
