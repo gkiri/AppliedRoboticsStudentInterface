@@ -283,28 +283,28 @@ namespace student {
     /*****************************************************************************/
     
     // //Draw original polygons on top of inflated ones
-    // for (size_t i = 0; i<obstacle_list.size(); i++){
-    //   draw_polygon(obstacle_list[i], map_param, cv::Scalar(255,0,0));
+    // for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
+    //   draw_polygon(inflated_obstacle_list[i], map_param, cv::Scalar(255,0,0));
     // }
 
-  /*****************Alvaro PRM local planner Unit testing **********************/
-    UT_local_planner(inflated_obstacle_list, &map_param);
+    /*****************Alvaro PRM local planner Unit testing **********************/
+    //UT_local_planner(inflated_obstacle_list, &map_param);
     //UT_KDTree(&map_param);
-  /*****************************************************************************/
+    /*****************************************************************************/
 
-  /*****************Alvaro PRM global planner Unit testing *************************/
-    UT_global_planner(inflated_obstacle_list, &map_param);    
-  /*****************************************************************************/
+    /*****************Alvaro PRM global planner Unit testing **********************/
+    //UT_global_planner(inflated_obstacle_list, &map_param);    
+    /*****************************************************************************/
  
-
-  /*****************Alvaro dubins path Unit testing *************************/
+    /*****************Alvaro dubins path Unit testing *************************/
     //UT_dubins_path(inflated_obstacle_list, &map_param);  
     //UT_compute_triangle_angles(&map_param);
-  /*****************************************************************************/
+    /*****************************************************************************/
 
-    
-
-    
+    /*****************Alvaro overall PRM planner Unit testing ********************/
+    UT_overall_planner(inflated_obstacle_list, &map_param);  
+    /*****************************************************************************/  
+     
     
     /* Draw test-------------------------------------------*/
     //Print an example of th drawing functions in a single image

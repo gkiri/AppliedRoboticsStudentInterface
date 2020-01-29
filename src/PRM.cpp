@@ -119,7 +119,7 @@ void PRM::global_planner(Point start,Point goal){
     //output --> std::vector<Point> global_planner_path;
 
     //Call astar
-    std::cout << "previous" << prm_graph.size() << std::endl;
+    //std::cout << "previous" << prm_graph.size() << std::endl;
     global_planner_path = globalplanner::astar(prm_graph, start, goal);
 }
 
@@ -136,7 +136,7 @@ void PRM::local_planner(){
     // graph_example_element = std::make_pair(Vertex_ex_1, Edges_ex_1);    
     // prm_graph.push_back(graph_example_element);
     //****************************************************************************  
-    //implement local planner here    
+      
     //Variables
     //double max_dist = 0.31; //max distance
     double min_dist = 0.2001;
@@ -184,37 +184,7 @@ void PRM::local_planner(){
             if(!remove_flag){
                 knn_points.push_back(knn_candidate);
             }
-        }
-
-
-        // std::cout << "---------------------------" << std::endl;
-        // std::cout << "Point " << i << ":" << pt_t_points[i][0] << "," <<pt_t_points[i][1] << std::endl;
-        
-        // if(knn_points.size() == 1){ //no points within the neighborhood (only itself)
-        //     //Construct auxiliar tree            
-        //     aux_pt_t_points = pt_t_points;            
-        //     aux_pt_t_points.erase(aux_pt_t_points.begin() + i); //Eliminate the point to find the nearest            
-            
-        //     KDTree aux_tree(aux_pt_t_points);            
-        //     auto nearest_point = aux_tree.nearest_point(pt_t_points[i]); //nearest point 
-        //     //Pt = point_t_to_Point(knn_points);
-        //     //std::cout << "nearest point:" << Pt.x << ", " << Pt.y << std::endl;
-        //     //CONVERT NEAREST IN A VECTOR TO REDUCE CODE
-        //     knn_points.clear();
-        //     knn_points.push_back(nearest_point);
-        //     // Pt = point_t_to_Point(nearest_point);
-        //     // KNN_points.push_back(Pt);
-        //     // std::cout << "edges:" << Pt.x << ", " << Pt.y << std::endl;         
-        // }
-                        
-        // //Convert back to Points                     
-        // for(point_t pt_t : knn_points){
-        //     Pt = point_t_to_Point(pt_t);
-        //     if(!same_point(Pt, free_space_points[i])){ //do not safe the vertex as an edge
-        //         KNN_points.push_back(Pt); 
-        //         std::cout << "edges:" << Pt.x << ", " << Pt.y << std::endl; 
-        //     }               
-        // }
+        }        
 
         //Convert back to Points   
         KNN_points.clear(); //reset vector of Point format                 
@@ -235,8 +205,7 @@ void PRM::local_planner(){
         //Save into graph
         graph_element = std::make_pair(free_space_points[i], KNN_points);    
         prm_graph.push_back(graph_element);
-    }           
-    std::cout << prm_graph.size() << std::endl;
+    }  
 }
 
 
@@ -251,7 +220,7 @@ void PRM::dubins_planner(Path& final_path){
     //For dubins
     Path path;
     struct arc_extract three_seg[3];
-    double rho=0.05;    //@Alvaro: DANGER!!! DUPLICATED VALUE IN student_interface.cpp
+    double rho=0.1;    //@Alvaro: DANGER!!! DUPLICATED VALUE IN student_interface.cpp
     double qs[3],qm[3],qe[3]; 
     // Point goal = global_planner_path.back();
     // std::cout << "GOAL point:" << goal.x << ", " << goal.y << std::endl;
