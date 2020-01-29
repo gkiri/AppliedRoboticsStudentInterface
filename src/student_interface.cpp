@@ -27,8 +27,11 @@
 
 #include "PRM.h"
 
+#include <collision_detection.hpp>
 
 #include "unit-testing.cpp"
+
+#include "process_map.cpp"
 
 //Unit test and printouts variables
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
@@ -227,9 +230,22 @@ namespace student {
 
 
   bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
-    //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );  
-    //cv::Mat dst_mat;
-    //cv::cvtColor(img_in, dst_mat, COLOR_BGR2HSV);
+
+    std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
+    // Convert color space from BGR to HSV
+    cv::Mat hsv_img;
+    cv::cvtColor(img_in, hsv_img, cv::COLOR_BGR2HSV);
+
+    const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
+    if(!res1) std::cout << "processObstacles return false" << std::endl;
+    const bool res2 = processGate(hsv_img, scale, gate);
+    if(!res2) std::cout << "processGate return false" << std::endl;
+    //const bool res3 = processVictims(hsv_img, scale, victim_list);
+    const bool res3 = processVictims_student(img_in,hsv_img, scale, victim_list,config_folder);
+    if(!res3) std::cout << "processVictims return false" << std::endl;
+
+    return res1 && res2 && res3;
+
   }
 
   bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
@@ -286,6 +302,25 @@ namespace student {
     // for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
     //   draw_polygon(inflated_obstacle_list[i], map_param, cv::Scalar(255,0,0));
     // }
+    // //Draw victims polygons
+    // for (size_t i = 0; i<victim_list.size(); i++){
+    //   draw_polygon(victim_list[i].second, map_param, cv::Scalar(255,0,0));
+    // }
+
+    /*****************Alvaro PRM global planner Unit testing *************************/
+    //UT_global_planner(inflated_obstacle_list, &map_param);    
+   /*****************************************************************************/
+
+    //* **********************Ambikeya Line-Line Collision Unit Testing*************************/
+    //UT_line_line_collision(&map_param);
+    //UT_line_circle_collision(&map_param);
+
+    /*****************GkiriCollision Unit testing **********************/
+    //UT_line_arc_collision(&map_param);
+    //UT_Bounding_Box(obstacle_list,&map_param);
+    //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
+    //UT_Bounding_Box_arc_check(obstacle_list,&map_param);
+    /*****************************************************************************/    
 
     /*****************Alvaro PRM local planner Unit testing **********************/
     //UT_local_planner(inflated_obstacle_list, &map_param);
@@ -339,6 +374,7 @@ namespace student {
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
     /* **********************Gkiri UT_dubins_curve_test space Unit Testing*************************/
     //UT_dubins_curve_test(three_seg,&map_param);
+    //UT_Bounding_Box_dubins_check(obstacle_list,three_seg,&map_param);
     /*********************************************************************************************/
     #endif
 
