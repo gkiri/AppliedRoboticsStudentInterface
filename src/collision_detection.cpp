@@ -1,6 +1,6 @@
 
 #include <collision_detection.hpp>
-#define ARC_DEBUG 0
+#define ARC_DEBUG 1
 
 
 //  Determines the intersection point of the line defined by points A and B with the
@@ -227,7 +227,7 @@ bool  Construct_Bounding_Box(Polygon& input , Polygon& output)
 
 
 /*construct bounding boxes for all obstacles */
-void Build_All_Bounding_Box(std::vector<Polygon> obstacle_list,std::vector<Polygon>& Box_list){
+void Build_All_Bounding_Box(std::vector<Polygon>& obstacle_list,std::vector<Polygon>& Box_list){
 
   Polygon input;
   Polygon output;
@@ -300,13 +300,51 @@ bool  Process_Box_line_check(std::vector<Polygon>& Box_list,struct arc_extract& 
     
 }
 
+
+/*Box vs line  for obstacle list*/
+bool  Process_Box_line_check_obstacles(std::vector<Polygon>& obstacle_list,struct arc_extract& segment)
+{
+    bool intersection;
+    Point Line_start_point,Line_end_point,X;
+    int k=0;
+
+    std::vector<Polygon> Box_list;
+    Build_All_Bounding_Box(obstacle_list,Box_list);//gets lists of bounding boxes
+
+    for (size_t i = 0; i<Box_list.size(); i++){//no of boxes
+        
+        for (size_t j = 0; j<Box_list[i].size(); j++){ //4corners of each box
+
+            if(j==3) {
+                intersection=linelineIntersection(segment.start_point,segment.end_point,Box_list[i][j],Box_list[i][0],&X);
+                if(intersection)
+                    return true;
+
+            }
+            else {
+                intersection=linelineIntersection(segment.start_point,segment.end_point,Box_list[i][j],Box_list[i][j+1],&X);
+                if(intersection)
+                    return true;
+            }
+            
+        }//Inner forloop
+    }//Outer forloop
+
+    return false;//No collision
+    
+}
+
+
+
+
 /*High level box vs each arc of dubins check */
-bool  Highlevel_Box_dubins_check(std::vector<Polygon> obstacle_list,struct arc_extract *three_seg)
+bool  Highlevel_Box_dubins_check(std::vector<Polygon>& obstacle_list,struct arc_extract *three_seg)
 {
     bool Intersection;
     std::vector<Polygon> Box_list;
     Build_All_Bounding_Box(obstacle_list,Box_list);//gets lists of bounding boxes
 
+    //threeseg lenght is 3
     for (size_t i = 0; i<3; i++){
 
         switch (three_seg[i].LSR)
