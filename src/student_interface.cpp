@@ -23,7 +23,7 @@
 
 #include "draw_functions.cpp"
 
-#include "PRM.h"
+//#include "PRM.h"
 
 #include <collision_detection.hpp>
 
@@ -38,10 +38,11 @@
 //Unit test and printouts variables
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
-#define DUBINS_TEST 1
+#define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
 #define DRAW_GATE_TEST 0
 #define UNIT_TEST 0
+#define MISSION_DRAWING 1
 
 namespace student {
 
@@ -275,8 +276,7 @@ namespace student {
     /*************CONFIG VARIABLES*********************/
     //Robot parameters (move to another file?)
     const double robot_length = 0.2; //(m)
-    const double robot_width = 0.14; //(m)
-    struct arc_extract three_seg[3];//segment extract
+    const double robot_width = 0.14; //(m)   
 
     //Visualising the map parameters
     double map_w = 1.56; //real map width in m
@@ -285,11 +285,14 @@ namespace student {
     //image map height is calculated through the other three parameters
     
     //Sampling
-    int N = 500;
+    int n_samples = 500;
 
     //Dubins parameters
     double k_max = 10;
     double discretizer_size = 0.005; 
+
+    //mission id
+    int mission_id = 0;
     /*****************************************************/
 
 
@@ -314,8 +317,98 @@ namespace student {
    
     /****************** Missions **********************************************/
     
-    double gate_pose[3];
+    /*------variables--------*/
+    double start_pose[3], gate_pose[3];
+    struct dubins_param dubins_param;
+    std::vector<Point> bias_points;
+    
+    //set dubins param
+    dubins_param.k_max = k_max;
+    dubins_param.discretizer_size = discretizer_size;
+
+    //set PRM params
+    struct PRM_param PRM_param;
+    PRM_param.map_h = map_h;
+    PRM_param.map_w = map_w;
+    PRM_param.obstacle_list = inflated_obstacle_list;
+    PRM_param.n_samples = n_samples;
+
+    //start point    
+    start_pose[0] = x;
+    start_pose[1] = y;
+    start_pose[2] = theta;
+
+    //end point = gate_pose    
     get_gate_pose(gate, map_h, map_w, robot_length, gate_pose);
+
+    //set bias points
+    //TBD
+
+    //output for missions
+    struct mission_output_0 miss_output_0;
+    struct mission_output_12 miss_output_12;
+    struct arc_extract three_seg[3];//segment extract
+
+
+    /*--------mission selection ------------*/
+    switch (mission_id){
+
+    case 0:      
+      miss_output_0 = mission_0(dubins_param, start_pose, gate_pose);
+      path = miss_output_0.path;
+      if(path.empty()){
+        printf("Empty path\n");
+        break;
+      }
+      else{
+        #if MISSION_DRAWING
+        //draw gate
+        draw_polygon(gate, map_param, cv::Scalar(255,0,0));
+        //Draw path
+        create_three_seg(three_seg, start_pose[0], start_pose[1], miss_output_0.dubins_path);
+        for(int i=0; i< 3; i++){      
+          draw_dubins_segment(three_seg[i], map_param, cv::Scalar(0,0,255));
+        } 
+        //draw start and end point
+        draw_point(Point(start_pose[0], start_pose[1]), map_param, cv::Scalar(0,255,0));
+        draw_point(Point(gate_pose[0], gate_pose[1]), map_param, cv::Scalar(0,255,0));
+        #endif
+      }
+      break;
+      
+
+    case 1:      
+
+      miss_output_12 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, bias_points);
+      path = miss_output_12.path;
+      if(path.empty()){
+        printf("Empty path\n");
+        break;
+        }
+      #if MISSION_DRAWING
+
+      #endif
+      break;    
+    
+    case 2:
+
+      if(path.empty()){
+        printf("Empty path\n");
+        break;
+        }
+      #if MISSION_DRAWING
+
+      #endif
+      break; 
+      
+      break;
+    
+    default:
+      printf("Student interface: No mission selected\n");
+      break;
+    }
+    
+
 
     #if DRAW_GATE_TEST
     //Drawing

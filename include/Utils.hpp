@@ -21,12 +21,19 @@ struct arc_extract{ // dubins segment structure for collision and drawing purpos
     float length;
     int LSR; // Letft - Straight - Right indicator (0,1,2)
 };
-
-
 //Struct for ellipse calculations
 struct arc_param{
     double start_angle;
     double end_angle;
+};
+//PRM planners
+struct dubins_param{
+    double k_max, discretizer_size;
+};
+struct PRM_param{
+    double map_w, map_h;
+    std::vector<Polygon> obstacle_list;
+    int n_samples;
 };
 
 /**
