@@ -42,7 +42,7 @@ void compute_heading_angle(double* qs,double* qm,double* qe){
   //Calculate alpha
   d_s_e = sqrt(pow(qs[0]-qe[0],2) + pow(qs[1]-qe[1],2)); //euclidean distance
   alpha = SafeAcos(sqrt(pow(qs[0]-qe[0],2))/d_s_e); //angle btw start and end
-  std::cout << "ALPHA: " << alpha*RAD2DEG << std::endl;
+  //std::cout << "ALPHA: " << alpha*RAD2DEG << std::endl;
   //Check for quadrants
   quadrant = compute_quadrant(Point(qe[0],qe[1]), Point(qs[0],qs[1]));
   switch (quadrant){
@@ -66,7 +66,7 @@ void compute_heading_angle(double* qs,double* qm,double* qe){
   
   //save heading angle of mid point
   qm[2] = alpha;
-  std::cout << "HEADING ANGLE: " << alpha*RAD2DEG << std::endl;
+  //std::cout << "HEADING ANGLE: " << alpha*RAD2DEG << std::endl;
 } 
 
 
