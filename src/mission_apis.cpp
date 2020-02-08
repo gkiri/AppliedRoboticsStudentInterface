@@ -68,3 +68,25 @@ void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot
         break;
     } 
 }
+
+Path mission_0(double start_pose[3], double gate_pose[3]){
+
+}
+
+
+Path mission_1(double start_pose[3], double gate_pose[3], 
+    std::vector<Polygon> inflated_obstacle_list){
+
+}
+
+
+Path mission_1_5(double start_pose[3], double gate_pose[3], std::vector<Point> bias_points, 
+    std::vector<Polygon> inflated_obstacle_list){
+
+}
+
+
+Path mission_2(double start_pose[3], double gate_pose[3], 
+    std::vector<std::pair<int,Polygon>> victim_list, std::vector<Polygon> inflated_obstacle_list){
+
+}

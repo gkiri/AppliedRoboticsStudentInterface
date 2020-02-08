@@ -159,8 +159,19 @@ void create_three_seg(struct arc_extract three_seg[3], double x0, double y0, Dub
   }
 }
 
-void concatenate_dubins_path(Path& path, DubinsCurve dubins_path){
+void concatenate_dubins_path(Path& path, DubinsCurve dubins_path, double discritizer_size){
+  //variables
+  double updated_s, next_s;  
+  next_s = path.size()*discritizer_size;
 
+  for(int j = 0; j < dubins_path.discretized_curve.size(); j++){    
+    updated_s = next_s + j*discritizer_size; //keep counting from last s with step size equal to the discretezer
+
+    //concatenate paths
+    path.points.emplace_back(updated_s, dubins_path.discretized_curve[j].xf, 
+          dubins_path.discretized_curve[j].yf, dubins_path.discretized_curve[j].thf, 
+          dubins_path.discretized_curve[j].k);
+  }
 }
 
 

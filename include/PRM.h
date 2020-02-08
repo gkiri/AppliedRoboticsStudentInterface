@@ -79,9 +79,10 @@ public:
      *  
      * @param start_theta - initial orientation of the robot
      * @param goal_theta - final orientation of the robot
+     * @param dubins_param - k_max and discretize step size for dubins
      * @output - return final path to be followed by the robot
      */
-    Path dubins_planner(float start_theta, float goal_theta);
+    Path dubins_planner(float start_theta, float goal_theta, struct dubins_param);
 
     /**
      * Given a starting pose, a goal pose and a vector of bias points (points through
@@ -93,7 +94,7 @@ public:
      * @param bias_points - vector of bias points 
      * @output - return final path to be followed by the robot
      */
-    Path prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points);
+    Path prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points, struct dubins_param);
 
 
 private:

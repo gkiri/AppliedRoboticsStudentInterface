@@ -223,8 +223,7 @@ void PRM::local_planner(std::vector<Point> bias_points){
 }
 
 
-/*DUBINS PLANNER V2*/
-Path PRM::dubins_planner(float start_theta, float goal_theta){
+Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_param dubins_param){
     //Inputs: global_planner_path, prm_graph
     //Outputs: vector of dubin's segments --> final_path  
     double DEG2RAD = M_PI/180.0; 
@@ -239,8 +238,9 @@ Path PRM::dubins_planner(float start_theta, float goal_theta){
     //std::vector<Pose> poses_final;
     Path path, no_path;
     //For dubins
+    //double discretizer_size = 0.005;
     struct arc_extract three_seg[3]; 
-    DubinsCurvesHandler dubins_handler{};   
+    DubinsCurvesHandler dubins_handler(dubins_param.k_max, dubins_param.discretizer_size);       
     DubinsCurve dubins_path;
     double qs[3],qm[3],qe[3]; 
     double heading_angle_sum, heading_angle_sub; //trackers of the heading angles after summing and substracting
@@ -302,7 +302,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta){
                     path_final_draw.push_back(three_seg[i]);
                 }
                 //Insert new dubins path into path
-                //concatenate_dubins_path(path,dubins_path);                                                  
+                concatenate_dubins_path(path,dubins_path, dubins_param.discretizer_size);                                                  
 
                 //Set up for next node            
                 node_pos++; //next node
@@ -340,7 +340,8 @@ Path PRM::dubins_planner(float start_theta, float goal_theta){
     return path;
 }
 
-Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points){
+Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points, 
+                        struct dubins_param dubins_param){
     //Set variables
     Path path;
     Point start = Point(start_pose[0], start_pose[1]);
@@ -364,7 +365,7 @@ Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> 
     PRM::global_planner(start,goal); 
 
     //Call dubins planner
-    path = PRM::dubins_planner(start_theta, goal_theta);
+    path = PRM::dubins_planner(start_theta, goal_theta, dubins_param);
 
     //return
     return path;

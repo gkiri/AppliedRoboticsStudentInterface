@@ -281,7 +281,10 @@ void UT_dubins_path(std::vector<Polygon> obstacle_list, img_map_def *map_param){
 
   //****************************************************************************
   //********************Dubins path algorithm***********************************
-  obj.dubins_planner(0, M_PI/2);  
+  struct dubins_param dubins_param;
+  dubins_param.k_max = 10;
+  dubins_param.discretizer_size = 0.005;
+  obj.dubins_planner(0, M_PI/2, dubins_param);  
 
   //****************************************************************************
   //********Drawing and printing the dubins path************************
@@ -355,7 +358,10 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   //Path final_path; //container for dubins planner path outcome
 
   //Call dubins planner
-  obj.dubins_planner(start_theta, goal_theta); 
+  struct dubins_param dubins_param;
+  dubins_param.k_max = 10;
+  dubins_param.discretizer_size = 0.005;
+  obj.dubins_planner(start_theta, goal_theta, dubins_param); 
 
 
   //****************************************************************************
@@ -418,12 +424,15 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
 
 
 void UT_prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points, 
-        std::vector<Polygon> obstacle_list, double map_w, double map_h, int N, 
-        img_map_def *map_param){
+         std::vector<Polygon> obstacle_list, double map_w, double map_h, int N, 
+         img_map_def *map_param){
   //Create instance
   PRM obj(obstacle_list, map_w, map_h, N);
   //call prm_planner
-  obj.prm_planner(start_pose, goal_pose, bias_points);
+  struct dubins_param dubins_param;
+  dubins_param.k_max = 10;
+  dubins_param.discretizer_size = 0.005;
+  obj.prm_planner(start_pose, goal_pose, bias_points, dubins_param);
 
   //Retrieve all variables for drawing purposes
   std::vector<Point> free_space_points = obj.get_free_space_points();

@@ -119,9 +119,10 @@ void create_three_seg(struct arc_extract three_seg[3], double x0, double y0, Dub
  * 
  * @param path - Path container
  * @param dubins_path - DubinsCurve container
+ * @param discritizer_size - step size od discritization
  * @output - update by reference the Path with the concatenate version of both inputs
 */
-void concatenate_dubins_path(Path& path, DubinsCurve dubins_path);
+void concatenate_dubins_path(Path& path, DubinsCurve dubins_path, double discritizer_size);
 
 
 
