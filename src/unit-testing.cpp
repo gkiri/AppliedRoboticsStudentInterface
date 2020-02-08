@@ -531,6 +531,27 @@ void UT_compute_triangle_angles(img_map_def *map_param){
       << (int)(t_angles.beta_2*RAD2DEG) << "," << (int)(t_angles.beta_3*RAD2DEG) << std::endl;  
 }
 
+void UT_dubins_collision_test(struct arc_extract three_seg[3],
+          std::vector<Polygon> obstacle_list, img_map_def *map_param){
+  bool collision;
+  //collision detection
+  collision = Highlevel_Box_dubins_check(obstacle_list, three_seg);
+  if(collision){
+    printf("COLLISION!!\n");
+  }
+  else{
+    printf("NO COLLISION!!\n");
+  }
+  //Drawing
+  //poly
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+    draw_polygon(obstacle_list[i], *map_param);
+  }
+  //dubins
+  for(int i=0;i<3;i++){
+    draw_dubins_segment(three_seg[i], *map_param);
+  }  
+}
 
 void UT_dubins_curve_test(struct arc_extract *three_seg,img_map_def *map_param)
 {
