@@ -207,7 +207,8 @@ void PRM::local_planner(std::vector<Point> bias_points){
             Pt = point_t_to_Point(pt_t);             
             //Check for collision 
             edge_line.end_point = Pt;
-            collision = Process_Box_line_check_obstacles(obstacle_list,edge_line);  
+            //collision = Process_Box_line_check_obstacles(obstacle_list,edge_line);
+            collision = Global_Line_check(obstacle_list,edge_line);
             if(!collision){ // if no collision, save edge
                 KNN_points.push_back(Pt); 
             }                          

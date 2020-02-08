@@ -15,8 +15,6 @@
 
 #include "findRobot.cpp"
 
-//#include "dubins_curve.hpp"
-
 #include "image_undistort.hpp"
 
 #include "clipper.hpp"
@@ -38,10 +36,10 @@
 //#include "DubinsCurvesHandler.hpp"
 
 //Unit test and printouts variables
-#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
-#define DUBINS_TEST 0
-#define PRM_PLANNER_TEST 1
+#define DUBINS_TEST 1
+#define PRM_PLANNER_TEST 0
 #define DRAW_GATE_TEST 0
 #define UNIT_TEST 0
 
@@ -453,30 +451,14 @@ namespace student {
     // goal_pose[2] = gate_pose[2];
 
     //test
-    goal_pose[0] = 0.2;
+    goal_pose[0] = 0.6;
     goal_pose[1] = 0.8;
     goal_pose[2] = 0;
-   
-
-    // //CODEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-    // //establish Dubins curve generator
-    // DubinsCurvesHandler dubins_handler{};
-
-    // for(int i = 0; i < smoothPath.size() - 1; i++){
-    //     DubinsCurve dubins_path = dubins_handler.findShortestPath(smoothPath[i].location.x, smoothPath[i].location.y, smoothPath[i].theta, smoothPath[i+1].location.x, smoothPath[i+1].location.y, smoothPath[i+1].theta);
-
-    //     for(int j = 0; j < dubins_path.discretized_curve.size(); j++)
-    //     {
-    //         path.points.emplace_back(dubins_path.discretized_curve[j].s, dubins_path.discretized_curve[j].xf, dubins_path.discretized_curve[j].yf, dubins_path.discretized_curve[j].thf, dubins_path.discretized_curve[j].k);
-    //     }
-
-    // }
-    // /////////////////////////////////////////////////////
 
     //establish Dubins curve generator
 
     //DubinsCurvesHandler dubins_handler{};
-    DubinsCurvesHandler dubins_handler(k_max, discritizer_size);
+    DubinsCurvesHandler dubins_handler(k_max, discretizer_size);
     Path path_container;
 
     DubinsCurve dubins_path = dubins_handler.findShortestPath(start_pose[0],start_pose[1],start_pose[2],
@@ -491,17 +473,20 @@ namespace student {
 
     //test for create_three_seg
     create_three_seg(three_seg, start_pose[0], start_pose[1], dubins_path);
-    //UT_dubins_curve_test(three_seg,&map_param);
-    concatenate_dubins_path(path_container, dubins_path, discritizer_size);
-    path = path_container;
-    if(path.empty()){printf("Empty path\n");}
-    else{
-      for(int i=0;i<path.points.size();i++){
-      std::cout << "point " << i << ": " << path.points[i].s <<","<< path.points[i].x <<","
-      << path.points[i].y <<"," << path.points[i].theta <<","<< path.points[i].kappa << std::endl;
-      }
-    }
-    
+
+    //test for dubins collision detection
+    UT_dubins_collision_test(three_seg, inflated_obstacle_list, &map_param);
+
+    // concatenate_dubins_path(path_container, dubins_path, discretizer_size);
+    // path = path_container;
+    // if(path.empty()){printf("Empty path\n");}
+    // else{
+    //   for(int i=0;i<path.points.size();i++){
+    //   std::cout << "point " << i << ": " << path.points[i].s <<","<< path.points[i].x <<","
+    //   << path.points[i].y <<"," << path.points[i].theta <<","<< path.points[i].kappa << std::endl;
+    //   }
+    // }
+
     #endif
 
     #if UNIT_TEST
