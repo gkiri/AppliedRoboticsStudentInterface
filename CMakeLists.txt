@@ -18,7 +18,6 @@ include_directories(
 add_library(student SHARED
    src/student_interface.cpp
    src/image_undistort.cpp
-   src/dubins_curve.cpp
    src/clipper.cpp
    src/PRM.cpp
    src/collision_detection.cpp
