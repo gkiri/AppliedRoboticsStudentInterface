@@ -109,9 +109,12 @@ mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, doub
     std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
 
     mission_12.path = path;
+    mission_12.free_space_points = free_space_points;
+    mission_12.prm_graph = prm_graph;
+    mission_12.global_planner_path = global_planner_path;
+    mission_12.path_final_draw = PRM_obj.path_final_draw;
 
     return mission_12; 
-
 }
 
 mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 

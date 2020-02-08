@@ -36,7 +36,7 @@
 //#include "DubinsCurvesHandler.hpp"
 
 //Unit test and printouts variables
-#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
 #define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
@@ -292,7 +292,7 @@ namespace student {
     double discretizer_size = 0.005; 
 
     //mission id
-    int mission_id = 0;
+    int mission_id = 1;
     /*****************************************************/
 
 
@@ -384,10 +384,65 @@ namespace student {
       if(path.empty()){
         printf("Empty path\n");
         break;
+      }
+      else{
+        #if MISSION_DRAWING
+        //Drawing variables
+        std::pair<Point, std::vector<Point>> graph_node;  
+        Point V;
+        std::vector<Point> E; 
+        arc_extract edge_line;
+        Point E_point;
+        arc_extract dubins_path_seg;  
+        
+        //draw polygons
+        for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
+          draw_polygon(inflated_obstacle_list[i], map_param);
         }
-      #if MISSION_DRAWING
+        
+        //Draw prm_graph
+        for(int i=0; i<miss_output_12.prm_graph.size(); i++){
+          //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
+          graph_node = miss_output_12.prm_graph[i];
+          V = graph_node.first; //Vertex
+          //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+          E = graph_node.second; //Edges
+          //Draw edges    
+          for(int j=0;j<E.size();j++){ 
+            //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+            edge_line = to_arc_extract_type(V,E[j],true);
+            draw_line(edge_line, map_param);
+          }
+          //Draw vertex
+          draw_point(V, map_param, cv::Scalar(255,0,0));
+        }  
 
-      #endif
+        //Draw sample points  
+        for (int z=0;z<miss_output_12.free_space_points.size();z++){
+            draw_point(miss_output_12.free_space_points[z], map_param, cv::Scalar(255,0,0));           
+        }
+
+        //Draw global_planner path
+        for(int i=0;i<miss_output_12.global_planner_path.size();i++){   
+          //Draw path
+          if(i<miss_output_12.global_planner_path.size()-1){         
+            edge_line = to_arc_extract_type(miss_output_12.global_planner_path[i],miss_output_12.global_planner_path[i+1],true);
+            draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
+          }
+          //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
+        }
+
+        //Draw dubins curve   
+        for(int i=0; i<miss_output_12.path_final_draw.size(); i++){
+          dubins_path_seg = miss_output_12.path_final_draw[i]; //retrieve three_segments
+          //std::cout << "Dubins_path_" << i << std::endl;
+        
+          //Draw
+          draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,0,255));
+        } 
+        #endif
+
+      }
       break;    
     
     case 2:
@@ -531,7 +586,7 @@ namespace student {
     #if DUBINS_TEST
     /* Dubins Section-------------------------------------------*/
   
-    double start_pose[3], goal_pose[3];   
+    //double start_pose[3], goal_pose[3];   
 
     //start point
     start_pose[0] = x;
@@ -544,9 +599,9 @@ namespace student {
     // goal_pose[2] = gate_pose[2];
 
     //test
-    goal_pose[0] = 0.6;
-    goal_pose[1] = 0.8;
-    goal_pose[2] = 0;
+    gate_pose[0] = 0.5;
+    gate_pose[1] = 0.85; 
+    gate_pose[2] = 0;
 
     //establish Dubins curve generator
 
@@ -555,7 +610,7 @@ namespace student {
     Path path_container;
 
     DubinsCurve dubins_path = dubins_handler.findShortestPath(start_pose[0],start_pose[1],start_pose[2],
-                                                goal_pose[0], goal_pose[1], goal_pose[2]);
+                                                gate_pose[0], gate_pose[1], gate_pose[2]);
 
     for(int j = 0; j < dubins_path.discretized_curve.size(); j++)
     {
