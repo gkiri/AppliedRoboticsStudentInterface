@@ -6,16 +6,30 @@
 #include <algorithm> 
 
 #include "PRM.h"
-#include "Utils.hpp"
+//#include "Utils.hpp"
 #include "a_star.cpp"
+#include "collision_detection.hpp"
 
 
 PRM::PRM(std::vector<Polygon> polygons_list)
 {
-  for (size_t j = 0; j<polygons_list.size(); j++){  
-      obstacle_list.push_back(polygons_list[j]);
-  }
+    //polygons
+    for (size_t j = 0; j<polygons_list.size(); j++){  
+        obstacle_list.push_back(polygons_list[j]);
+    }
+}
 
+
+PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N)
+{
+    //polygons
+    for (size_t j = 0; j<polygons_list.size(); j++){  
+        obstacle_list.push_back(polygons_list[j]);
+    }
+    //rest
+    this->cspace_width = cspace_width;
+    this->cspace_height = cspace_height;
+    this->N = N;
 }
 
 
@@ -86,19 +100,19 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
 }
 
 
-void PRM::generate_random_points(double cspace_length,double cspace_width, int N)
+void PRM::generate_random_points()
 {
 
-    std::cout <<"Random Sampling in Map start st" <<  std::endl;
+    //std::cout <<"Random Sampling in Map start st" <<  std::endl;
     Point test_pt;
     int count=0;  
 
     /* Generate random pointst */
     for(int i=0;i<N;i++){
-        float x_rand = (rand() / (double) RAND_MAX) * cspace_length; //Generate random sample
-        float y_rand = (rand() / (double) RAND_MAX) * cspace_width;
+        float x_rand = (rand() / (double) RAND_MAX) * cspace_width; //Generate random sample
+        float y_rand = (rand() / (double) RAND_MAX) * cspace_height;
 
-        std::cout <<"Random Sampling in Map" << x_rand << "," << y_rand << std::endl;
+        //std::cout <<"Random Sampling in Map" << x_rand << "," << y_rand << std::endl;
 
         test_pt.x=x_rand;
         test_pt.y=y_rand;
@@ -107,7 +121,7 @@ void PRM::generate_random_points(double cspace_length,double cspace_width, int N
             //draw_point(random_points[z], *map_param); 
             free_space_points.emplace_back(test_pt);
             count++;
-            std::cout << "Gkiri :: Motion sample After count= " << count << std::endl; 
+            //td::cout << "Gkiri :: Motion sample After count= " << count << std::endl; 
         }
 
     }//end for loop
@@ -118,13 +132,12 @@ void PRM::global_planner(Point start,Point goal){
     //input --> std::pair<Point, std::pair<Point ,Point > > prm_graph;
     //output --> std::vector<Point> global_planner_path;
 
-    //Call astar
-    //std::cout << "previous" << prm_graph.size() << std::endl;
+    //Call astar  
     global_planner_path = globalplanner::astar(prm_graph, start, goal);
 }
 
 
-void PRM::local_planner(){    
+void PRM::local_planner(std::vector<Point> bias_points){    
     //****************************************************************************
     //**Example of creating a simple graph of a single vertex and 3 edges*********
 
@@ -137,22 +150,23 @@ void PRM::local_planner(){
     // prm_graph.push_back(graph_example_element);
     //****************************************************************************  
       
-    //Variables
-    //double max_dist = 0.31; //max distance
-    double min_dist = 0.2001;
-    //double max_dist = 0.11;
+    //Variables    
+    //double min_dist = 0.2001;    
+    //double max_dist = 0.3001;
+    double min_dist = 0.1001;    
     double max_dist = 0.3001;
     pointVec knn_points;
-    bool remove_flag;
+    bool remove_flag, collision;
     Point Pt;
     std::vector<Point> KNN_points;
     point_t pt_t;
     pointVec pt_t_points, aux_pt_t_points;
     std::pair<Point, std::vector<Point> > graph_element; // (V,E) element of prm_graph
     std::vector<Point> graph_element_edges; // edges of an element of prm_graph
+    struct arc_extract edge_line; //line creation for collision detection
 
     /*Insert bias points into free_space_points to be included into the KDTree*/
-    //free_space_points.insert(free_space_points.begin(),bias_points.begin(), bias_points(end));
+    free_space_points.insert(free_space_points.begin(), bias_points.begin(), bias_points.end());
 
     /*Construct KDTree from sample points*/
 
@@ -186,21 +200,21 @@ void PRM::local_planner(){
             }
         }        
 
-        //Convert back to Points   
+        //Convert back to Points & Check for collision  
+        edge_line.start_point = free_space_points[i]; //vertex as start point
         KNN_points.clear(); //reset vector of Point format                 
         for(point_t pt_t : knn_points){
-            Pt = point_t_to_Point(pt_t);            
-            KNN_points.push_back(Pt); 
-            //std::cout << "edges:" << Pt.x << ", " << Pt.y << std::endl;               
-        }
-        
-
-        //Construct graph for each point being the edges the knn_points
-        //Check collision for edges
-        //TBD
-        //When a collision happen, point is removed from edge
+            Pt = point_t_to_Point(pt_t);             
+            //Check for collision 
+            edge_line.end_point = Pt;
+            collision = Process_Box_line_check_obstacles(obstacle_list,edge_line);  
+            if(!collision){ // if no collision, save edge
+                KNN_points.push_back(Pt); 
+            }                          
+        }    
+       
         // if Edges size = 0, increase radius and repeat process util edge.size() != 0
-        //
+        // TBD 
 
         //Save into graph
         graph_element = std::make_pair(free_space_points[i], KNN_points);    
@@ -209,57 +223,71 @@ void PRM::local_planner(){
 }
 
 
-void PRM::dubins_planner(Path& final_path){
+Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_param dubins_param){
     //Inputs: global_planner_path, prm_graph
-    //Outputs: vector of dubin's segments --> final_path
+    //Outputs: vector of dubin's segments --> final_path  
+    double DEG2RAD = M_PI/180.0; 
+    double RAD2DEG = 180.0/M_PI;
     int node_pos = 0;
     bool repath; 
-    int N = 0;   
-    int maxIter = 50; // number of maximum iterations to repath
-
+    int N = 0;      
+    double delta = 15; //tune angle in degrees 
+    int maxIter = 360/delta - 1; // number of maximum iterations to repath
+    bool tuned_up; //flag to determine if we have to sum or substract the tune angle for this iteration
+    //For output
+    //std::vector<Pose> poses_final;
+    Path path, no_path;
     //For dubins
-    Path path;
-    struct arc_extract three_seg[3];
-    double rho=0.1;    //@Alvaro: DANGER!!! DUPLICATED VALUE IN student_interface.cpp
+    //double discretizer_size = 0.005;
+    struct arc_extract three_seg[3]; 
+    DubinsCurvesHandler dubins_handler(dubins_param.k_max, dubins_param.discretizer_size);       
+    DubinsCurve dubins_path;
     double qs[3],qm[3],qe[3]; 
-    // Point goal = global_planner_path.back();
-    // std::cout << "GOAL point:" << goal.x << ", " << goal.y << std::endl;
+    double heading_angle_sum, heading_angle_sub; //trackers of the heading angles after summing and substracting
+    
     while(!globalplanner::ifeq_point(global_planner_path[node_pos], global_planner_path.back())){ //while goal is not reached
-        repath = true; //flag for collision detected
+        repath = true; //reset flag for collision detected
+        N = 0; //reset repath counter    
+        //Set values for dubins
+        std::cout << "Node number " << node_pos << ":" << std::endl;
+        //start point
+        qs[0] = global_planner_path[node_pos].x;
+        qs[1] = global_planner_path[node_pos].y;
+        //qs[2] = M_PI/2;
+        //mid point
+        qm[0] = global_planner_path[node_pos + 1].x;
+        qm[1] = global_planner_path[node_pos + 1].y;
+        //qm[2]= -M_PI/2;
+        //std::cout << "qs,qm angle: " << qs[2] << "," << qm[2] << std::endl;
+
+        if(node_pos == 0){ //set start angle
+            qs[2] = start_theta; 
+        }
+        if(node_pos + 1 == global_planner_path.size() - 1){ //mid node is goal
+            qm[2] = goal_theta; 
+        }
+        else{ 
+            //set end point                
+            qe[0] = global_planner_path[node_pos + 2].x;
+            qe[1] = global_planner_path[node_pos + 2].y;
+            //Calculate best heading angle for the mid point
+            compute_heading_angle(qs,qm,qe);
+        }            
+        std::cout << "---> QS: (" << qs[0] << "," << qs[1] << "," << qs[2] << "), QM: ("
+                        << qm[0] << "," << qm[1] << "," << qm[2] << "), QE: ("
+                        << qe[0] << "," << qe[1] << "," << qe[2] << ")" << std::endl;
+        
+        //Save original heading angle of mid point in case of collision
+        heading_angle_sum = qm[2];
+        heading_angle_sub = qm[2];
+        //std::cout << "HA original:" << heading_angle_sum*RAD2DEG << std::endl;
         while(repath && N < maxIter){
-
-            //Set values for dubins
-            std::cout << "Node number " << node_pos << ":" << std::endl;
-            //start point
-            qs[0] = global_planner_path[node_pos].x;
-            qs[1] = global_planner_path[node_pos].y;
-            //qs[2] = M_PI/2;
-            //mid point
-            qm[0] = global_planner_path[node_pos + 1].x;
-            qm[1] = global_planner_path[node_pos + 1].y;
-            //qm[2]= -M_PI/2;
-            //std::cout << "qs,qm angle: " << qs[2] << "," << qm[2] << std::endl;
-
-            if(node_pos == 0){ //set start angle
-                qs[2] = 0; // @Alvaro: SUBSTITUTE FOR STARTING ANGLE (retrieve in find_robot)
-            }
-            if(node_pos + 1 == global_planner_path.size() - 1){ //mid node is goal
-                qm[2] = 0; //@Alvaro: SUBSTITUTE FOR ENDING ANGLE (not sure how we calculate this)
-            }
-            else{ 
-                //set end point                
-                qe[0] = global_planner_path[node_pos + 2].x;
-                qe[1] = global_planner_path[node_pos + 2].y;
-                //Calculate best heading angle for the mid point
-                compute_heading_angle(qs,qm,qe);
-            }            
-            std::cout << "---> QS: (" << qs[0] << "," << qs[1] << "," << qs[2] << "), QM: ("
-                            << qm[0] << "," << qm[1] << "," << qm[2] << "), QE: ("
-                            << qe[0] << "," << qe[1] << "," << qe[2] << ")" << std::endl;
-            
-
             //calculate dubin's segments between actual node and the following
-            dubins_wrapper_api(path, three_seg, qs, qm, rho);
+            //dubins_wrapper_api(path_segment, three_seg, qs, qm, rho);
+            dubins_path = dubins_handler.findShortestPath(qs[0],qs[1],qs[2],qm[0],qm[1],qm[2]);
+
+            //Retrieve three_seg (dubins path representation)
+            create_three_seg(three_seg, qs[0], qs[1], dubins_path);
 
             //Check for collision
             for(int i=0; i<3; i++){
@@ -271,19 +299,76 @@ void PRM::dubins_planner(Path& final_path){
             if(!repath){
                 //Push segments for drawing purposes
                 for(int i=0; i<3; i++){
-                    final_path_draw.push_back(three_seg[i]);
+                    path_final_draw.push_back(three_seg[i]);
                 }
-
-                //Push to final_path
-                // TBD  
+                //Insert new dubins path into path
+                concatenate_dubins_path(path,dubins_path, dubins_param.discretizer_size);                                                  
 
                 //Set up for next node            
                 node_pos++; //next node
                 qs[2] = qm[2]; //next start node angle is previous mid point angle 
-            }            
+            }   
+            //Collision
+            else{ 
+                //tune heading angle of qm
+                if(!tuned_up){                 
+                    heading_angle_sum += delta*DEG2RAD;   //sum delta                    
+                    qm[2] = heading_angle_sum; //set mid heading angle 
+                    tuned_up = true; //set flag for next iteration
+                    std::cout << "iteration " << N << ": New HA: " << heading_angle_sum*RAD2DEG << std::endl;
+                }
+                else{                    
+                    heading_angle_sub -= delta*DEG2RAD;   //sub delta                    
+                    qm[2] = heading_angle_sub; //set mid heading angle 
+                    tuned_up = false; //set flag for next iteration
+                    std::cout << "iteration " << N << ": New HA: " << heading_angle_sub*RAD2DEG << std::endl;
+                }
+            } 
+            //increase repathing counter
+            N++;    
+            
+        }
+        if(N == maxIter){
+            printf("It does NOT exist a non-colliding path with this roadmap\n");          
+            return no_path; //return empty path
         }
     }
 
+    //Set path_final
+    //path_final.setPoints(poses_final);
+
+    return path;
+}
+
+Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points, 
+                        struct dubins_param dubins_param){
+    //Set variables
+    Path path;
+    Point start = Point(start_pose[0], start_pose[1]);
+    Point goal = Point(goal_pose[0], goal_pose[1]);
+    float start_theta = start_pose[2];
+    float goal_theta = goal_pose[2];
+
+    //Sample generation
+    PRM::generate_random_points();   
+    
+    //Add start and end bias points    
+    bias_points.push_back(start);
+    bias_points.push_back(goal);
+    
+    //Call local planner 
+    PRM::local_planner(bias_points);
+
+    //
+
+    //Call global planner   
+    PRM::global_planner(start,goal); 
+
+    //Call dubins planner
+    path = PRM::dubins_planner(start_theta, goal_theta, dubins_param);
+
+    //return
+    return path;
 }
 
 

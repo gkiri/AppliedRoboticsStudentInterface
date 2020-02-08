@@ -75,6 +75,45 @@ std::vector<Polygon> inflate_polygons(const std::vector<Polygon>& obstacle_list,
     return inflated_obstacle_list;
 }
 
+std::vector<Polygon> inflate_walls(double map_w, double map_h, double OFFSET){
+    //variables    
+    Polygon left_wall, right_wall, upper_wall, bottom_wall;
+    std::vector<Polygon> inflated_walls;
+
+    //left wall
+    left_wall.emplace_back(0,0);
+    left_wall.emplace_back(OFFSET,0);
+    left_wall.emplace_back(OFFSET,map_h);
+    left_wall.emplace_back(0,map_h);
+
+    //bottom wall
+    bottom_wall.emplace_back(0,0);
+    bottom_wall.emplace_back(map_w,0);
+    bottom_wall.emplace_back(map_w,OFFSET);
+    bottom_wall.emplace_back(0,OFFSET);
+
+    //right wall
+    right_wall.emplace_back(map_w - OFFSET,0);
+    right_wall.emplace_back(map_w,0);
+    right_wall.emplace_back(map_w,map_h);
+    right_wall.emplace_back(map_w - OFFSET,map_h);
+
+    //Upper wall
+    upper_wall.emplace_back(0,map_h - OFFSET);
+    upper_wall.emplace_back(map_w,map_h - OFFSET);
+    upper_wall.emplace_back(map_w,map_h);
+    upper_wall.emplace_back(0,map_h);
+
+    //Push all into vector
+    inflated_walls.push_back(left_wall);
+    inflated_walls.push_back(right_wall);
+    inflated_walls.push_back(upper_wall);
+    inflated_walls.push_back(bottom_wall);
+
+    return inflated_walls;
+}
+
+
 // //////PRINTING OUT POLYGONS///////////
 // void print_polygons_out(std::vector<Polygon> obstacle_list, 
 //                         std::vector<Polygon> inflated_obstacle_list){

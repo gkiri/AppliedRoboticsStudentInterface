@@ -24,7 +24,7 @@ struct img_map_def{
 };
 
 
-int TO_CM = 100;    //Transform from m to cms
+double TO_CM = 100.0;    //Transform from m to cms
 
 // /* Safe acos function -------------------------------------*/
 // double SafeAcos (double x){
@@ -99,8 +99,6 @@ void draw_polygon(Polygon poly, img_map_def img_map_def, cv::Scalar colour = pol
     v_poly_scaled = {poly_scaled};  //fillpoly works with vectors of polygons
     fillPoly(img_map_def.img_map, v_poly_scaled, colour);
 }
-
-
 
 /* Draw an arc-------------------------------------------*/
 
