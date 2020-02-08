@@ -42,16 +42,8 @@ struct arc_extract
     Point center;
     float length;
     int LSR;
-
 };
 
-// struct line_extract @Alvaro NOT USED ANYMORE
-// {
-//     Point start_point;
-//     Point end_point;
-//     float length;
-
-// };
 
 #define EDUBOK        (0)   /* No error */
 #define EDUBCOCONFIGS (1)   /* Colocated configurations */

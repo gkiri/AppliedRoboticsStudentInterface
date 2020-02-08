@@ -24,6 +24,8 @@ add_library(student SHARED
    src/collision_detection.cpp
    src/Utils.cpp
    src/KDTree.cpp
+   src/mission_apis.cpp
+   src/DubinsCurvesHandler.cpp
 )
 
 target_link_libraries(student

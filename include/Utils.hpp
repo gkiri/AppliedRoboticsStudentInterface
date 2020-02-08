@@ -1,15 +1,28 @@
+#pragma once
+
 #include <vector>
 #include <list>
 #include "KDTree.hpp"
+#include "DubinsCurvesHandler.hpp"
 
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
+
 
 
 /*Variables*/
 struct triangle_angles{ //Angles of a triangle
     double beta_1, beta_2, beta_3;
 };
+struct arc_extract{ // dubins segment structure for collision and drawing purposes
+    Point start_point;
+    Point end_point;
+    float radius;
+    Point center;
+    float length;
+    int LSR; // Letft - Straight - Right indicator (0,1,2)
+};
+
 
 /**
  * Compute the angles within a triangle (in radians)
@@ -87,4 +100,41 @@ Point point_t_to_Point(point_t pt_t);
  * @output - return true if they are the same point, false otherwise
 */
 bool same_point(point_t pt1, point_t pt2);
+
+/**
+ * Convert a DubinsCurve into an arc_extract, suitable for collision
+ * detection and drawing
+ * 
+ * @param three_seg - Array of 3 arc_extract
+ * @param x0 - x of start point of dubins
+ * @param y0 - y of start point of dubins
+ * @param dubins_path - DubinsCurve composed by 3 DubinsArc
+ * @output - return by reference the array of 3 arc_extract which represents a DubinsCurve
+*/
+void create_three_seg(struct arc_extract three_seg[3], double x0, double y0, DubinsCurve dubins_path);
+
+/**
+ * Given a DubinsCurve concatenate its discretization into a Path structure, updating 
+ * accordingly the s counter of the Path
+ * 
+ * @param path - Path container
+ * @param dubins_path - DubinsCurve container
+ * @output - update by reference the Path with the concatenate version of both inputs
+*/
+void concatenate_dubins_path(Path& path, DubinsCurve dubins_path);
+
+
+
+/**
+ * Compute the center Point of a curve by passing the arc_extract values of it
+ * 
+ * @param start - start Point of curve
+ * @param end - end Point of curve
+ * @param radius - radius of curve
+ * @param length  - left/straigth/right indicator of curve
+ * @output Point - center Point
+*/
+Point compute_center(Point start,Point end,float radius,float length, int LSR);
+
+
 

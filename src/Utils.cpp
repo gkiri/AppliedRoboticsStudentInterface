@@ -120,3 +120,133 @@ bool same_point(point_t pt1, point_t pt2){
   float epsilon = 0.00001;
   return std::fabs(pt1[0] - pt2[0]) < epsilon && std::fabs(pt1[1] - pt2[1]) < epsilon? true:false;
 }
+
+void create_three_seg(struct arc_extract three_seg[3], double x0, double y0, DubinsCurve dubins_path){
+  for(int i=0;i<3;i++){
+    //Save length
+    three_seg[i].length = dubins_path.arcs[i].L;
+    //Save start/end point
+    if(i==0){ //first dubins segment
+      three_seg[i].start_point = Point(x0,y0);
+      three_seg[i].end_point = Point(dubins_path.arcs[i].xf, dubins_path.arcs[i].yf);
+    }
+    else{
+      // start point = end point of previous segment
+      three_seg[i].start_point = Point(dubins_path.arcs[i-1].xf, dubins_path.arcs[i-1].yf); 
+      three_seg[i].end_point = Point(dubins_path.arcs[i].xf, dubins_path.arcs[i].yf);
+    }
+    //Save LSR, radius and center
+    if(dubins_path.arcs[i].k > 0){ //left cruve
+      three_seg[i].LSR = 0;
+      three_seg[i].radius = fabs(1/dubins_path.arcs[i].k);
+      three_seg[i].center = compute_center(three_seg[i].start_point, three_seg[i].end_point,
+                              three_seg[i].radius, three_seg[i].length, three_seg[i].LSR);
+    }
+    else if(dubins_path.arcs[i].k == 0){ //straight line
+      three_seg[i].LSR = 1;
+      three_seg[i].radius = 0;
+      three_seg[i].center = Point(0,0);
+    }
+    else if(dubins_path.arcs[i].k < 0){ //right curve
+      three_seg[i].LSR = 2;
+      three_seg[i].radius = fabs(1/dubins_path.arcs[i].k);
+      three_seg[i].center = compute_center(three_seg[i].start_point, three_seg[i].end_point,
+                              three_seg[i].radius, three_seg[i].length, three_seg[i].LSR);
+    }
+    else{
+      printf("Utils.cpp: Unknown LSR\n");
+    }    
+  }
+}
+
+void concatenate_dubins_path(Path& path, DubinsCurve dubins_path){
+
+}
+
+
+Point compute_center(Point start,Point end,float radius,float length, int LSR){   
+  //Check if angle between start and end is bigger than 180 degrees (M_PI rad)
+  if((length/radius > M_PI)){ // swap start and end
+      Point tmp = start;
+      start = end;
+      end = tmp;
+  }
+
+  //https://math.stackexchange.com/questions/27535/how-to-find-center-of-an-arc-given-start-point-end-point-radius-and-arc-direc
+
+  int epsilon = 1; // Arc from start to end --> clockwise e=1 (LSR = 0), e=-1 counter-clockwise (LSR = 2)
+  
+  switch (LSR)
+  {
+  case 0: // counter-clockwise
+
+      //epsilon = 1;
+      break;
+  case 1: // Straight line --> Center = 0
+      return Point(0,0); 
+      break;
+
+  case 2: 
+      epsilon = -1; 
+      break;
+      
+  default:
+      printf("unkown LSR");
+      break;
+  }    
+
+  Point mid_point(0,0);
+  mid_point.x=(start.x+end.x)/2.0 ;
+  mid_point.y=(start.y+end.y)/2.0;
+  //std::cout << "mid: " << mid_point.x << ", " << mid_point.y << std::endl;
+
+  float distance;
+  distance=sqrt(pow((end.x-start.x),2)+pow((end.y-start.y),2));
+  if (distance <= 0){
+      return Point(0,0);
+  }
+  //std::cout << "distance: " << distance << std::endl;
+
+  /* 
+  n(u,v) =unit normal in the direction z1 to z0
+  n*(-v,u) =unit normal in the direction z0 to z1
+  
+  */
+  Point normal_point(0,0);//
+  normal_point.x=(end.x-start.x)/distance ;
+  normal_point.y=(end.y-start.y)/distance ;
+  //std::cout << "normal point module: " << normal_point.x << ", " << normal_point.y << std::endl;
+
+  Point normal_pointstar(0,0);
+  normal_pointstar.x= -normal_point.y;
+  normal_pointstar.y= normal_point.x ;
+  //std::cout << "normal point vector: " << normal_pointstar.x << ", " << normal_pointstar.y << std::endl;
+
+  /*Let Distance H from midpoint to center */
+  float h, h_round, sqrt_content;
+  sqrt_content = pow(radius,2) - pow(distance,2)/4;   
+  //h_round = std::ceil(sqrt_content * 100.0) / 100.0; //round to the 2nd decimal
+  //std::cout << "sqrt_content: " << sqrt_content << std::endl;
+  //std::cout << "h_round: " << h_round << std::endl;
+
+  if(sqrt_content < -0.0001) //residual threshold for r2-d2/4
+  {
+      //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
+      sqrt_content =0;
+  }else if(sqrt_content < 0.0 && sqrt_content > -0.0001)
+  {
+      //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
+  }
+  h=sqrt(sqrt_content);   
+  //std::cout << "h: " << h << std::endl;
+
+  //c=𝐦+𝜖 ℎ 𝐧∗ 
+  Point center;
+  center.x=mid_point.x + epsilon*h*normal_pointstar.x;
+  center.y=mid_point.y + epsilon*h*normal_pointstar.y;
+  //std::cout << "center: " << center.x << ", " << center.y << std::endl;
+
+  return center;
+    
+}
+
