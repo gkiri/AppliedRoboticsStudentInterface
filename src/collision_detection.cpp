@@ -363,7 +363,6 @@ bool  Process_Box_line_check_obstacles(std::vector<Polygon>& obstacle_list,struc
 
 
 
-
 /*High level box vs each arc of dubins check */
 bool  Highlevel_Box_dubins_check(std::vector<Polygon>& obstacle_list,struct arc_extract three_seg[3])
 {
@@ -389,8 +388,8 @@ bool  Highlevel_Box_dubins_check(std::vector<Polygon>& obstacle_list,struct arc_
                 return false;
             }
                 
-
             break;
+            
         case 1: // Straight line --> Center = 0
             Intersection=Global_Line_check(obstacle_list,three_seg[i]);
 
@@ -429,8 +428,8 @@ bool  Highlevel_Box_dubins_check(std::vector<Polygon>& obstacle_list,struct arc_
         }  
     }//forloop
 
-
 }
+
 
 void construct_line_structure(arc_extract& line_data,Point Arc_Start ,Point Arc_End){
 
