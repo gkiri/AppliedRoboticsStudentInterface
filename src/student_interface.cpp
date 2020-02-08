@@ -320,11 +320,16 @@ namespace student {
     //UT_line_circle_collision(&map_param);
 
   /*****************GkiriCollision Unit testing **********************/
-    //UT_line_arc_collision(&map_param);
+    //UT_line_arc_collision_prof(&map_param);
     //UT_Bounding_Box(obstacle_list,&map_param);
     //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
-    UT_Bounding_Box_line_check_obstacles(obstacle_list,&map_param);//boundingbox vs line
+    //UT_Bounding_Box_line_check_obstacles(obstacle_list,&map_param);//boundingbox vs line
     //UT_Bounding_Box_arc_check(obstacle_list,&map_param);
+    //UT_Polygons_arc_check(obstacle_list,&map_param);
+    //UT_Polygons_line_check(obstacle_list,&map_param);
+
+    //UT_Global_line_collision_check(obstacle_list,&map_param);
+    UT_Global_arc_collision_check(obstacle_list,&map_param);
   /*****************************************************************************/ 
 
   /*****************Alvaro dubins path Unit testing *************************/
@@ -345,10 +350,6 @@ namespace student {
     //UT_compute_triangle_angles(&map_param);
   /*****************************************************************************/
 
-    
-
-    
-    
     /* Draw test-------------------------------------------*/
     //Print an example of th drawing functions in a single image
     //draw_test(obstacle_list,x,y,theta,victim_list,map_param);
@@ -373,12 +374,15 @@ namespace student {
     //Dubins test
     #if DUBINS_TEST
 
-    q0[0]=0;//start of dubins
-    q0[1]=0;
+    // q0[0]=x;//start of dubins
+    // q0[1]=y;
+    // q0[2]=theta;
+    q0[0]=0.3;//start of dubins
+    q0[1]=0.3;
     q0[2]=0;
-    q1[0]=0.8;//end of dubins
-    q1[1]=0.3;
-    q1[2]=0;
+    q1[0]=0.95;//end of dubins
+    q1[1]=0.2;
+    q1[2]=M_PI/2;
     dubins_wrapper_api(path,three_seg,q0,q1,rho);
     /* **********************Gkiri UT_dubins_curve_test space Unit Testing*************************/
     //UT_dubins_curve_test(three_seg,&map_param);

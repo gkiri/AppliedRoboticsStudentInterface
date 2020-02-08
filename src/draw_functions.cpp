@@ -22,11 +22,7 @@ struct img_map_def{
     float scale;
     float coord_trans;
 };
-//Struct for ellipse calculations
-struct arc_param{
-    double start_angle;
-    double end_angle;
-};
+
 
 int TO_CM = 100;    //Transform from m to cms
 
@@ -104,93 +100,6 @@ void draw_polygon(Polygon poly, img_map_def img_map_def, cv::Scalar colour = pol
     fillPoly(img_map_def.img_map, v_poly_scaled, colour);
 }
 
-
-/* Calculate arc parameters for cv::ellipse function ---------------------------------*/
-
-arc_param calculate_arc_drawing_angles(arc_extract arc){   
-    
-    double RAD2DEG = 180.0/M_PI;
-    double start_angle, end_angle;
-    double alpha, beta;
-    Point s,e; //start and end point copies
-    double d_x; //diff btw start point and center in x coordinates
-    int quadrant;    
-
-    //space
-    //std::cout << "" << std::endl;
-    
-    // Calculate alpha = angle btw start and end point
-    alpha = (arc.length/arc.radius)*RAD2DEG; 
-
-    //std::cout << "ALPHA:"<< alpha << std::endl;
-
-    //Copy of start and end point
-    if(arc.start_point.x < arc.end_point.x){        
-        //End point becomes the start point due to how cv::ellipse works
-        s = arc.end_point;
-        e = arc.start_point;
-    }
-    else{
-        s = arc.start_point;
-        e = arc.end_point; 
-    }
-    d_x = abs((s.x - arc.center.x)*10000); //abs return int
-    d_x = d_x/10000; //d_x round to the 5th decimal (to increase smoothness of representation)
-    
-    
-    // std::cout << "d_x"<< d_x << std::endl;
-    // std::cout << "d_x/arc.radius"<< d_x/arc.radius << std::endl;
-    // std::cout << "Start,end POINT: ("<< s.x << "," << s.y << "), " << "("<< e.x << "," << e.y << ")" << std::endl;  
-
-    //Calculate beta = Angle btw positive x-axis and start    
-    beta = SafeAcos(d_x/arc.radius)*RAD2DEG; //angle wrt to x-axis
-    quadrant = compute_quadrant(s,arc.center);
-
-    // std::cout << "BETA_pre:"<< beta << std::endl;    
-    // std::cout << "Quadrant:"<< quadrant << std::endl;
-
-    switch (quadrant){
-    case 1:
-        beta = -beta;
-        break;
-    case 2:
-        beta = 180 + beta;
-        break;
-    case 3:
-        beta = 180 - beta;
-        break;
-    case 4:
-        // beta = beta;
-        break;
-
-    default:
-        printf("ERROR in calculate_arc");
-        break;
-    }
-    //std::cout << "BETA:"<< beta << std::endl;
-
-    //Check for sign of turn (Left or Right) with the original start and end point
-    if((arc.start_point.x > arc.end_point.x && arc.LSR == 2) || 
-            ((arc.start_point.x < arc.end_point.x && arc.LSR == 0))){
-        // Start point on the right wrt to end point and turn right OR
-        // Start point on the left wrt to end point and turn left
-        start_angle = beta;
-        end_angle = start_angle + alpha;
-    }
-    else if((arc.start_point.x > arc.end_point.x && arc.LSR == 0) || 
-            ((arc.start_point.x < arc.end_point.x && arc.LSR == 2))){
-        // Start point on the right wrt to end point and turn left OR
-        // Start point on the left wrt to end point and turn right
-        start_angle = 360 + beta;
-        end_angle = start_angle - alpha;
-    }
-
-    //std::cout << "START,END ANGLE:" << start_angle << "," << end_angle << std::endl;
-    
-    arc_param result = {start_angle, end_angle};
-
-    return result; 
-}    
 
 
 /* Draw an arc-------------------------------------------*/

@@ -1,14 +1,22 @@
+#pragma once
+
 #include <vector>
 #include <list>
 #include "KDTree.hpp"
 
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
-
+#include "dubins_curve.hpp"
 
 /*Variables*/
 struct triangle_angles{ //Angles of a triangle
     double beta_1, beta_2, beta_3;
+};
+
+//Struct for ellipse calculations
+struct arc_param{
+    double start_angle;
+    double end_angle;
 };
 
 /**
@@ -87,4 +95,6 @@ Point point_t_to_Point(point_t pt_t);
  * @output - return true if they are the same point, false otherwise
 */
 bool same_point(point_t pt1, point_t pt2);
+
+arc_param calculate_arc_drawing_angles(arc_extract arc);
 

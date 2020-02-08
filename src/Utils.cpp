@@ -120,3 +120,70 @@ bool same_point(point_t pt1, point_t pt2){
   float epsilon = 0.00001;
   return std::fabs(pt1[0] - pt2[0]) < epsilon && std::fabs(pt1[1] - pt2[1]) < epsilon? true:false;
 }
+
+
+/* Calculate arc parameters for cv::ellipse function ---------------------------------*/
+arc_param calculate_arc_drawing_angles(arc_extract arc){   
+    
+    double RAD2DEG = 180.0/M_PI;
+    double start_angle, end_angle;
+    double alpha, beta;
+    Point s,e; //start and end point copies       
+
+    //space
+    //std::cout << "" << std::endl;    
+
+    //start - end point
+    s = arc.start_point;
+    e = arc.end_point;
+
+    //Calculate beta = Angle btw positive x-axis and start    
+    alpha = atan2(s.y - arc.center.y, s.x - arc.center.x)*RAD2DEG;
+    if(alpha > 0){
+        alpha = 360 - alpha;
+    }
+    else{
+        alpha = -alpha;
+    }
+    //std::cout << "ALPHA:"<< alpha << std::endl;
+
+    //Calculate beta = Angle btw positive x-axis and start    
+    beta = atan2(e.y - arc.center.y, e.x - arc.center.x)*RAD2DEG;
+    if(beta > 0){
+        beta = 360 - beta;
+    }
+    else{
+        beta = -beta;
+    }
+    //std::cout << "BETA:"<< beta << std::endl;      
+
+    //Check for turn (Left or Right)
+    if(alpha < beta){
+        if(arc.LSR == 0){ //Left
+            start_angle = beta;
+            end_angle = alpha + 360;
+        }
+        else if(arc.LSR == 2){//Right
+            start_angle = alpha;
+            end_angle = beta;            
+        }
+    }
+    if(alpha > beta){
+        if(arc.LSR == 0){ //Left
+            // start_angle = alpha;
+            // end_angle = beta;
+            start_angle = beta;
+            end_angle = alpha;
+        }
+        else if(arc.LSR == 2){//Right
+            start_angle = alpha;
+            end_angle = beta + 360;
+        }
+    }    
+
+    //std::cout << "START,END ANGLE:" << start_angle << "," << end_angle << std::endl;
+    
+    arc_param result = {start_angle, end_angle};
+
+    return result; 
+}    
