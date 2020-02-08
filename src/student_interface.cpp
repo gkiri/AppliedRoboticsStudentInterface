@@ -225,8 +225,6 @@ namespace student {
   }
 
 
-
-
  //-------------------------------------------------------------------------
   //          UNWARP TRANSFORM
   //-------------------------------------------------------------------------
@@ -534,12 +532,8 @@ namespace student {
     
     /************************Process map unit testing******************************/
     // //Draw original polygons on top of inflated ones
-    // for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
-    //   draw_polygon(inflated_obstacle_list[i], map_param, cv::Scalar(255,0,0));
-    // }
-    // //Draw victims polygons
-    // for (size_t i = 0; i<victim_list.size(); i++){
-    //   draw_polygon(victim_list[i].second, map_param, cv::Scalar(255,0,0));
+    // for (size_t i = 0; i<obstacle_list.size(); i++){
+    //   draw_polygon(obstacle_list[i], map_param, cv::Scalar(255,0,0));
     // }
 
     // for (size_t i = 0; i<victim_list.size(); i++){
@@ -552,27 +546,37 @@ namespace student {
     //UT_line_circle_collision(&map_param);
     /*****************************************************************************/ 
 
+
     /*****************GkiriCollision Unit testing ********************************/
     //UT_line_arc_collision(&map_param);
     //UT_Bounding_Box(obstacle_list,&map_param);
     //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
     //UT_Bounding_Box_line_check_obstacles(obstacle_list,&map_param);//boundingbox vs line
     //UT_Bounding_Box_arc_check(obstacle_list,&map_param);
-    /*****************************************************************************/    
+    //UT_Polygons_arc_check(obstacle_list,&map_param);
+    //UT_Polygons_line_check(obstacle_list,&map_param);
+
+    //UT_Global_line_collision_check(obstacle_list,&map_param);
+    UT_Global_arc_collision_check(obstacle_list,&map_param);
+    /*****************************************************************************/ 
+
+    /*****************Alvaro dubins path Unit testing *************************/
+    //UT_dubins_path(inflated_obstacle_list, &map_param);    
 
     /*****************Alvaro PRM local planner Unit testing **********************/
     //UT_local_planner(inflated_obstacle_list, &map_param);
     //UT_KDTree(&map_param);
     /*****************************************************************************/
 
-    /*****************Alvaro PRM global planner Unit testing **********************/
+    /*****************Alvaro PRM global planner Unit testing *************************/
     //UT_global_planner(inflated_obstacle_list, &map_param);    
     /*****************************************************************************/
- 
+
     /*****************Alvaro dubins path Unit testing *****************************/
     //UT_dubins_path(inflated_obstacle_list, &map_param);  
     //UT_compute_triangle_angles(&map_param);
     /*****************************************************************************/
+
     #endif
 
 

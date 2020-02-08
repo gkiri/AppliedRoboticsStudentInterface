@@ -7,7 +7,7 @@
 
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
-
+#include "dubins_curve.hpp"
 
 
 /*Variables*/
@@ -23,6 +23,12 @@ struct arc_extract{ // dubins segment structure for collision and drawing purpos
     int LSR; // Letft - Straight - Right indicator (0,1,2)
 };
 
+
+//Struct for ellipse calculations
+struct arc_param{
+    double start_angle;
+    double end_angle;
+};
 
 /**
  * Compute the angles within a triangle (in radians)
@@ -137,5 +143,7 @@ void concatenate_dubins_path(Path& path, DubinsCurve dubins_path, double discrit
 */
 Point compute_center(Point start,Point end,float radius,float length, int LSR);
 
+
+arc_param calculate_arc_drawing_angles(arc_extract arc);
 
 
