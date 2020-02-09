@@ -42,7 +42,7 @@ int get_line_circle_intersection(Point linestart, Point lineend,Point center, do
     float ex = t*dxl + linestart.x, ey = t*dyl + linestart.y; // Coordinates of e on line and closest to circle center
     float lec = sqrtf((ex-center.x)*(ex-center.x) + (ey-center.y)*(ey-center.y)); // Distance e to circle center
    
-    std::cout <<"Gkiri:get_line_circle_intersection  lec " << lec <<"RHO " << RHO  << "arc radius " << radius << std::endl;
+    //std::cout <<"Gkiri:get_line_circle_intersection  lec " << lec <<"RHO " << RHO  << "arc radius " << radius << std::endl;
 
     if (lec < RHO) { // Intersection
         float dt = sqrtf(RHO*RHO - lec*lec); // Distance to to circle intersection point

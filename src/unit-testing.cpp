@@ -575,7 +575,7 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
         Construct_Bounding_Box(input , output);
         draw_polygon(output, *map_param);
         for (size_t j = 0; j<output.size()-1; j++){ //4corners of each box
-           std::cout <<"Gkiri:BOX start_point.x= " << output[j].x << "start_point.y= " << output[j].y<< "end_point.y= " << output[j+1].x << "end_point.y= " << output[j+1].y << std::endl; 
+           //std::cout <<"Gkiri:BOX start_point.x= " << output[j].x << "start_point.y= " << output[j].y<< "end_point.y= " << output[j+1].x << "end_point.y= " << output[j+1].y << std::endl; 
         }
         output.clear();//clear pushback of output vector ref
   }
@@ -585,7 +585,7 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
         for (size_t j = 0; j<obstacle_list[i].size()-1; j++){ //4corners of each box
             construct_line_structure(line_data,obstacle_list[i][j],obstacle_list[i][j+1]);
             draw_line(line_data, *map_param, cv::Scalar(0,255,0)); 
-            std::cout <<"Gkiri:Polygon start_point.x= " << obstacle_list[i][j].x << "start_point.y= " << obstacle_list[i][j].y<< "end_point.y= " << obstacle_list[i][j+1].x << "end_point.y= " << obstacle_list[i][j+1].y << std::endl; 
+            //std::cout <<"Gkiri:Polygon start_point.x= " << obstacle_list[i][j].x << "start_point.y= " << obstacle_list[i][j].y<< "end_point.y= " << obstacle_list[i][j+1].x << "end_point.y= " << obstacle_list[i][j+1].y << std::endl; 
         }
     }
       
