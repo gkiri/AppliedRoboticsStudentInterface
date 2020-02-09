@@ -1111,6 +1111,35 @@ void UT_line_arc_collision(img_map_def *map_param){
 
 }
 
+
+//victims tes
+void UT_draw_victims(const std::vector<std::pair<int,Polygon>>& victim_list,img_map_def *map_param){
+
+  Polygon input;
+  Polygon output;
+  Point centroid;
+  for (size_t i = 0; i<victim_list.size(); i++){
+
+        input=victim_list[i].second;
+        draw_polygon(input, *map_param);
+        if(victim_list[i].first==1)
+        {
+          centroid=compute2DPolygonCentroid(input);
+          draw_point(centroid, *map_param);
+        }
+
+        if(victim_list[i].first==5){
+          centroid=compute2DPolygonCentroid(input);
+          draw_point(centroid, *map_param,cv::Scalar(255,0,0));//5 on blue
+
+        }
+       
+
+  }
+
+}
+
+
 void UT_Bounding_Box(std::vector<Polygon> obstacle_list,img_map_def *map_param){
 
   Polygon input;
