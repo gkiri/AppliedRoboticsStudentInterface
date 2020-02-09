@@ -4,6 +4,8 @@
 #define RAD2DEG 180.0/M_PI
 #define COLLISION_DEBUG 1
 
+#define RHO 0.1
+
 //  Determines the intersection point of the line defined by points A and B with the
 //  line defined by points C and D.
 //
@@ -29,48 +31,60 @@ bool linelineIntersection(Point A,Point B,Point C,Point D,Point *X)
     return intersection;
 }
 
-// radius of circle // first parameter of line ax+by+c // second parameter of line ax+by+c
-// third parameter of line ax+by+c
-int linecircleIntersection(double r, double a , double b, double c ,std::vector<Point>& X)
+//COnsider vertical straight lines as special case and handle
+int get_line_circle_intersection(Point linestart, Point lineend,Point center, double radius,Point& firstIntersection,Point& secondIntersection)
 {
-    Point Temp;
-    double x0 = -a*c/(a*a+b*b), y0 = -b*c/(a*a+b*b);
-    if (c*c > r*r*(a*a+b*b)+EPS){
-        puts ("no points");
-        return 0;//no intersection
-    }
-    else if (abs (c*c - r*r*(a*a+b*b)) < EPS) {
-          puts ("1 point");
-          //cout << x0 << ' ' << y0 << '\n';
-          return 1;//Tangent 
-    }
-    else {
-      double d = r*r - c*c/(a*a+b*b);
-      double mult = sqrt (d / (a*a+b*b));
-      double ax, ay, bx, by;
-      ax = x0 + b * mult;
-      bx = x0 - b * mult;
-      ay = y0 - a * mult;
-      by = y0 + a * mult;
+    float dx = lineend.x-linestart.x, dy = lineend.y-linestart.y;
+    float l = sqrtf(dx*dx+dy*dy); // Length of line
+    float dxl = dx/l, dyl = dy/l;
+    float t = dxl*(center.x-linestart.x) + dyl*(center.y-linestart.y); // Projection of circle center on line
 
-      Temp.x=ax;
-      Temp.y=ay;
-      X.push_back(Temp);
+    float ex = t*dxl + linestart.x, ey = t*dyl + linestart.y; // Coordinates of e on line and closest to circle center
+    float lec = sqrtf((ex-center.x)*(ex-center.x) + (ey-center.y)*(ey-center.y)); // Distance e to circle center
+   
+    //std::cout <<"Gkiri:get_line_circle_intersection  lec " << lec <<"RHO " << RHO  << "arc radius " << radius << std::endl;
 
-      Temp.x=bx;
-      Temp.y=by;
-      X.push_back(Temp);
-
-      puts ("2 points");
-      //cout << ax << ' ' << ay << '\n' << bx << ' ' << by << '\n';
-      return 2;// collision and intersection point
+    if (lec < RHO) { // Intersection
+        float dt = sqrtf(RHO*RHO - lec*lec); // Distance to to circle intersection point
+        int nbi = 0;
+        if (t-dt >=0 && t-dt <= l) {
+            
+            firstIntersection.x = (t-dt) * dxl + linestart.x;
+            firstIntersection.y = (t-dt) * dyl + linestart.y;
+            nbi = 1;
+        }
+        if (t+dt >=0 && t+dt <= l) {
+            if (nbi == 0) {
+                
+                firstIntersection.x = (t+dt) * dxl + linestart.x;
+                firstIntersection.y = (t+dt) * dyl + linestart.y;
+                nbi = 1;
+            }
+            else {
+                    secondIntersection.x = (t+dt) * dxl + linestart.x;
+                    secondIntersection.y = (t+dt) * dyl + linestart.y;
+                nbi = 2;
+            }
+        }
+        return nbi;
     }
+    else if (lec == RHO && t >=0 && t <= l) { // Tangent
+            firstIntersection.x = ex;
+            firstIntersection.y = ex;
+        return 1;
+    }
+    
+    return 0;
+
 
 }
 
 // Find the points of intersection. 
 int FindLineCircleIntersections(Point point1, Point point2,Point center, double radius,Point& intersection1,Point& intersection2)
 {
+
+    std::cout <<"Gkiri:FindLineCircleIntersections line start.x= " << point1.x <<"linestart.y " << point1.y <<"lineend.x " <<point2.x <<"lineend.y " <<point2.y  << std::endl;
+
     double dx, dy, A, B, C, det, t;
 
     dx = point2.x - point1.x;
@@ -80,15 +94,17 @@ int FindLineCircleIntersections(Point point1, Point point2,Point center, double 
     B = 2 * (dx * (point1.x - center.x) + dy * (point1.y - center.y));
     C = (point1.x- center.x) * (point1.x - center.x) +(point1.y - center.y) * (point1.y - center.y) - radius * radius;
 
+
     det = B * B - 4 * A * C;
     std::cout <<"Gkiri:FindLineCircleIntersections DET= " << det << "line distance"<< sqrt(A)<< "Radius= "<< radius << "centerX= " <<center.x << "centerY= " << center.y<< std::endl;
-    // if(radius<0.05) //Corner case for small circles
-    // {
-    //     //Corner case for small circles-Ignoring small circles
-    //     intersection1 = Point(-1, -1);
-    //     intersection2 = Point(-1, -1);
-    //     return 0;
-    // }
+    if(sqrt(A)<0.03) //Corner case for small lines
+    {
+        //Corner case for small lines-Ignoring small lines
+        intersection1 = Point(-1, -1);
+        intersection2 = Point(-1, -1);
+        std::cout <<"Gkiri:FindLineCircleIntersections  NEGLIGIBLE LINE"  << std::endl;
+        return 0;
+    }
 
     if ((A <= 0.0000001) || (det < 0))
     {
@@ -127,7 +143,9 @@ bool lineArcIntersection_prof(struct arc_extract line,struct arc_extract arc,std
     struct arc_param test_param;
 
     /*Find Circle new method */
-    ret_val=FindLineCircleIntersections(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
+    ret_val=get_line_circle_intersection(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
+
+    //ret_val=FindLineCircleIntersections(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
     //std::cout <<"Gkiri:FindLineCircle**  intersect1.x " << intersection1.x <<" intersect1.y " << intersection1.y << std::endl;
     //std::cout <<"Gkiri:FindLineCircle** intersect2.x " << intersection2.x <<" intersect2.y " << intersection2.y << std::endl;
     intersect_points.push_back(intersection1);
@@ -504,14 +522,19 @@ bool narrow_polygon_obstacles_arc_check(std::vector<Polygon>& obstacle_list,stru
             if(j==obstacle_list[i].size()-1) {
                 construct_line_structure(line_data,obstacle_list[i][j],obstacle_list[i][0]);
                 intersection=lineArcIntersection_prof(line_data,arc,intersect_points);
-                if(intersection)
+                if(intersection){
+                    std::cout <<"Gkiri:NARROW intersection at start_point.x= " << i <<"---"<< line_data.start_point.x << "start_point.y= " << line_data.start_point.y <<"end_point.x= " << line_data.end_point.x  << " end_point.y = " << line_data.end_point.y << std::endl; 
                     return true;
+                }
+                   
             }
             else {
                 construct_line_structure(line_data,obstacle_list[i][j],obstacle_list[i][j+1]);
                 intersection=lineArcIntersection_prof(line_data,arc ,intersect_points);
-                if(intersection)
+                if(intersection){
+                    std::cout <<"Gkiri:NARROW intersection at start_point.x= " << i <<"---"<< line_data.start_point.x << "start_point.y= " << line_data.start_point.y <<"end_point.x= " << line_data.end_point.x  << " end_point.y = " << line_data.end_point.y << std::endl; 
                     return true;
+                }
             }
             
         }//Inner forloop

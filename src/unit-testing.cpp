@@ -532,10 +532,21 @@ void UT_compute_triangle_angles(img_map_def *map_param){
       << (int)(t_angles.beta_2*RAD2DEG) << "," << (int)(t_angles.beta_3*RAD2DEG) << std::endl;  
 }
 
+//Dubins arc collision test
 void UT_dubins_collision_test(struct arc_extract three_seg[3],
           std::vector<Polygon> obstacle_list, img_map_def *map_param){
   bool collision;
-  //collision detection
+  arc_extract line_data;
+
+  printf("Noof obstacles = %d !!\n",obstacle_list.size());
+  
+  #if 0
+  std::vector<Polygon> obstacle_list2;
+  obstacle_list2.push_back(obstacle_list[5]);//0 obstace has out of map and failing arc check
+  obstacle_list=obstacle_list2;
+  #endif
+
+  // //collision detection
   collision = Highlevel_Box_dubins_check(obstacle_list, three_seg);
   if(collision){
     printf("COLLISION!!\n");
@@ -543,15 +554,44 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
   else{
     printf("NO COLLISION!!\n");
   }
-  //Drawing
-  //poly
-  for (size_t i = 0; i<obstacle_list.size(); i++){
-    draw_polygon(obstacle_list[i], *map_param);
-  }
-  //dubins
+  // //Drawing
+  // //poly
+  // for (size_t i = 0; i<obstacle_list.size(); i++){
+  //   draw_polygon(obstacle_list[i], *map_param);
+  // }
+  // //dubins
   for(int i=0;i<3;i++){
     draw_dubins_segment(three_seg[i], *map_param);
+    std::cout <<"Gkiri:Dubins  start_point.x= " << three_seg[i].start_point.x << "start_point.y= " << three_seg[i].start_point.y<< "end_point.y= " << three_seg[i].end_point.x << "end_point.y= " << three_seg[i].end_point.y << std::endl; 
+
   }  
+
+
+  Polygon input;
+  Polygon output;
+
+  for (size_t i = 0; i<obstacle_list.size(); i++){
+
+        input=obstacle_list[i];
+        Construct_Bounding_Box(input , output);
+        draw_polygon(output, *map_param);
+        for (size_t j = 0; j<output.size()-1; j++){ //4corners of each box
+           //std::cout <<"Gkiri:BOX start_point.x= " << output[j].x << "start_point.y= " << output[j].y<< "end_point.y= " << output[j+1].x << "end_point.y= " << output[j+1].y << std::endl; 
+        }
+        output.clear();//clear pushback of output vector ref
+  }
+  
+
+  for (size_t i = 0; i<obstacle_list.size(); i++){//no of boxes 
+        for (size_t j = 0; j<obstacle_list[i].size()-1; j++){ //4corners of each box
+            construct_line_structure(line_data,obstacle_list[i][j],obstacle_list[i][j+1]);
+            draw_line(line_data, *map_param, cv::Scalar(0,255,0)); 
+            //std::cout <<"Gkiri:Polygon start_point.x= " << obstacle_list[i][j].x << "start_point.y= " << obstacle_list[i][j].y<< "end_point.y= " << obstacle_list[i][j+1].x << "end_point.y= " << obstacle_list[i][j+1].y << std::endl; 
+        }
+    }
+      
+
+
 }
 
 void UT_dubins_curve_test(struct arc_extract *three_seg,img_map_def *map_param)
@@ -781,6 +821,7 @@ void UT_line_line_collision(img_map_def *map_param){
 }
 
 //Test Case-2
+#if 0
 void UT_line_circle_collision(img_map_def *map_param){
 
   Point X1,X2;
@@ -848,6 +889,8 @@ void UT_line_circle_collision(img_map_def *map_param){
 
 }
 
+#endif
+
 void UT_line_arc_collision_prof(img_map_def *map_param){
 
   Point Line_Start, Line_End, Arc_Start, Arc_End,center;
@@ -859,6 +902,7 @@ void UT_line_arc_collision_prof(img_map_def *map_param){
   double length_big = 0.235362;
   std::vector<Point> intersect_points;
 
+  Point firstIntersection, secondIntersection;
 
   #if 0 //origin diagonal
   Line_Start.x=0;
@@ -867,18 +911,37 @@ void UT_line_arc_collision_prof(img_map_def *map_param){
   Line_End.y=0.3578310535;//0.75;
   #endif
 
-  #if 1 //origin diagonal
+  #if 0 //origin diagonal
   Line_Start.x=0.152;
   Line_Start.y=0.182;
   Line_End.x=0.4152605;//1.295;
   Line_End.y=0.20578310535;//0.75;
   #endif
-  #if 1 //small arc //Right
+
+  #if 1 //origin diagonal
+  Line_Start.x=0.403;
+  Line_Start.y=0.041;
+  Line_End.x=0.403;//1.295;
+  Line_End.y=0.9;//0.367;
+  #endif
+
+
+
+
+  #if 0 //small arc //Right
   center= Point(0.3, 0.15);
   Arc_End = Point (0.3, 0.1);
   Arc_Start = Point (0.35, 0.15);
   length = length_big;
   r=rad;
+  #endif
+
+
+  #if 1 //dubins spl
+  center= Point(0.5, 0.75);
+  Arc_End = Point (0.7, 0.75);
+  Arc_Start = Point (0.5, 0.55);
+  r=0.1;
   #endif
 
   #if 0 //Big circle
@@ -918,13 +981,18 @@ void UT_line_arc_collision_prof(img_map_def *map_param){
   arc_extract curve;
   curve.start_point = Arc_Start;
   curve.end_point = Arc_End;
-  curve.LSR = 0;//R= clockwise from start L= anticlockwise from start
+  curve.LSR = 2;//R= clockwise from start L= anticlockwise from start
   curve.center=center;
   curve.radius=r;
   curve.length=length;
   draw_arc(curve, *map_param);
 
-  bool intersect=lineArcIntersection_prof(dt,curve,intersect_points);
+  //bool intersect=lineArcIntersection_prof(dt,curve,intersect_points);
+  #if 1
+  bool intersect=get_line_circle_intersection( dt.start_point, dt.end_point ,curve.center,curve.radius,firstIntersection, secondIntersection);
+  intersect_points.push_back(firstIntersection);
+  intersect_points.push_back(secondIntersection);
+  #endif
 
   if(intersect){
     std::cout <<"Gkiri:UT_line_arc_collision line-Arc INTERSECTION  " << std::endl;
@@ -938,7 +1006,6 @@ void UT_line_arc_collision_prof(img_map_def *map_param){
     std::cout <<"Gkiri:UT_line_arc_collision line-Arc NO INTERSECTION  " << std::endl;
   }
   
-
 
 }
 
