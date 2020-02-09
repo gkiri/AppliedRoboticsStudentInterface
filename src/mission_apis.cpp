@@ -69,24 +69,55 @@ void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot
     } 
 }
 
-Path mission_0(double start_pose[3], double gate_pose[3]){
+mission_output_0 mission_0(dubins_param dubins_param, double start_pose[3], double gate_pose[3]){
 
+    DubinsCurvesHandler dubins_handler(dubins_param.k_max, dubins_param.discretizer_size);
+    Path path;
+    double three_seg[3];
+    struct mission_output_0 mission_0;
+
+    DubinsCurve dubins_path = dubins_handler.findShortestPath(start_pose[0],start_pose[1],start_pose[2],
+                                                gate_pose[0], gate_pose[1], gate_pose[2]);
+
+    for(int j = 0; j < dubins_path.discretized_curve.size(); j++){
+        path.points.emplace_back(dubins_path.discretized_curve[j].s, 
+              dubins_path.discretized_curve[j].xf, dubins_path.discretized_curve[j].yf, 
+              dubins_path.discretized_curve[j].thf, dubins_path.discretized_curve[j].k);
+    }   
+
+    mission_0.path = path;
+    mission_0.dubins_path = dubins_path;
+
+    return mission_0;
 }
 
 
-Path mission_1(double start_pose[3], double gate_pose[3], 
-    std::vector<Polygon> inflated_obstacle_list){
+mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
+    double gate_pose[3], std::vector<Point> bias_points){
+    
+    Path path;
+    struct mission_output_12 mission_12;
 
+    //create PRM instance
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples);
+    //call prm planner
+    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param);
+    
+    //Retrieve PRM variables for drawing purposes
+    std::vector<Point> free_space_points = PRM_obj.get_free_space_points();
+    std::vector<std::pair<Point, std::vector<Point> >> prm_graph = PRM_obj.get_prm_graph();
+    std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
+
+    mission_12.path = path;
+    mission_12.free_space_points = free_space_points;
+    mission_12.prm_graph = prm_graph;
+    mission_12.global_planner_path = global_planner_path;
+    mission_12.path_final_draw = PRM_obj.path_final_draw;
+
+    return mission_12; 
 }
 
-
-Path mission_1_5(double start_pose[3], double gate_pose[3], std::vector<Point> bias_points, 
-    std::vector<Polygon> inflated_obstacle_list){
-
-}
-
-
-Path mission_2(double start_pose[3], double gate_pose[3], 
-    std::vector<std::pair<int,Polygon>> victim_list, std::vector<Polygon> inflated_obstacle_list){
+mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
+    double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list){
 
 }
