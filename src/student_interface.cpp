@@ -36,7 +36,7 @@
 //#include "DubinsCurvesHandler.hpp"
 
 //Unit test and printouts variables
-#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
 #define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
@@ -292,7 +292,7 @@ namespace student {
     double discretizer_size = 0.005; 
 
     //mission id
-    int mission_id = 1;
+    int mission_id = 6;    
     /*****************************************************/
 
 
@@ -321,6 +321,7 @@ namespace student {
     double start_pose[3], gate_pose[3];
     struct dubins_param dubins_param;
     std::vector<Point> bias_points;
+    Point victim_centroid;
     
     //set dubins param
     dubins_param.k_max = k_max;
@@ -341,14 +342,20 @@ namespace student {
     //end point = gate_pose    
     get_gate_pose(gate, map_h, map_w, robot_length, gate_pose);
 
-    //set bias points
-    //TBD
-
     //output for missions
     struct mission_output_0 miss_output_0;
     struct mission_output_12 miss_output_12;
     struct arc_extract three_seg[3];//segment extract
 
+    /*--------small tests----------------*/
+    //set bias points with victims
+    for(std::pair<int,Polygon> victim : victim_list){
+      victim_centroid = get_polygon_centroid(victim.second);
+      bias_points.push_back(victim_centroid);
+      //draw
+      draw_victim(victim, map_param, true);
+    }
+    
 
     /*--------mission selection ------------*/
     switch (mission_id){
@@ -379,7 +386,8 @@ namespace student {
 
     case 1:      
 
-      miss_output_12 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, bias_points);
+      miss_output_12 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
+        bias_points);
       path = miss_output_12.path;
       if(path.empty()){
         printf("Empty path\n");
@@ -588,10 +596,15 @@ namespace student {
   
     //double start_pose[3], goal_pose[3];   
 
+    // //start point
+    // start_pose[0] = x;
+    // start_pose[1] = y;
+    // start_pose[2] = theta;
+
     //start point
-    start_pose[0] = x;
-    start_pose[1] = y;
-    start_pose[2] = theta;
+    start_pose[0] = 1.4;
+    start_pose[1] = 0.4;
+    start_pose[2] = 0;
     
     //end point
     // goal_pose[0] = gate_pose[0];
@@ -599,9 +612,9 @@ namespace student {
     // goal_pose[2] = gate_pose[2];
 
     //test
-    gate_pose[0] = 0.5;
-    gate_pose[1] = 0.85; 
-    gate_pose[2] = 0;
+    gate_pose[0] = 1.2;
+    gate_pose[1] = 0.6; 
+    gate_pose[2] = M_PI;
 
     //establish Dubins curve generator
 

@@ -205,31 +205,34 @@ void draw_victim(std::pair<int,Polygon> victim, img_map_def img_map_def,
                         bool show_contour = false){
     
     //char victim_number = victim.first;
-    std::string victim_number = std::to_string(victim.first + 1); //start at 0
+    std::string victim_number = std::to_string(victim.first); //start at 0
     Point rel_number_label = Point(0.01,0); //Relative label w.r.t victim centroid
     cv::Point abs_number_label_scaled;  //absolute position of label scaled.
     Point centroid;
-    float centroid_x, centroid_y;
-    centroid_x = 0;
-    centroid_y = 0;    
+    //float centroid_x, centroid_y;
+    //centroid_x = 0;
+    //centroid_y = 0;    
     Polygon victim_poly = victim.second;
 
     //std::cout << "victim number: " << victim.first << std::endl;
 
-    //Calculate centroid  
-    float n_points = victim_poly.size();
-    for (int i=0;i<n_points;i++){
-      //std::cout << "Centroid value: " << centroid_x << ", " << centroid_y << std::endl;
-      centroid_x += victim_poly[i].x;
-      centroid_y += victim_poly[i].y;
-      //std::cout << "Centroid sum: " << centroid_x << ", " << centroid_y << std::endl;   
-    }
-    centroid = Point(centroid_x/n_points, centroid_y/n_points);
-    //std::cout << "Centroid: " << centroid_x/n_points << ", " << centroid_y/n_points << std::endl;
+    // //Calculate centroid  
+    // float n_points = victim_poly.size();
+    // for (int i=0;i<n_points;i++){
+    //   //std::cout << "Centroid value: " << centroid_x << ", " << centroid_y << std::endl;
+    //   centroid_x += victim_poly[i].x;
+    //   centroid_y += victim_poly[i].y;
+    //   //std::cout << "Centroid sum: " << centroid_x << ", " << centroid_y << std::endl;   
+    // }
+    // centroid = Point(centroid_x/n_points, centroid_y/n_points);
+    // //std::cout << "Centroid: " << centroid_x/n_points << ", " << centroid_y/n_points << std::endl;
+
+    //Calculate centroid 
+    centroid = get_polygon_centroid(victim_poly);
 
     if(show_contour){
-        draw_polygon(victim_poly, img_map_def, victim_colour);
-        draw_point(centroid, img_map_def, cv::Scalar(0,0,0));
+        draw_polygon(victim_poly, img_map_def, path_colour);
+        draw_point(centroid, img_map_def, victim_colour);
     }
     else{        
         draw_point(centroid, img_map_def, victim_colour);

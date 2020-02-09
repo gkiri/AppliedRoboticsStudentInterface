@@ -560,12 +560,7 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
   //   draw_polygon(obstacle_list[i], *map_param);
   // }
   // //dubins
-  for(int i=0;i<3;i++){
-    draw_dubins_segment(three_seg[i], *map_param);
-    std::cout <<"Gkiri:Dubins  start_point.x= " << three_seg[i].start_point.x << "start_point.y= " << three_seg[i].start_point.y<< "end_point.y= " << three_seg[i].end_point.x << "end_point.y= " << three_seg[i].end_point.y << std::endl; 
-
-  }  
-
+ 
 
   Polygon input;
   Polygon output;
@@ -589,6 +584,14 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
             //std::cout <<"Gkiri:Polygon start_point.x= " << obstacle_list[i][j].x << "start_point.y= " << obstacle_list[i][j].y<< "end_point.y= " << obstacle_list[i][j+1].x << "end_point.y= " << obstacle_list[i][j+1].y << std::endl; 
         }
     }
+
+  //dubins
+  for(int i=0;i<3;i++){
+    draw_dubins_segment(three_seg[i], *map_param);
+    std::cout <<"Gkiri:Dubins  start_point.x= " << three_seg[i].start_point.x << "start_point.y= " << three_seg[i].start_point.y<< "end_point.y= " << three_seg[i].end_point.x << "end_point.y= " << three_seg[i].end_point.y << std::endl; 
+    std::cout << "LSR:" << three_seg[i].LSR << ", radius:" << three_seg[i].radius << ", center:" << three_seg[i].center.x << "," << three_seg[i].center.y << std::endl;
+  }  
+
       
 
 

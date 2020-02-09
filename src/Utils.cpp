@@ -241,14 +241,21 @@ Point compute_center(Point start,Point end,float radius,float length, int LSR){
   //std::cout << "sqrt_content: " << sqrt_content << std::endl;
   //std::cout << "h_round: " << h_round << std::endl;
 
-  if(sqrt_content < -0.0001) //residual threshold for r2-d2/4
+  // if(sqrt_content < -0.0001) //residual threshold for r2-d2/4
+  // {
+  //     //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
+  //     sqrt_content =0;
+  // }else if(sqrt_content < 0.0 && sqrt_content > -0.0001)
+  // {
+  //     //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
+  // }
+
+  if(sqrt_content > -0.0001 && sqrt_content < 0.0)
   {
-      //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
-      sqrt_content =0;
-  }else if(sqrt_content < 0.0 && sqrt_content > -0.0001)
-  {
-      //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
-  }
+    sqrt_content =0;
+    //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
+  } 
+
   h=sqrt(sqrt_content);   
   //std::cout << "h: " << h << std::endl;
 
@@ -328,3 +335,22 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
 
     return result; 
 }    
+
+Point get_polygon_centroid(Polygon poly){
+  //Variables
+  double centroid_x, centroid_y, n_points;
+  //Init values
+  centroid_x = 0;
+  centroid_y = 0;
+  n_points = poly.size();
+
+  for (int i=0;i<n_points;i++){    
+    centroid_x += poly[i].x;
+    centroid_y += poly[i].y;
+    //std::cout << "Centroid sum: " << centroid_x << ", " << centroid_y << std::endl;   
+  }
+  Point centroid = Point(centroid_x/n_points, centroid_y/n_points);
+  //std::cout << "Centroid: " << centroid_x/n_points << ", " << centroid_y/n_points << std::endl;
+
+  return centroid;
+}

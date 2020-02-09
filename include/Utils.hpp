@@ -150,6 +150,22 @@ void concatenate_dubins_path(Path& path, DubinsCurve dubins_path, double discrit
 Point compute_center(Point start,Point end,float radius,float length, int LSR);
 
 
+/**
+ * Compute start and end angles corresponding to an arc (taking the center as the origin
+ * , angles are measured from the positive x-axis following clockwise direction)
+ * 
+  * @param arc  - arc_extract structure which includes all parameters to define an arc
+ * @output arc_param - arc_param strcuture which includes start and end angle.
+*/
 arc_param calculate_arc_drawing_angles(arc_extract arc);
+
+
+/**
+ * Compute the centroid of any polygon
+ * 
+ * @param poly  - Given polygon with structure Polygon
+ * @output Point - centroid of polygon
+*/
+Point get_polygon_centroid(Polygon poly);
 
 
