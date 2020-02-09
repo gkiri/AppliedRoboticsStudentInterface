@@ -27,9 +27,11 @@
 
 #include <collision_detection.hpp>
 
+#include "process_map.cpp"
+
 #include "unit-testing.cpp"
 
-#include "process_map.cpp"
+
 
 #include "mission_apis.hpp"
 
@@ -38,10 +40,10 @@
 //Unit test and printouts variables
 #define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
-#define DUBINS_TEST 1
+#define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
 #define DRAW_GATE_TEST 0
-#define UNIT_TEST 0
+#define UNIT_TEST 1
 
 namespace student {
 
@@ -235,6 +237,9 @@ namespace student {
   bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
 
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
+
+    const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
+    //const std::string& template_folder="../imgs/template/";
     // Convert color space from BGR to HSV
     cv::Mat hsv_img;
     cv::cvtColor(img_in, hsv_img, cv::COLOR_BGR2HSV);
@@ -243,8 +248,8 @@ namespace student {
     if(!res1) std::cout << "processObstacles return false" << std::endl;
     const bool res2 = processGate(hsv_img, scale, gate);
     if(!res2) std::cout << "processGate return false" << std::endl;
-    const bool res3 = processVictims(hsv_img, scale, victim_list);
-    //const bool res3 = processVictims_student(img_in,hsv_img, scale, victim_list,config_folder);
+    //const bool res3 = processVictims(hsv_img, scale, victim_list);
+    const bool res3 = processVictims_student(img_in,hsv_img, scale, victim_list,template_folder);
     if(!res3) std::cout << "processVictims return false" << std::endl;
 
 
@@ -451,8 +456,8 @@ namespace student {
     // goal_pose[2] = gate_pose[2];
 
     //test
-    goal_pose[0] = 0.6;
-    goal_pose[1] = 0.8;
+    goal_pose[0] = 0.3;
+    goal_pose[1] = 0.5;
     goal_pose[2] = 0;
 
     //establish Dubins curve generator
@@ -495,6 +500,9 @@ namespace student {
     /************************Draw test******************************************/
     //Print an example of th drawing functions in a single image
     //draw_test(obstacle_list,x,y,theta,victim_list,map_param);
+    
+    UT_draw_victims(victim_list,&map_param);
+
     /*****************************************************************************/ 
 
     /*****************Alvaro PRM ellipse and draw Unit testing ******************/
@@ -533,7 +541,7 @@ namespace student {
 
 
     /*****************GkiriCollision Unit testing ********************************/
-    //UT_line_arc_collision(&map_param);
+    UT_line_arc_collision_prof(&map_param);
     //UT_Bounding_Box(obstacle_list,&map_param);
     //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
     //UT_Bounding_Box_line_check_obstacles(obstacle_list,&map_param);//boundingbox vs line
@@ -542,7 +550,7 @@ namespace student {
     //UT_Polygons_line_check(obstacle_list,&map_param);
 
     //UT_Global_line_collision_check(obstacle_list,&map_param);
-    UT_Global_arc_collision_check(obstacle_list,&map_param);
+    //UT_Global_arc_collision_check(obstacle_list,&map_param);
     /*****************************************************************************/ 
 
     /*****************Alvaro dubins path Unit testing *************************/

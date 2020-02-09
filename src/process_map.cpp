@@ -1,5 +1,15 @@
-  
-#define MIN_AREA_SIZE  100
+#include <opencv2/core.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+#include <opencv2/opencv.hpp>
+
+const double MIN_AREA_SIZE = 100;
+
+//std::string template_folder = "../imgs/template/";
+#define MIN_AREA_SIZE  500
 
 #define TEMPLATE_DEBUG 0
   //-------------------------------------------------------------------------
@@ -146,6 +156,7 @@ bool processVictims(const cv::Mat& hsv_img, const double scale, std::vector<std:
   }
 
 
+
 bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const double scale, std::vector<std::pair<int,Polygon>>& victim_list,const std::string& template_folder){
        
     // Find green regions
@@ -177,8 +188,16 @@ bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const dou
     // Finds contours in a binary image.
     cv::findContours(green_mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);  
         
+
+        // Display the image 
+    #if 0//TEMPLATE_DEBUG
+    cv::imshow("Original", contours[0]);
+    cv::waitKey(0);
+    #endif
+
     // create an array of rectangle (i.e. bounding box containing the green area contour)  
-    std::vector<cv::Rect> boundRect(contours.size());
+    //std::vector<cv::Rect> boundRect(contours.size());
+    std::vector<cv::Rect> boundRect;
     for (int i=0; i<contours.size(); ++i)
     {
         double area = cv::contourArea(contours[i]);
@@ -187,15 +206,25 @@ bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const dou
         std::vector<cv::Point> approx_curve;
         approxPolyDP(contours[i], approx_curve, 10, true);
         if(approx_curve.size() < 6) continue; //fitler out the gate 
+
+        /*****Store half part of victims*****/
+        Polygon scaled_contour;
+        for (const auto& pt: approx_curve) {
+          scaled_contour.emplace_back(pt.x/scale, pt.y/scale);
+        }
+        victim_list.push_back({-1, scaled_contour});
+        ///////////////////////////////////////////////////////////
+
         contours_approx = {approx_curve};
 
         // Draw the contours on image with a line color of BGR=(0,170,220) and a width of 3
         drawContours(contours_img, contours_approx, -1, cv::Scalar(0,170,220), 3, cv::LINE_AA);
 
         // find the bounding box of the green blob approx curve
-        boundRect[i] = boundingRect(cv::Mat(approx_curve)); 
+        boundRect.push_back(boundingRect(cv::Mat(approx_curve))); 
     }
 
+    std::cout << "Green Blobs = : " <<boundRect.size() << std::endl; 
 
     // Display the image 
     #if TEMPLATE_DEBUG
@@ -221,7 +250,11 @@ bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const dou
     // Load digits template images
     std::vector<cv::Mat> templROIs;
     for (int i=1; i<=5; ++i) {
+        //std::cout << "Before Read folder: " << std::endl;   
+
         auto num_template = cv::imread(template_folder + std::to_string(i) + ".png");
+        //std::cout << "After Read folder: "  << std::endl;   
+
         // mirror the template, we want them to have the same shape of the number that we
         // have in the unwarped ground image
         cv::flip(num_template, num_template, 1); 
@@ -242,6 +275,8 @@ bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const dou
     // create a 3x3 recttangular kernel for img filtering
     kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size((2*2) + 1, (2*2)+1));
     
+    std::cout << "Green Blobs with Digits only = : " << boundRect.size() << std::endl; 
+
     // For each green blob in the original image containing a digit
     for (int i=0; i<boundRect.size(); ++i)
     {
@@ -270,9 +305,11 @@ bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const dou
         int angle_step = 15; //Angle of rotation
         int iImageHeight = processROI.size().height; 
         int iImageWidth = processROI.size().width;
+
+
         //Rotate the number
         for (int angle = 0; angle <= 360; angle += angle_step) {    
-            std::cout << "Angle value: " << angle << std::endl;   
+            //std::cout << "Angle value: " << angle << std::endl;   
             cv::Mat matRotation = cv::getRotationMatrix2D( cv::Point(iImageWidth/2, iImageHeight/2), (angle_step), 1 );
             cv::warpAffine(processROI, processROI, matRotation, processROI.size() );
             //Show actual number
@@ -284,22 +321,68 @@ bool processVictims_student(const cv::Mat& img,const cv::Mat& hsv_img, const dou
             for (int j=0; j<templROIs.size(); ++j) {
                 cv::Mat result;
 
+                //std::cout << "Before Match template : "  << std::endl;   
+
                 // Match the ROI with the templROIs j-th
                 cv::matchTemplate(processROI, templROIs[j], result, cv::TM_CCOEFF);
+                //std::cout << "After  Match template: "  << std::endl;   
+
                 double score;
                 cv::minMaxLoc(result, nullptr, &score); 
 
                 // Compare the score with the others, if it is higher save this as the best match!
                 if (score > maxScore) {
-                maxScore = score;
-                maxIdx = j;
+                  maxScore = score;
+                  maxIdx = j;
                 }        
             }
-        }    
-        // Display the best fitting number
-        std::cout << "Best fitting template: " << maxIdx + 1 << std::endl;
-        #if TEMPLATE_DEBUG    
-        cv::waitKey(0);
-        #endif
+      }    
+      // Display the best fitting number
+      std::cout << "Best fitting template: " << maxIdx + 1 << std::endl;    
+      
+      victim_list[i].first=maxIdx + 1;
+
+      #if TEMPLATE_DEBUG
+      cv::waitKey(0);
+      #endif
     }
+
+    return true;
+}
+
+
+
+
+//Centroid for Polygon vertices
+Point compute2DPolygonCentroid(Polygon vertices)
+{
+    Point centroid = {0, 0};
+    double signedArea = 0.0;
+    double x0 = 0.0; // Current vertex X
+    double y0 = 0.0; // Current vertex Y
+    double x1 = 0.0; // Next vertex X
+    double y1 = 0.0; // Next vertex Y
+    double a = 0.0;  // Partial signed area
+
+    // For all vertices
+    int i=0;
+    int vertexCount=vertices.size();
+
+    for (i=0; i<vertexCount; ++i)
+    {
+        x0 = vertices[i].x;
+        y0 = vertices[i].y;
+        x1 = vertices[(i+1) % vertexCount].x;
+        y1 = vertices[(i+1) % vertexCount].y;
+        a = x0*y1 - x1*y0;
+        signedArea += a;
+        centroid.x += (x0 + x1)*a;
+        centroid.y += (y0 + y1)*a;
+    }
+
+    signedArea *= 0.5;
+    centroid.x /= (6.0*signedArea);
+    centroid.y /= (6.0*signedArea);
+
+    return centroid;
 }
