@@ -612,9 +612,22 @@ bool  Process_Box_arc_check_obstacles(std::vector<Polygon>& obstacle_list,struct
     int k=0;
     arc_extract line_data;
     std::vector<Point> intersect_points;
+    bool point_lies_inside1,point_lies_inside2;
 
     std::vector<Polygon> Box_list;
     Build_All_Bounding_Box(obstacle_list,Box_list);//gets lists of bounding boxes
+
+
+    /*Corner case-1 :Check for two points of ARC lies inside Bounding Box */
+    point_lies_inside1=Detect_point_liesin_polygon(arc.start_point,Box_list);
+    point_lies_inside2=Detect_point_liesin_polygon(arc.end_point,Box_list);
+
+    if(point_lies_inside1 && point_lies_inside2)
+    {
+        std::cout <<"Gkiri:Both points of ARC Lies inside Bounding Box" << std::endl;
+        return true;//consider it as colliding because line is inside Bounding Box
+
+    }
 
     for (size_t i = 0; i<Box_list.size(); i++){//no of boxes
         
