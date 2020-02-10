@@ -5,7 +5,6 @@
 #include <math.h>
 #include "Utils.hpp"
 
-
 double SafeAcos (double x){
   if (x < -1.0) x = -1.0 ;
   else if (x > 1.0) x = 1.0 ;
@@ -354,3 +353,36 @@ Point get_polygon_centroid(Polygon poly){
 
   return centroid;
 }
+
+//https://www.walletfox.com/course/parseconfigfile.php
+double load_config_param(std::string config_dir, std::string param_name){
+  double param;
+  std::ifstream cFile;
+  cFile.open(config_dir);
+  if (cFile.is_open())
+  {
+    std::string line;
+    while(getline(cFile, line)){
+      line.erase(std::remove_if(line.begin(), line.end(), isspace),line.end());
+      if(line[0] == '#' || line.empty())
+          continue;
+      auto delimiterPos = line.find("=");
+      auto name = line.substr(0, delimiterPos);
+      auto value = line.substr(delimiterPos + 1);
+      //std::cout << name << " " << value << '\n';
+      if(param_name == name){
+        param = std::stod(value);
+
+        return param;
+      }
+    }
+    std::cerr << "Couldn't find the parameter\n";
+
+    return 0;        
+  }
+  else {
+    std::cerr << "Couldn't open config file for reading.\n";
+    return 0;
+  }  
+}
+

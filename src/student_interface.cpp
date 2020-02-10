@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 #include <vector>
 #include <atomic>
@@ -31,14 +32,13 @@
 
 #include "unit-testing.cpp"
 
-
-
 #include "mission_apis.hpp"
+
 
 //#include "DubinsCurvesHandler.hpp"
 
 //Unit test and printouts variables
-#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 0  //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
 #define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
@@ -279,37 +279,40 @@ namespace student {
                 Path& path,
                 const std::string& config_folder)
 
-  { 
+  {   
     /*************CONFIG VARIABLES*********************/
-    //Robot parameters (move to another file?)
-    const double robot_length = 0.2; //(m)
-    const double robot_width = 0.14; //(m)   
+    //Load config file
+    std::string config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
+    
+    double robot_length = load_config_param(config_dir, "robot_length"); //(m)    
+    double robot_width = load_config_param(config_dir, "robot_width"); //(m) 
+   
 
-    //Visualising the map parameters
-    double map_w = 1.56; //real map width in m
-    double map_h = 1.06; //real map height in m  
-    double img_map_w = 720; //image map width in pixels
-    //image map height is calculated through the other three parameters
+     //Visualising the map parameters
+    double map_w = load_config_param(config_dir, "map_w"); //real map width in m    
+    double map_h = load_config_param(config_dir, "map_h"); //real map height in m     
+    double img_map_w = load_config_param(config_dir, "img_map_w"); //image map width in pixels
+    //image map height is calculated through the other three parameters 
     
     //Sampling
-    int n_samples = 500;
-
+    int n_samples = load_config_param(config_dir, "n_samples");
+    
     //Local planner
-    double min_dist = 0.1001;    
-    double max_dist = 0.2001;
-
+    double min_dist = load_config_param(config_dir, "min_dist");     
+    double max_dist = load_config_param(config_dir, "max_dist");
+    
     //Dubins parameters
-    double k_max = 10;
-    double discretizer_size = 0.005; 
+    double k_max = load_config_param(config_dir, "k_max");    
+    double discretizer_size = load_config_param(config_dir, "discretizer_size");    
 
     //Dubins planner
-    double delta = 15; //tune angle in degrees
+    double delta = load_config_param(config_dir, "delta"); //tune angle in degrees    
 
     //mission id
-    int mission_id = 2; 
-
+    int mission_id = load_config_param(config_dir, "mission_id");
+   
     //Drawing flag
-    bool drawing = true;   
+    int drawing = load_config_param(config_dir, "drawing");   
     /*****************************************************/
 
 
@@ -320,10 +323,17 @@ namespace student {
     //Radius of circle approximating robot shape (m) 
     double OFFSET_walls = sqrt(pow(robot_length,2) + pow(robot_width,2))/2; //more restrictive case, diagonal of robot
     double OFFSET_polygon = robot_length/2; // less restrictive case --> length of robot                           
-    std::vector<Polygon> inflated_obstacle_list, inflated_walls;
+    std::vector<Polygon> clean_obstacle_list, inflated_obstacle_list, inflated_walls;
 
+    //sanity check     
+    for(Polygon poly:obstacle_list){   
+      if(poly.size() > 2){
+        clean_obstacle_list.push_back(poly);
+      }
+    }
+    
     //Inflate polygon function --> Return std::vector<Polygon>   
-    inflated_obstacle_list = inflate_polygons(obstacle_list, OFFSET_polygon);
+    inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET_polygon);
     //Inflate walls    
     inflated_walls = inflate_walls(map_w, map_h, OFFSET_polygon);
 
@@ -416,7 +426,8 @@ namespace student {
       miss_output_12 = mission_2(PRM_param, dubins_param, start_pose, gate_pose, 
         victim_list, delta);
       path = miss_output_12.path;
-      if(path.empty()){
+      //if(path.empty()){
+      if(false){
         printf("Empty path\n");
         break;
       }
@@ -689,11 +700,12 @@ namespace student {
 
 
     /* Map visualization -------------------------------------------*/
-    #if VISUALIZE_MAP
-    //Show map image
-    cv::imshow("Image",map_param.img_map);
-    cv::waitKey( 0.01 );
-    #endif
+    if(drawing){
+      //Show map image
+      cv::imshow("Image",map_param.img_map);
+      cv::waitKey( 0.01 );
+    }
+      
     
 
     return true;

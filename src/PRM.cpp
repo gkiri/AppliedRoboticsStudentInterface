@@ -47,8 +47,8 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
     cv::Point cv_point_temp;
 
     cv::Point2f test_pt;
-	  test_pt.x = pt.x*100*720/150;
-	  test_pt.y = pt.y*100*576/100;
+	  test_pt.x = pt.x*100*720/156;
+	  test_pt.y = pt.y*100*576/106;
 
     for (size_t j = 0; j<cv_poly_list.size(); j++){  
 
