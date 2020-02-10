@@ -26,6 +26,7 @@ bool  Construct_Bounding_Box(Polygon& input , Polygon& output);
 void construct_line_structure(arc_extract& line_data,Point Arc_Start ,Point Arc_End);
 int get_line_circle_intersection(Point linestart, Point lineend,Point center, double radius,Point& firstIntersection,Point& secondIntersection);
 bool is_line_colliding_circle(Point linestart, Point lineend, Point center, double radius);
+bool Detect_point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list);
 
 
 /**
