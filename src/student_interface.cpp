@@ -38,13 +38,12 @@
 //#include "DubinsCurvesHandler.hpp"
 
 //Unit test and printouts variables
-#define VISUALIZE_MAP 1   //(0)Deactivated - (1)Visualize elements in map
+#define VISUALIZE_MAP 0   //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
 #define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
 #define DRAW_GATE_TEST 0
 #define UNIT_TEST 0
-#define MISSION_DRAWING 1
 
 
 namespace student {
@@ -240,7 +239,9 @@ namespace student {
 
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
 
-    const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
+    //const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
+    const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+
     //const std::string& template_folder="../imgs/template/";
     // Convert color space from BGR to HSV
     cv::Mat hsv_img;
@@ -293,12 +294,22 @@ namespace student {
     //Sampling
     int n_samples = 500;
 
+    //Local planner
+    double min_dist = 0.1001;    
+    double max_dist = 0.2001;
+
     //Dubins parameters
     double k_max = 10;
     double discretizer_size = 0.005; 
 
+    //Dubins planner
+    double delta = 15; //tune angle in degrees
+
     //mission id
-    int mission_id = 6;    
+    int mission_id = 2; 
+
+    //Drawing flag
+    bool drawing = true;   
     /*****************************************************/
 
 
@@ -325,9 +336,8 @@ namespace student {
     
     /*------variables--------*/
     double start_pose[3], gate_pose[3];
-    struct dubins_param dubins_param;
-    std::vector<Point> bias_points;
-    Point victim_centroid;
+    struct dubins_param dubins_param; 
+    std::vector<Point> bias_points;   
     
     //set dubins param
     dubins_param.k_max = k_max;
@@ -339,6 +349,8 @@ namespace student {
     PRM_param.map_w = map_w;
     PRM_param.obstacle_list = inflated_obstacle_list;
     PRM_param.n_samples = n_samples;
+    PRM_param.max_dist = max_dist;
+    PRM_param.min_dist = min_dist;
 
     //start point    
     start_pose[0] = x;
@@ -347,20 +359,26 @@ namespace student {
 
     //end point = gate_pose    
     get_gate_pose(gate, map_h, map_w, robot_length, gate_pose);
+    
+    /*-------- failing test---------*/
+    // gate_pose[0] = 0.35;
+    // gate_pose[1] = 0.5;
+    // gate_pose[2] = M_PI;
+
 
     //output for missions
     struct mission_output_0 miss_output_0;
-    struct mission_output_12 miss_output_12;
-    struct arc_extract three_seg[3];//segment extract
+    struct mission_output_12 miss_output_12;    
 
-    /*--------small tests----------------*/
-    //set bias points with victims
-    for(std::pair<int,Polygon> victim : victim_list){
-      victim_centroid = get_polygon_centroid(victim.second);
-      bias_points.push_back(victim_centroid);
-      //draw
-      draw_victim(victim, map_param, true);
-    }
+    // /*--------small tests----------------*/  
+    // Point victim_centroid;
+    // //set bias points with victims
+    // for(std::pair<int,Polygon> victim : victim_list){
+    //   victim_centroid = get_polygon_centroid(victim.second);
+    //   bias_points.push_back(victim_centroid);
+    //   //draw
+    //   //draw_victim(victim, map_param);
+    // }
     
 
     /*--------mission selection ------------*/
@@ -373,19 +391,8 @@ namespace student {
         printf("Empty path\n");
         break;
       }
-      else{
-        #if MISSION_DRAWING
-        //draw gate
-        draw_polygon(gate, map_param, cv::Scalar(255,0,0));
-        //Draw path
-        create_three_seg(three_seg, start_pose[0], start_pose[1], miss_output_0.dubins_path);
-        for(int i=0; i< 3; i++){      
-          draw_dubins_segment(three_seg[i], map_param, cv::Scalar(0,0,255));
-        } 
-        //draw start and end point
-        draw_point(Point(start_pose[0], start_pose[1]), map_param, cv::Scalar(0,255,0));
-        draw_point(Point(gate_pose[0], gate_pose[1]), map_param, cv::Scalar(0,255,0));
-        #endif
+      else if(drawing){       
+        drawing_mission_0(start_pose,gate_pose,gate,miss_output_0,map_param);
       }
       break;
       
@@ -393,83 +400,29 @@ namespace student {
     case 1:      
 
       miss_output_12 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
-        bias_points);
+        bias_points, delta);
       path = miss_output_12.path;
       if(path.empty()){
         printf("Empty path\n");
         break;
       }
-      else{
-        #if MISSION_DRAWING
-        //Drawing variables
-        std::pair<Point, std::vector<Point>> graph_node;  
-        Point V;
-        std::vector<Point> E; 
-        arc_extract edge_line;
-        Point E_point;
-        arc_extract dubins_path_seg;  
-        
-        //draw polygons
-        for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
-          draw_polygon(inflated_obstacle_list[i], map_param);
-        }
-        
-        //Draw prm_graph
-        for(int i=0; i<miss_output_12.prm_graph.size(); i++){
-          //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
-          graph_node = miss_output_12.prm_graph[i];
-          V = graph_node.first; //Vertex
-          //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
-          E = graph_node.second; //Edges
-          //Draw edges    
-          for(int j=0;j<E.size();j++){ 
-            //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
-            edge_line = to_arc_extract_type(V,E[j],true);
-            draw_line(edge_line, map_param);
-          }
-          //Draw vertex
-          draw_point(V, map_param, cv::Scalar(255,0,0));
-        }  
-
-        //Draw sample points  
-        for (int z=0;z<miss_output_12.free_space_points.size();z++){
-            draw_point(miss_output_12.free_space_points[z], map_param, cv::Scalar(255,0,0));           
-        }
-
-        //Draw global_planner path
-        for(int i=0;i<miss_output_12.global_planner_path.size();i++){   
-          //Draw path
-          if(i<miss_output_12.global_planner_path.size()-1){         
-            edge_line = to_arc_extract_type(miss_output_12.global_planner_path[i],miss_output_12.global_planner_path[i+1],true);
-            draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
-          }
-          //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
-        }
-
-        //Draw dubins curve   
-        for(int i=0; i<miss_output_12.path_final_draw.size(); i++){
-          dubins_path_seg = miss_output_12.path_final_draw[i]; //retrieve three_segments
-          //std::cout << "Dubins_path_" << i << std::endl;
-        
-          //Draw
-          draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,0,255));
-        } 
-        #endif
-
+      else if(drawing){
+        drawing_mission_1(inflated_obstacle_list, miss_output_12, map_param);
       }
       break;    
     
     case 2:
-
+      
+      miss_output_12 = mission_2(PRM_param, dubins_param, start_pose, gate_pose, 
+        victim_list, delta);
+      path = miss_output_12.path;
       if(path.empty()){
         printf("Empty path\n");
         break;
-        }
-      #if MISSION_DRAWING
-
-      #endif
-      break; 
-      
+      }
+      else if(drawing){
+        drawing_mission_1(inflated_obstacle_list, miss_output_12, map_param);
+      }      
       break;
     
     default:
@@ -599,28 +552,28 @@ namespace student {
     /* Dubins Section-------------------------------------------*/
     #if DUBINS_TEST
     /* Dubins Section-------------------------------------------*/
-  
+    struct arc_extract three_seg[3];//segment extract
     //double start_pose[3], goal_pose[3];   
 
-    // //start point
-    // start_pose[0] = x;
-    // start_pose[1] = y;
-    // start_pose[2] = theta;
-
     //start point
-    start_pose[0] = 1.4;
-    start_pose[1] = 0.4;
-    start_pose[2] = 0;
+    start_pose[0] = x;
+    start_pose[1] = y;
+    start_pose[2] = theta;
+
+    // //start point
+    // start_pose[0] = 1.4;
+    // start_pose[1] = 0.4;
+    // start_pose[2] = 0;
     
     //end point
     // goal_pose[0] = gate_pose[0];
     // goal_pose[1] = gate_pose[1];
     // goal_pose[2] = gate_pose[2];
 
-    //test
-    gate_pose[0] = 1.2;
-    gate_pose[1] = 0.6; 
-    gate_pose[2] = M_PI;
+    //down wall
+    gate_pose[0] = x - 0.05;
+    gate_pose[1] = y;
+    gate_pose[2] = M_PI/4;
 
     //establish Dubins curve generator
 

@@ -52,7 +52,7 @@ public:
     void generate_random_points();
 
     /**
-     * Generate grpah from list of free_space_points by adding  to vertices
+     * Generate grpah from list of free_space_points by adding to vertices
      *
      * Iterate over vertices for connecting edges and paralelly check for collision while 
      * constructing roadmap graph
@@ -60,9 +60,10 @@ public:
      * implement Knearest neighbour of samples(q)
      * 
      * @param bias_points - Points through where the robots must pass (E.g start,end,victim1,etc)
-     * @returns - zero on successful completion, or the result of the callback
+     * @param max_dist - Maximum radius within it looks for nearest neighbors
+     * @param min_dist - Minimum radius within it does not look for nearest neighbors.
      */
-    void local_planner(std::vector<Point> bias_points);
+    void local_planner(std::vector<Point> bias_points, double max_dist, double min_dist);
 
     /**
      * Plan optimal path from roadmap graph
@@ -82,9 +83,10 @@ public:
      * @param start_theta - initial orientation of the robot
      * @param goal_theta - final orientation of the robot
      * @param dubins_param - k_max and discretize step size for dubins
+     * @param delta - tune angle in degrees when a collision happen
      * @output - return final path to be followed by the robot
      */
-    Path dubins_planner(float start_theta, float goal_theta, struct dubins_param);
+    Path dubins_planner(float start_theta, float goal_theta, struct dubins_param, double delta);
 
     /**
      * Given a starting pose, a goal pose and a vector of bias points (points through
@@ -94,9 +96,15 @@ public:
      * @param start_pose  - initial pose of the robot
      * @param goal_pose - final pose of the robot
      * @param bias_points - vector of bias points 
-     * @output - return final path to be followed by the robot
+     * @param max_dist - Maximum radius within it looks for nearest neighbors
+     * @param min_dist - Minimum radius within it does not look for nearest neighbors.
+     * @param dubins_param - k_max and discretize step size for dubins
+     * @param delta - tune angle in degrees when a collision happen
+     * @return Path - return final path to be followed by the robot
      */
-    Path prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points, struct dubins_param);
+    Path prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points,
+        double max_dist, double min_dist, struct dubins_param, double delta);
+
 
 
 private:
@@ -108,4 +116,12 @@ private:
     double cspace_width; //width of sample space
     double cspace_height; //height of sample space
     int N; //Number of samples
+
+    /**
+     * Given a global planner path, refines the path to have the least amount of nodes
+     *  
+     * @param tmp_global_planner_path - Given global planner path to be refined     
+     * @returns - refined global planner path
+    */
+    std::vector<Point> refine_global_planner_path(std::vector<Point> tmp_global_planner_path);
 };

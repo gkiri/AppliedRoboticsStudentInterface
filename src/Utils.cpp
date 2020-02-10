@@ -28,7 +28,7 @@ triangle_angles compute_triangle_angles(Point A,Point B, Point C){
     return {CAB,ABC,BCA};    
 }
 
-//Source: https://arxiv.org/pdf/1609.06662.pdf
+
 void compute_heading_angle(double* qs,double* qm,double* qe){
   double RAD2DEG = 180.0/M_PI;
   double alpha, d_s_e;
@@ -63,7 +63,7 @@ void compute_heading_angle(double* qs,double* qm,double* qe){
   printf("ERROR in compute heading angle");
     break;
   }
-  
+
   //save heading angle of mid point
   qm[2] = alpha;
   //std::cout << "HEADING ANGLE: " << alpha*RAD2DEG << std::endl;
