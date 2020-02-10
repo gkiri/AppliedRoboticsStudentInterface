@@ -31,7 +31,7 @@ struct dubins_param{
     double k_max, discretizer_size;
 };
 struct PRM_param{
-    double map_w, map_h;
+    double map_w, map_h, max_dist, min_dist;
     std::vector<Polygon> obstacle_list;
     int n_samples;
 };

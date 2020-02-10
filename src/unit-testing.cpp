@@ -129,6 +129,8 @@ void UT_sample_generation(std::vector<Polygon> obstacle_list, double map_w,
 
 void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   // Set variables for your unit test
+  double min_dist = 0.1001;    
+  double max_dist = 0.3001;
   PRM obj(obstacle_list);
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph_test; //Output 
 
@@ -147,7 +149,7 @@ void UT_local_planner(std::vector<Polygon> obstacle_list, img_map_def *map_param
 
   //Call your implementation on PRM.cpp 
   std::vector<Point> bias_points; 
-  obj.local_planner(bias_points); //Implement your local planner in PRM.cpp
+  obj.local_planner(bias_points, max_dist, min_dist); //Implement your local planner in PRM.cpp
   
   //Retrieve the output of your function
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
@@ -284,7 +286,8 @@ void UT_dubins_path(std::vector<Polygon> obstacle_list, img_map_def *map_param){
   struct dubins_param dubins_param;
   dubins_param.k_max = 10;
   dubins_param.discretizer_size = 0.005;
-  obj.dubins_planner(0, M_PI/2, dubins_param);  
+  double delta = 15;
+  obj.dubins_planner(0, M_PI/2, dubins_param, delta);  
 
   //****************************************************************************
   //********Drawing and printing the dubins path************************
@@ -317,6 +320,8 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
       std::vector<Polygon> obstacle_list, double map_w, double map_h, int N, img_map_def *map_param){
   //Set variables for unit test
   PRM obj(obstacle_list, map_w, map_h, N);
+  double min_dist = 0.1001;    
+  double max_dist = 0.3001;
   //Point start = Point(0.1,0.1);
   //Point goal = Point(1.3,0.8); 
   Point start = Point(start_pose[0], start_pose[1]);
@@ -339,7 +344,7 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   bias_points.push_back(goal);
  
   //Call local planner 
-  obj.local_planner(bias_points);
+  obj.local_planner(bias_points, max_dist, min_dist);
   
   //Retrieve the output of your function
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
@@ -361,7 +366,8 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   struct dubins_param dubins_param;
   dubins_param.k_max = 10;
   dubins_param.discretizer_size = 0.005;
-  obj.dubins_planner(start_theta, goal_theta, dubins_param); 
+  double delta = 15;
+  obj.dubins_planner(start_theta, goal_theta, dubins_param, delta); 
 
 
   //****************************************************************************
@@ -432,7 +438,10 @@ void UT_prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bi
   struct dubins_param dubins_param;
   dubins_param.k_max = 10;
   dubins_param.discretizer_size = 0.005;
-  obj.prm_planner(start_pose, goal_pose, bias_points, dubins_param);
+  double delta = 15;
+  double min_dist = 0.1001;    
+  double max_dist = 0.3001;
+  obj.prm_planner(start_pose, goal_pose, bias_points, max_dist, min_dist, dubins_param, delta);
 
   //Retrieve all variables for drawing purposes
   std::vector<Point> free_space_points = obj.get_free_space_points();
@@ -538,7 +547,7 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
   bool collision;
   arc_extract line_data;
 
-  printf("Noof obstacles = %d !!\n",obstacle_list.size());
+  //printf("Noof obstacles = %d !!\n",obstacle_list.size());
   
   #if 0
   std::vector<Polygon> obstacle_list2;

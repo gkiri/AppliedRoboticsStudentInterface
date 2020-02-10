@@ -1,3 +1,5 @@
+#pragma once
+
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
@@ -50,9 +52,10 @@ mission_output_0 mission_0(dubins_param dubins_param, double start_pose[3], doub
  * @param start_pose - starting pose of the robot
  * @param gate_pose - pose at the gate 
  * @param bias_points - bias points over where the robot must pass.
+ * @param delta - tune angle in degrees for dubins planner
  * @output Path - Return path to be followed by the robot to complete the mission
 */
-mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<Point> bias_points);
+mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<Point> bias_points, double delta);
 
 
 /**
@@ -64,9 +67,10 @@ mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, doub
  * @param start_pose - starting pose of the robot
  * @param gate_pose - pose at the gate 
  * @param victim_list - list of victims. Each victim represented by its number and a polygon
+ * @param delta - tune angle in degrees for dubins planner
  * @output Path - Return path to be followed by the robot to complete the mission
 */
-mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list);
+mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta);
 
 
 

@@ -8,6 +8,7 @@
 #include <vector>
 #include <math.h>
 #include "Utils.hpp"
+#include "mission_apis.hpp"
 
 //Map object colours - BGR
 cv::Scalar robot_colour(255,0,0);   //blue
@@ -466,4 +467,81 @@ void draw_motion_planning(const std::vector<Polygon>& obstacle_list,img_map_def 
            
     }
 
+}
+
+/*------------- missions drawing ----------------------------*/
+void drawing_mission_0(double start_pose[3], double gate_pose[3], Polygon gate, 
+    mission_output_0 miss_output_0, img_map_def map_param){
+    //variables
+    struct arc_extract three_seg[3];
+
+    //draw gate
+    draw_polygon(gate, map_param, cv::Scalar(255,0,0));
+    //Draw path
+    create_three_seg(three_seg, start_pose[0], start_pose[1], miss_output_0.dubins_path);
+    for(int i=0; i< 3; i++){      
+        draw_dubins_segment(three_seg[i], map_param, cv::Scalar(0,0,255));
+    } 
+    //draw start and end point
+    draw_point(Point(start_pose[0], start_pose[1]), map_param, cv::Scalar(0,255,0));
+    draw_point(Point(gate_pose[0], gate_pose[1]), map_param, cv::Scalar(0,255,0));
+}
+
+
+void drawing_mission_1(std::vector<Polygon>& inflated_obstacle_list, 
+    mission_output_12 miss_output_12, img_map_def map_param){
+
+    //Drawing variables
+    std::pair<Point, std::vector<Point>> graph_node;  
+    Point V;
+    std::vector<Point> E; 
+    arc_extract edge_line;
+    Point E_point;
+    arc_extract dubins_path_seg;  
+
+    //draw polygons
+    for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
+        draw_polygon(inflated_obstacle_list[i], map_param);
+    }
+
+    //Draw prm_graph
+    for(int i=0; i<miss_output_12.prm_graph.size(); i++){
+        //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
+        graph_node = miss_output_12.prm_graph[i];
+        V = graph_node.first; //Vertex
+        //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+        E = graph_node.second; //Edges
+        //Draw edges    
+        for(int j=0;j<E.size();j++){ 
+        //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+        edge_line = to_arc_extract_type(V,E[j],true);
+        draw_line(edge_line, map_param);
+        }
+        //Draw vertex
+        draw_point(V, map_param, cv::Scalar(255,0,0));
+    }  
+
+    //Draw sample points  
+    for (int z=0;z<miss_output_12.free_space_points.size();z++){
+        draw_point(miss_output_12.free_space_points[z], map_param, cv::Scalar(255,0,0));           
+    }
+
+    //Draw global_planner path
+    for(int i=0;i<miss_output_12.global_planner_path.size();i++){   
+        //Draw path
+        if(i<miss_output_12.global_planner_path.size()-1){         
+        edge_line = to_arc_extract_type(miss_output_12.global_planner_path[i],miss_output_12.global_planner_path[i+1],true);
+        draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
+        }
+        //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
+    }
+
+    //Draw dubins curve   
+    for(int i=0; i<miss_output_12.path_final_draw.size(); i++){
+        dubins_path_seg = miss_output_12.path_final_draw[i]; //retrieve three_segments
+        //std::cout << "Dubins_path_" << i << std::endl;
+
+        //Draw
+        draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,0,255));
+    } 
 }
