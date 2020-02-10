@@ -117,7 +117,8 @@ void draw_arc(arc_extract arc, img_map_def img_map_def, cv::Scalar colour = path
         
         cv::ellipse(img_map_def.img_map, center_scaled, cv::Size(radius_scaled, radius_scaled), 
                 0, arc_angles.start_angle, arc_angles.end_angle, colour,1,15,0);
-      
+
+             
     }
 }
 
