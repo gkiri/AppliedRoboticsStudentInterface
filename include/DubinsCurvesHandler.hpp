@@ -6,10 +6,6 @@
 #include <cstdint>
 
 //region Structures
-struct dubins_param{
-    double k_max, discretizer_size;
-};
-
 struct ScaledParameters {
     double scaled_th0, scaled_thf, scaled_k_max, inverse_scaled_k_max, lambda;
 };
