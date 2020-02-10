@@ -31,6 +31,116 @@ bool linelineIntersection(Point A,Point B,Point C,Point D,Point *X)
     return intersection;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////
+double dist(double x1, double y1, double x2, double y2)
+{
+  double distX = x2 - x1;
+  double distY = y2 - y1;
+  double distance = sqrt( (distX*distX) + (distY*distY) );
+  return distance;
+}
+
+// check if point is inside circle
+bool pointCircle(double px, double py, double cx, double cy, double r) {
+
+  // get distance between the point and circle's center
+  // using the Pythagorean Theorem
+  double distX = px - cx;
+  double distY = py - cy;
+  double distance = sqrt( (distX*distX) + (distY*distY) );
+
+  // if the distance is less than the circle's
+  // radius the point is inside!
+  if (distance <= r) {
+    return true;
+  }
+  return false;
+}
+
+// LINE/POINT
+bool linePoint(double x1, double y1, double x2, double y2, double px, double py) {
+
+  // get distance from the point to the two ends of the line
+  double d1 = dist(px,py, x1,y1);
+  double d2 = dist(px,py, x2,y2);
+
+  // get the length of the line
+  double lineLen = dist(x1,y1, x2,y2);
+
+  // since floats are so minutely accurate, add
+  // a little buffer zone that will give collision
+  double buffer = 0.1;    // higher # = less accurate
+
+  // if the two distances are equal to the line's
+  // length, the point is on the line!
+  // note we use the buffer here to give a range,
+  // rather than one #
+  if (d1+d2 >= lineLen-buffer && d1+d2 <= lineLen+buffer) {
+    return true;
+  }
+  return false;
+
+}
+
+
+// LINE/CIRCLE
+bool lineCircle(double x1, double y1, double x2, double y2, double cx, double cy, double r) {
+
+  // is either end INSIDE the circle?
+  // if so, return true immediately
+  bool inside1 = pointCircle(x1,y1, cx,cy,r);
+  bool inside2 = pointCircle(x2,y2, cx,cy,r);
+  if (inside1 || inside2) return true;
+
+  // get length of the line
+  double distX = x1 - x2;
+  double distY = y1 - y2;
+  double len = sqrt( (distX*distX) + (distY*distY) );
+
+  // get dot product of the line and circle
+  double dot = ( ((cx-x1)*(x2-x1)) + ((cy-y1)*(y2-y1)) ) / pow(len,2);
+
+  // find the closest point on the line
+  double closestX = x1 + (dot * (x2-x1));
+  double closestY = y1 + (dot * (y2-y1));
+
+  // is this point actually on the line segment?
+  // if so keep going, but if not, return false
+  bool onSegment = linePoint(x1,y1,x2,y2, closestX,closestY);
+  if (!onSegment) return false;
+
+  // get distance to closest point
+  distX = closestX - cx;
+  distY = closestY - cy;
+  double distance = sqrt( (distX*distX) + (distY*distY) );
+
+  if (distance <= r) {
+    return true;
+  }
+  return false;
+}
+
+
+/* Line circle just collision detection*/
+bool is_line_colliding_circle(Point linestart, Point lineend, Point center, double radius)
+{
+    bool colliding;
+
+    colliding = lineCircle(linestart.x, linestart.y, lineend.x,lineend.y, center.x, center.y, radius);
+    if(colliding)
+    {
+        return true;
+    }
+    else {
+
+        return false;
+    }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
 //COnsider vertical straight lines as special case and handle
 int get_line_circle_intersection(Point linestart, Point lineend,Point center, double radius,Point& firstIntersection,Point& secondIntersection)
 {
@@ -142,10 +252,21 @@ bool lineArcIntersection_prof(struct arc_extract line,struct arc_extract arc,std
     bool final_flag;
     struct arc_param test_param;
 
-    /*Find Circle new method */
-    ret_val=get_line_circle_intersection(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
+    /*1st level of Just collision check */
+    if(is_line_colliding_circle(line.start_point,line.end_point,arc.center,arc.radius))
+    {
+        std::cout <<"Gkiri:is_line_colliding_circle COLLISION DETECTED "  << std::endl;
+        
+    }
+    else{
+        std::cout <<"Gkiri:is_line_colliding_circle COLLISION FREE "  << std::endl;
+        return false;//return false as there is no collision so no further arc checks needed
+    }
 
-    //ret_val=FindLineCircleIntersections(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
+    /*Find Circle new method */
+    //ret_val=get_line_circle_intersection(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
+
+    ret_val=FindLineCircleIntersections(line.start_point,line.end_point,arc.center,arc.radius,intersection1,intersection2);
     //std::cout <<"Gkiri:FindLineCircle**  intersect1.x " << intersection1.x <<" intersect1.y " << intersection1.y << std::endl;
     //std::cout <<"Gkiri:FindLineCircle** intersect2.x " << intersection2.x <<" intersect2.y " << intersection2.y << std::endl;
     intersect_points.push_back(intersection1);

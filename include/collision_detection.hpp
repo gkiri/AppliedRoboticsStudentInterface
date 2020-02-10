@@ -25,6 +25,8 @@ bool lineArcIntersection_prof(struct arc_extract line,struct arc_extract arc,std
 bool  Construct_Bounding_Box(Polygon& input , Polygon& output);
 void construct_line_structure(arc_extract& line_data,Point Arc_Start ,Point Arc_End);
 int get_line_circle_intersection(Point linestart, Point lineend,Point center, double radius,Point& firstIntersection,Point& secondIntersection);
+bool is_line_colliding_circle(Point linestart, Point lineend, Point center, double radius);
+
 
 /**
  * DUbins 3 segment check with globally using narrow and broad phase

@@ -541,7 +541,8 @@ void UT_compute_triangle_angles(img_map_def *map_param){
       << (int)(t_angles.beta_2*RAD2DEG) << "," << (int)(t_angles.beta_3*RAD2DEG) << std::endl;  
 }
 
-//Dubins arc collision test
+
+//////////Dubins arc collision test
 void UT_dubins_collision_test(struct arc_extract three_seg[3],
           std::vector<Polygon> obstacle_list, img_map_def *map_param){
   bool collision;
@@ -602,7 +603,6 @@ void UT_dubins_collision_test(struct arc_extract three_seg[3],
   }  
 
       
-
 
 }
 
@@ -930,13 +930,19 @@ void UT_line_arc_collision_prof(img_map_def *map_param){
   Line_End.y=0.20578310535;//0.75;
   #endif
 
-  #if 1 //origin diagonal
+  #if 0 //Straight line diagonal
   Line_Start.x=0.403;
   Line_Start.y=0.041;
   Line_End.x=0.403;//1.295;
   Line_End.y=0.9;//0.367;
   #endif
 
+  #if 1 //Straight line diagonal
+  Line_Start.x=0.53;
+  Line_Start.y=0.75;
+  Line_End.x=0.95;//1.295;
+  Line_End.y=0.75;//0.367;
+  #endif
 
 
 
@@ -1000,16 +1006,21 @@ void UT_line_arc_collision_prof(img_map_def *map_param){
   draw_arc(curve, *map_param);
 
   //bool intersect=lineArcIntersection_prof(dt,curve,intersect_points);
-  #if 1
+  #if 0
   bool intersect=get_line_circle_intersection( dt.start_point, dt.end_point ,curve.center,curve.radius,firstIntersection, secondIntersection);
   intersect_points.push_back(firstIntersection);
   intersect_points.push_back(secondIntersection);
   #endif
 
+  #if 1
+  bool intersect=is_line_colliding_circle( dt.start_point, dt.end_point ,curve.center,curve.radius);
+
+  #endif
+
   if(intersect){
     std::cout <<"Gkiri:UT_line_arc_collision line-Arc INTERSECTION  " << std::endl;
-    draw_point(intersect_points[0], *map_param,cv::Scalar(255,0,0)); 
-    draw_point(intersect_points[1], *map_param,cv::Scalar(255,0,0)); 
+    //draw_point(intersect_points[0], *map_param,cv::Scalar(255,0,0)); 
+    //draw_point(intersect_points[1], *map_param,cv::Scalar(255,0,0)); 
     // draw_point(cal_points[1], *map_param,cv::Scalar(255,0,0)); //Blue Point
     // draw_point(cal_points[2], *map_param); 
   }
@@ -1529,13 +1540,13 @@ void UT_Global_arc_collision_check(std::vector<Polygon> obstacle_list,img_map_de
   Polygon input;
   Polygon output;
   bool Intersection;
-  struct arc_extract arc_seg;
+  struct arc_extract arc_seg,line_data;
   Point Arc_Start, Arc_End, center;
   double r,length ;
   double rad = 0.1; //common radius
 
 
-  #if 1 //small arc //Right
+  #if 0 //small arc //Right
   center= Point(0.3, 0.15);
   Arc_End = Point (0.3, 0.1);
   Arc_Start = Point (0.35, 0.15);
@@ -1548,6 +1559,13 @@ void UT_Global_arc_collision_check(std::vector<Polygon> obstacle_list,img_map_de
   Arc_End = Point (0.8, 0.4);
   Arc_Start = Point (0.7, 0.6);
   r=rad;
+  #endif
+
+  #if 0 //dubins spl
+  center= Point(0.5, 0.75);
+  Arc_End = Point (0.7, 0.75);
+  Arc_Start = Point (0.5, 0.55);
+  r=0.1;
   #endif
 
   #if 0 //Big arc 
@@ -1571,7 +1589,7 @@ void UT_Global_arc_collision_check(std::vector<Polygon> obstacle_list,img_map_de
   r=0.3;
   #endif
 
-  #if 0
+  #if 1
   center = Point(1.0, 0.8); 
   Arc_End = Point (1.2, 0.7);
   Arc_Start = Point (0.9, 0.6);
@@ -1586,11 +1604,25 @@ void UT_Global_arc_collision_check(std::vector<Polygon> obstacle_list,img_map_de
   arc_seg.radius=r;
   draw_arc(arc_seg, *map_param);
   
+
   for (size_t i = 0; i<obstacle_list.size(); i++){
 
         input=obstacle_list[i];
-        draw_polygon(input, *map_param);
-        input.clear();//clear pushback of output vector ref
+        Construct_Bounding_Box(input , output);
+        draw_polygon(output, *map_param);
+        for (size_t j = 0; j<output.size()-1; j++){ //4corners of each box
+           //std::cout <<"Gkiri:BOX start_point.x= " << output[j].x << "start_point.y= " << output[j].y<< "end_point.y= " << output[j+1].x << "end_point.y= " << output[j+1].y << std::endl; 
+        }
+        output.clear();//clear pushback of output vector ref
+  }
+  
+
+  for (size_t i = 0; i<obstacle_list.size(); i++){//no of boxes 
+        for (size_t j = 0; j<obstacle_list[i].size()-1; j++){ //4corners of each box
+            construct_line_structure(line_data,obstacle_list[i][j],obstacle_list[i][j+1]);
+            draw_line(line_data, *map_param, cv::Scalar(0,255,0)); 
+            //std::cout <<"Gkiri:Polygon start_point.x= " << obstacle_list[i][j].x << "start_point.y= " << obstacle_list[i][j].y<< "end_point.y= " << obstacle_list[i][j+1].x << "end_point.y= " << obstacle_list[i][j+1].y << std::endl; 
+        }
   }
 
   Intersection=Global_Arc_check(obstacle_list,arc_seg);
