@@ -8,11 +8,18 @@
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string> 
+#include <algorithm>
+
 
 /*Variables*/
 struct triangle_angles{ //Angles of a triangle
     double beta_1, beta_2, beta_3;
 };
+
 struct arc_extract{ // dubins segment structure for collision and drawing purposes
     Point start_point;
     Point end_point;
@@ -35,6 +42,7 @@ struct PRM_param{
     std::vector<Polygon> obstacle_list;
     int n_samples;
 };
+
 
 /**
  * Compute the angles within a triangle (in radians)
@@ -169,3 +177,4 @@ arc_param calculate_arc_drawing_angles(arc_extract arc);
 Point get_polygon_centroid(Polygon poly);
 
 
+double load_config_param(std::string config_dir, std::string param_name);
