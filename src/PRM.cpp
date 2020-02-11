@@ -20,7 +20,7 @@ PRM::PRM(std::vector<Polygon> polygons_list)
 }
 
 
-PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N)
+PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N, double scale)
 {
     //polygons
     for (size_t j = 0; j<polygons_list.size(); j++){  
@@ -30,6 +30,7 @@ PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_
     this->cspace_width = cspace_width;
     this->cspace_height = cspace_height;
     this->N = N;
+    this->scale = scale;
 }
 
 
@@ -40,16 +41,23 @@ PRM::~PRM()
 
 
 /* Draw Point in Polygon Test -------------------------------------------*/
-bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
+bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale)
 {   
-    double TO_CM = 100;
+    double TO_CM = 100.0;
     std::vector<cv::Point> contour;
     Polygon obstacle;
     cv::Point cv_point_temp;
 
     cv::Point2f test_pt;
-	  test_pt.x = pt.x*TO_CM*720/156;
-	  test_pt.y = pt.y*TO_CM*490/106; 
+	//test_pt.x = pt.x*TO_CM*720/156;
+	//test_pt.y = pt.y*TO_CM*490/106; 
+    test_pt.x = scale*pt.x*TO_CM;
+    test_pt.y = scale*pt.y*TO_CM;
+
+    //std::cout << "scale in lies point " << scale << std::endl;
+
+    //std::cout << "test_pt: " << test_pt.x << "," << test_pt.y << std::endl;
+    
 
     for (size_t j = 0; j<cv_poly_list.size(); j++){  
 
@@ -58,8 +66,10 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
 
         for (size_t k = 0; k<obstacle.size(); k++){  
 
-            cv_point_temp.x=obstacle[k].x*TO_CM*720/156;
-            cv_point_temp.y=obstacle[k].y*TO_CM*490/106;
+            //cv_point_temp.x= obstacle[k].x*TO_CM*720/156;
+            //cv_point_temp.y= obstacle[k].y*TO_CM*490/106;
+            cv_point_temp.x= scale*obstacle[k].x*TO_CM;
+            cv_point_temp.y= scale*obstacle[k].y*TO_CM;
             contour.push_back(cv_point_temp);
 
         }//inner for loop
@@ -82,7 +92,7 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
             case -1:   //-1 (point lies outside polygon)
 
                 //std::cout << "Gkiri:case -1-1-1-1-1-1-1 Inside polygon result= " << result << "measdistance= " << dist << "test point (x,y)= "<<test_pt.x << " , " << test_pt.y<<  std::endl;
-                if((dist< 0.0 && dist > -10.0))
+                if((dist< 0.0 && dist > -1.0))
                 {
                     return true;//Point outside polygon but bit closer to edge so remove this with some threshold distance   
                 }
@@ -118,7 +128,7 @@ void PRM::generate_random_points()
         test_pt.x=x_rand;
         test_pt.y=y_rand;
 
-        if(!point_liesin_polygon(test_pt ,  obstacle_list)){ //Global obstacle list
+        if(!point_liesin_polygon(test_pt ,  obstacle_list, scale)){ //Global obstacle list
             //draw_point(random_points[z], *map_param); 
             free_space_points.emplace_back(test_pt);
             count++;
@@ -294,8 +304,10 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             //Using liesin_point
             for(DubinsLine dubins_sample: dubins_path.discretized_curve){                       
                 repath = point_liesin_polygon(Point(dubins_sample.xf, dubins_sample.yf),
-                    obstacle_list);
+                    obstacle_list, scale);
                 if(repath){
+                    std::cout << "colliding point: " << dubins_sample.xf <<","<< dubins_sample.yf << std::endl;                  
+                    collision_points.push_back(Point(dubins_sample.xf, dubins_sample.yf));
                     break;
                 }
             }
@@ -352,27 +364,28 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
     return path;
 }
 
+void PRM::build_roadmap(std::vector<Point> bias_points, double max_dist, double min_dist){
+    //Sample generation
+    PRM::generate_random_points();      
+    
+    //Call local planner 
+    PRM::local_planner(bias_points, max_dist, min_dist);
+}
+
+
+
 Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points, 
-                        double max_dist, double min_dist, struct dubins_param dubins_param, double delta){
+                        struct dubins_param dubins_param, double delta){
+       
     //Variables
     Path path;    
     std::vector<Point> tmp_global_planner_path, refined_path;   
 
     //Set variables
     Point start = Point(start_pose[0], start_pose[1]);
-    Point goal = Point(goal_pose[0], goal_pose[1]);
+    Point goal = Point(goal_pose[0], goal_pose[1]);    
     float start_theta = start_pose[2];
     float goal_theta = goal_pose[2];
-
-    //Sample generation
-    PRM::generate_random_points();   
-    
-    //Add start and end bias points    
-    bias_points.insert(bias_points.begin(), start);
-    bias_points.push_back(goal);    
-    
-    //Call local planner 
-    PRM::local_planner(bias_points, max_dist, min_dist);
 
     //Save initial node into the tmp_global_planner_path
     tmp_global_planner_path.push_back(start);
@@ -381,32 +394,28 @@ Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> 
     for(int i=0; i< bias_points.size() - 1; i++){
         //set start and goal Point
         start = bias_points[i];
-        goal = bias_points[i + 1];
-
-        //debug
-        std::cout << "pair of bias points " << i << ": " << start.x << "," << start.y 
-            << " & " << goal.x << "," << goal.y << std::endl;
+        goal = bias_points[i + 1];       
 
         //Call global planner   
         PRM::global_planner(start,goal);
+        std::cout << "I passed global planner" << std::endl;
 
         //Refine tmp_global_planner
         refined_path = refine_global_planner_path(global_planner_path);
+        std::cout << "I passed refined planner" << std::endl;
 
         //Save concatenation of refined global planners
         tmp_global_planner_path.insert(tmp_global_planner_path.end(), 
             refined_path.begin() + 1, refined_path.end()); //+1 to not duplicate points (previous end = next start)
+        std::cout << "I passed concatenation" << std::endl;
     } 
-
-    // //Refine tmp_global_planner
-    // global_planner_path = refine_global_planner_path(tmp_global_planner_path);
-
+  
     //Save concatenate global planner into PRM variable
     global_planner_path = tmp_global_planner_path;
 
     //Call dubins planner
     path = PRM::dubins_planner(start_theta, goal_theta, dubins_param, delta);
-
+    std::cout << "I passed dubins planner" << std::endl;
     //return
     return path;
 }
@@ -436,8 +445,9 @@ std::vector<Point> PRM::refine_global_planner_path(std::vector<Point> tmp_global
             collision = Global_Line_check(obstacle_list,line_path);
         }
         //Found a non-colliding connection
-        end_local = start_local;
+        end_local = start_local;        
         next_node_counter = -1; //reset counter
+
         //save node into refined path
         refined_path.insert(refined_path.begin(), end_local);
     }

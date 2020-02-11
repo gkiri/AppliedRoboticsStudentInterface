@@ -38,7 +38,6 @@
 //#include "DubinsCurvesHandler.hpp"
 
 //Unit test and printouts variables
-#define VISUALIZE_MAP 0  //(0)Deactivated - (1)Visualize elements in map
 #define DUBINS_CURVE 0
 #define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
@@ -282,10 +281,13 @@ namespace student {
   {   
     /*************CONFIG VARIABLES*********************/
     //Load config file
+    //std::string config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
     std::string config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
-    
+
+    //Robot parameters
     double robot_length = load_config_param(config_dir, "robot_length"); //(m)    
-    double robot_width = load_config_param(config_dir, "robot_width"); //(m)    
+    double robot_width = load_config_param(config_dir, "robot_width"); //(m)
+    double robot_speed = load_config_param(config_dir, "robot_speed"); //(m/s)   
 
     //Visualising the map parameters
     double map_w = load_config_param(config_dir, "map_w"); //real map width in m    
@@ -307,11 +309,14 @@ namespace student {
     //Dubins planner
     double delta = load_config_param(config_dir, "delta"); //tune angle in degrees    
 
-    //mission id
+    //mission parameters
     int mission_id = load_config_param(config_dir, "mission_id");
+    double victim_reward = load_config_param(config_dir, "victim_reward"); //s
+    double goal_delta = load_config_param(config_dir, "goal_delta"); //m
    
     //Drawing flag
-    int drawing = load_config_param(config_dir, "drawing");   
+    int drawing = load_config_param(config_dir, "drawing");
+    int unit_test = load_config_param(config_dir, "unit_test");
     /*****************************************************/
 
 
@@ -360,34 +365,33 @@ namespace student {
     PRM_param.n_samples = n_samples;
     PRM_param.max_dist = max_dist;
     PRM_param.min_dist = min_dist;
-
+    PRM_param.scale = map_param.scale;
+    
     //start point    
     start_pose[0] = x;
     start_pose[1] = y;
     start_pose[2] = theta;
 
+    // /*start test*/
+    // start_pose[0] = 0.173173964024;
+    // start_pose[1] = 0.866390109062;
+    // start_pose[2] = 0.00524377822876;
+
     //end point = gate_pose    
-    get_gate_pose(gate, map_h, map_w, robot_length, gate_pose);
+    get_gate_pose(gate, map_h, map_w, robot_length, gate_pose, goal_delta);
     
     /*-------- failing test---------*/
-    // gate_pose[0] = 0.35;
-    // gate_pose[1] = 0.5;
-    // gate_pose[2] = M_PI;
+    //gate_pose[0] = 0.35;
+    //gate_pose[1] = 0.5;
+    //gate_pose[2] = M_PI;
+    
+
 
 
     //output for missions
     struct mission_output_0 miss_output_0;
-    struct mission_output_12 miss_output_12;    
-
-    // /*--------small tests----------------*/  
-    // Point victim_centroid;
-    // //set bias points with victims
-    // for(std::pair<int,Polygon> victim : victim_list){
-    //   victim_centroid = get_polygon_centroid(victim.second);
-    //   bias_points.push_back(victim_centroid);
-    //   //draw
-    //   //draw_victim(victim, map_param);
-    // }
+    struct mission_output_1 miss_output_1; 
+    struct mission_output_2 miss_output_2;
     
 
     /*--------mission selection ------------*/
@@ -408,32 +412,48 @@ namespace student {
 
     case 1:      
 
-      miss_output_12 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
+      miss_output_1 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
         bias_points, delta);
-      path = miss_output_12.path;
+      path = miss_output_1.path;
       if(path.empty()){
         printf("Empty path\n");
         break;
       }
       else if(drawing){
-        drawing_mission_1(inflated_obstacle_list, miss_output_12, map_param);
+        drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
       }
       break;    
     
+    case 15:
+      
+      miss_output_1 = mission_15(PRM_param, dubins_param, start_pose, gate_pose, 
+        victim_list, delta);
+      path = miss_output_1.path;
+      //if(path.empty()){
+      if(false){      
+        printf("Empty path\n");
+        break;
+      }
+      else if(drawing){
+        drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
+      }      
+      break;
+
     case 2:
       
-      miss_output_12 = mission_2(PRM_param, dubins_param, start_pose, gate_pose, 
-        victim_list, delta);
-      path = miss_output_12.path;
-      //if(path.empty()){
+      miss_output_2 = mission_2(PRM_param, dubins_param, start_pose, gate_pose, 
+        victim_list, delta, victim_reward, robot_speed);
+      path = miss_output_2.path;
+      //if(path.empty()){  
       if(false){
         printf("Empty path\n");
         break;
       }
       else if(drawing){
-        drawing_mission_1(inflated_obstacle_list, miss_output_12, map_param);
+        drawing_mission_2(inflated_obstacle_list, victim_list, miss_output_2, map_param);
       }      
       break;
+    
     
     default:
       printf("Student interface: No mission selected\n");
@@ -460,100 +480,105 @@ namespace student {
     
 
     /*****************Alvaro overall and prm planner Unit testing ********************/
-    #if PRM_PLANNER_TEST
-    double start_pose[3], goal_pose[3];
-    struct dubins_param dubins_param;
-    //double RAD2DEG = 180.0/M_PI;
-    dubins_param.k_max = k_max;
-    dubins_param.discretizer_size = discretizer_size;
+    if (unit_test){
+      //double start_pose[3], goal_pose[3];
+      //struct dubins_param dubins_param;
+      //double RAD2DEG = 180.0/M_PI;
+      //dubins_param.k_max = k_max;
+      //dubins_param.discretizer_size = discretizer_size;
 
-    //start point    
-    start_pose[0] = x;
-    start_pose[1] = y;
-    start_pose[2] = theta;
-    
-    //end point
-    goal_pose[0] = gate_pose[0];
-    goal_pose[1] = gate_pose[1];
-    goal_pose[2] = gate_pose[2];    
-    //bias points
-    std::vector<Point> bias_points;
-    //Call planner
-    //UT_overall_planner(qs, qe, path, inflated_obstacle_list,map_w,map_h,N, &map_param); 
-    //UT_prm_planner(qs, qe, bias_points, inflated_obstacle_list, map_w,map_h,N, &map_param); 
-    //Create instance
-    PRM obj(inflated_obstacle_list, map_w, map_h, N);
-    //call prm_planner   
-    path = obj.prm_planner(start_pose, goal_pose, bias_points, dubins_param); 
-    if(path.empty()){printf("Empty path\n");}
-    else{
-      for(int i=0;i<path.points.size();i++){
-      std::cout << "point " << i << ": " << path.points[i].s <<","<< path.points[i].x <<","
-      << path.points[i].y <<"," << path.points[i].theta <<","<< path.points[i].kappa << std::endl;
+
+
+      //start point    
+      start_pose[0] = x;
+      start_pose[1] = y;
+      start_pose[2] = theta;
+      
+      //end point
+      gate_pose[0] = 1.34648;
+      gate_pose[1] = 0.747094;
+      gate_pose[2] = M_PI/2;    
+      //bias points
+      //std::vector<Point> bias_points;
+      //Call planner
+
+      //UT_overall_planner(start_pose, gate_pose, inflated_obstacle_list,map_w,map_h,n_samples, &map_param); 
+      //UT_prm_planner(qs, qe, bias_points, inflated_obstacle_list, map_w,map_h,N, &map_param); 
+      //Create instance
+      /*
+      PRM obj(inflated_obstacle_list, map_w, map_h, N);
+      //call prm_planner   
+      path = obj.prm_planner(start_pose, goal_pose, bias_points, dubins_param); 
+      if(path.empty()){printf("Empty path\n");}
+      else{
+        for(int i=0;i<path.points.size();i++){
+        std::cout << "point " << i << ": " << path.points[i].s <<","<< path.points[i].x <<","
+        << path.points[i].y <<"," << path.points[i].theta <<","<< path.points[i].kappa << std::endl;
+        }
       }
-    }
-    
-    //Retrieving outputs
-    std::vector<Point> free_space_points = obj.get_free_space_points();
-    std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
-    std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
+      
+      //Retrieving outputs
+      std::vector<Point> free_space_points = obj.get_free_space_points();
+      std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
+      std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
 
-    //Drawing
+      //Drawing
 
-    //Drawing variables
-    std::pair<Point, std::vector<Point>> graph_node;  
-    Point V;
-    std::vector<Point> E; 
-    arc_extract edge_line;
-    Point E_point;
-    arc_extract dubins_path_seg;  
-    
-    //draw polygons
-    for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
-      draw_polygon(inflated_obstacle_list[i], map_param);
-    }
-    
-    //Draw prm_graph
-    for(int i=0; i<prm_graph.size(); i++){
-      //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
-      graph_node = prm_graph[i];
-      V = graph_node.first; //Vertex
-      //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
-      E = graph_node.second; //Edges
-      //Draw edges    
-      for(int j=0;j<E.size();j++){ 
-        //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
-        edge_line = to_arc_extract_type(V,E[j],true);
-        draw_line(edge_line, map_param);
+      //Drawing variables
+      std::pair<Point, std::vector<Point>> graph_node;  
+      Point V;
+      std::vector<Point> E; 
+      arc_extract edge_line;
+      Point E_point;
+      arc_extract dubins_path_seg;  
+      
+      //draw polygons
+      for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
+        draw_polygon(inflated_obstacle_list[i], map_param);
       }
-      //Draw vertex
-      draw_point(V, map_param, cv::Scalar(255,0,0));
-    }  
+      
+      //Draw prm_graph
+      for(int i=0; i<prm_graph.size(); i++){
+        //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
+        graph_node = prm_graph[i];
+        V = graph_node.first; //Vertex
+        //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+        E = graph_node.second; //Edges
+        //Draw edges    
+        for(int j=0;j<E.size();j++){ 
+          //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+          edge_line = to_arc_extract_type(V,E[j],true);
+          draw_line(edge_line, map_param);
+        }
+        //Draw vertex
+        draw_point(V, map_param, cv::Scalar(255,0,0));
+      }  
 
-    //Draw sample points  
-    for (int z=0;z<free_space_points.size();z++){
-        draw_point(free_space_points[z], map_param, cv::Scalar(255,0,0));           
-    }
-
-    //Draw global_planner path
-    for(int i=0;i<global_planner_path.size();i++){   
-      //Draw path
-      if(i<global_planner_path.size()-1){         
-        edge_line = to_arc_extract_type(global_planner_path[i],global_planner_path[i+1],true);
-        draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
+      //Draw sample points  
+      for (int z=0;z<free_space_points.size();z++){
+          draw_point(free_space_points[z], map_param, cv::Scalar(255,0,0));           
       }
-      //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
-    }
 
-    //Draw dubins curve   
-    for(int i=0; i<obj.path_final_draw.size(); i++){
-      dubins_path_seg = obj.path_final_draw[i]; //retrieve three_segments
-      //std::cout << "Dubins_path_" << i << std::endl;
-    
-      //Draw
-      draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,0,255));
+      //Draw global_planner path
+      for(int i=0;i<global_planner_path.size();i++){   
+        //Draw path
+        if(i<global_planner_path.size()-1){         
+          edge_line = to_arc_extract_type(global_planner_path[i],global_planner_path[i+1],true);
+          draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
+        }
+        //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
+      }
+
+      //Draw dubins curve   
+      for(int i=0; i<obj.path_final_draw.size(); i++){
+        dubins_path_seg = obj.path_final_draw[i]; //retrieve three_segments
+        //std::cout << "Dubins_path_" << i << std::endl;
+      
+        //Draw
+        draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,0,255));
+      } 
+      */
     } 
-    #endif
     
     
     /*****************************************************************************/  

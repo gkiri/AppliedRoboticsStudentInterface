@@ -36,7 +36,8 @@ double TO_CM = 100.0;    //Transform from m to cms
 
 /* Initialize map-------------------------------------------*/
 
-img_map_def initialize_img_map(double map_w, double map_h, double img_map_w){
+img_map_def
+ initialize_img_map(double map_w, double map_h, double img_map_w){
     // Initialize the map parameters for the visual representation of points, dubins curves
     // and polygons 
     
@@ -47,6 +48,10 @@ img_map_def initialize_img_map(double map_w, double map_h, double img_map_w){
     cv::Mat img_map = cv::Mat::zeros(scale*map_h*TO_CM, img_map_w, CV_8UC3); //create empty map
 
     img_map_def result = {img_map, scale, coord_trans};
+
+    std::cout << "scale in img param " << scale << std::endl;
+
+
     return result;
 }
 
@@ -489,8 +494,8 @@ void drawing_mission_0(double start_pose[3], double gate_pose[3], Polygon gate,
 }
 
 
-void drawing_mission_1(std::vector<Polygon>& inflated_obstacle_list, 
-    mission_output_12 miss_output_12, img_map_def map_param){
+void drawing_mission_1(std::vector<Polygon> inflated_obstacle_list, 
+    mission_output_1 miss_output_1, img_map_def map_param){
 
     //Drawing variables
     std::pair<Point, std::vector<Point>> graph_node;  
@@ -500,15 +505,16 @@ void drawing_mission_1(std::vector<Polygon>& inflated_obstacle_list,
     Point E_point;
     arc_extract dubins_path_seg;  
 
+
     //draw polygons
     for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
         draw_polygon(inflated_obstacle_list[i], map_param);
     }
 
     // //Draw prm_graph
-    // for(int i=0; i<miss_output_12.prm_graph.size(); i++){
+    // for(int i=0; i<miss_output_1.prm_graph.size(); i++){
     //     //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
-    //     graph_node = miss_output_12.prm_graph[i];
+    //     graph_node = miss_output_1.prm_graph[i];
     //     V = graph_node.first; //Vertex
     //     //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
     //     E = graph_node.second; //Edges
@@ -523,23 +529,23 @@ void drawing_mission_1(std::vector<Polygon>& inflated_obstacle_list,
     // }  
 
     // //Draw sample points  
-    // for (int z=0;z<miss_output_12.free_space_points.size();z++){
-    //     draw_point(miss_output_12.free_space_points[z], map_param, cv::Scalar(255,0,0));           
+    // for (int z=0;z<miss_output_1.free_space_points.size();z++){
+    //     draw_point(miss_output_1.free_space_points[z], map_param, cv::Scalar(255,0,0));           
     // }
 
-    //Draw global_planner path
-    for(int i=0;i<miss_output_12.global_planner_path.size();i++){   
-        //Draw path
-        if(i<miss_output_12.global_planner_path.size()-1){         
-        edge_line = to_arc_extract_type(miss_output_12.global_planner_path[i],miss_output_12.global_planner_path[i+1],true);
-        draw_line(edge_line, map_param, cv::Scalar(255,255,255));    
-        }
-        //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
-    }
+    // //Draw global_planner path
+    // for(int i=0;i<miss_output_1.global_planner_path.size();i++){   
+    //     //Draw path
+    //     if(i<miss_output_1.global_planner_path.size()-1){         
+    //     edge_line = to_arc_extract_type(miss_output_1.global_planner_path[i],miss_output_1.global_planner_path[i+1],true);
+    //     draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
+    //     }
+    //     //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
+    // }
 
     //Draw failed dubins curve   
-    for(int i=0; i<miss_output_12.failed_paths_draw.size(); i++){
-        dubins_path_seg = miss_output_12.failed_paths_draw[i]; //retrieve three_segments
+    for(int i=0; i<miss_output_1.failed_paths_draw.size(); i++){
+        dubins_path_seg = miss_output_1.failed_paths_draw[i]; //retrieve three_segments
         //std::cout << "Dubins_path_" << i << std::endl;
 
         //Draw
@@ -547,11 +553,45 @@ void drawing_mission_1(std::vector<Polygon>& inflated_obstacle_list,
     } 
 
     //Draw sucessful dubins curve   
-    for(int i=0; i<miss_output_12.path_final_draw.size(); i++){
-        dubins_path_seg = miss_output_12.path_final_draw[i]; //retrieve three_segments
+    for(int i=0; i<miss_output_1.path_final_draw.size(); i++){
+        dubins_path_seg = miss_output_1.path_final_draw[i]; //retrieve three_segments
         //std::cout << "Dubins_path_" << i << std::endl;
 
         //Draw
         draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,255,0));
-    }     
+    } 
+
+    //Draw collision points      
+    for(int i=0;i<miss_output_1.collision_points.size();i++){      
+      draw_point(miss_output_1.collision_points[i], map_param);
+    } 
+
+    
+
+
+}
+
+void drawing_mission_2(std::vector<Polygon> inflated_obstacle_list, 
+    std::vector<std::pair<int,Polygon>> victim_list, mission_output_2 miss_output_2, img_map_def map_param){
+
+    //Drawing variables
+    std::pair<Point, std::vector<Point>> graph_node;  
+    Point V, victim_centroid;
+    std::vector<Point> E; 
+    arc_extract edge_line;
+    Point E_point;
+    arc_extract dubins_path_seg;  
+
+    //draw polygons
+    for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
+        draw_polygon(inflated_obstacle_list[i], map_param);
+    }
+ 
+    //Draw victims 
+    for(std::pair<int,Polygon> victim : victim_list){
+      victim_centroid = get_polygon_centroid(victim.second);      
+      std::cout << "victim: " << victim.first << ": " << victim_centroid.x << "," << victim_centroid.y << std::endl;
+      //draw
+      draw_victim(victim, map_param);
+    }
 }

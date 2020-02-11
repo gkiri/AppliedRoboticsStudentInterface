@@ -5,12 +5,14 @@
 
 #include "mission_apis.hpp"
 
-void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot_length, double* gate_pose){    
+void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot_length, 
+    double* gate_pose, double goal_delta){  
+
     double RAD2DEG = 180.0/M_PI;
     double x_sum = 0;
     double y_sum = 0;
     int n_vertex = 0;
-    double delta = 0.025;
+    //double delta = 0.025;
     std::vector<double> dist_to_wall; //[left,right,up,down]    
     double lowest_dist = 100;
     int closest_wall;
@@ -43,22 +45,22 @@ void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot
     //Set pose and heading angle depending on closest wall
     switch (closest_wall){
     case 0: //left
-        gate_pose[0] = robot_length/2 + delta;
+        gate_pose[0] = robot_length/2 + goal_delta;
         gate_pose[2] = M_PI;
         //std::cout << "closes wall: Left wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
         break;
     case 1: //right
-        gate_pose[0] = map_w - (robot_length/2 + delta);
+        gate_pose[0] = map_w - (robot_length/2 + goal_delta);
         gate_pose[2] = 0;
         //std::cout << "closes wall: Right wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
         break;
     case 2: //up
-        gate_pose[1] = map_h - (robot_length/2 + delta);
+        gate_pose[1] = map_h - (robot_length/2 + goal_delta);
         gate_pose[2] = M_PI/2;
         //std::cout << "closes wall: Up wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
         break;
     case 3: //down
-        gate_pose[1] = robot_length/2 + delta;
+        gate_pose[1] = robot_length/2 + goal_delta;
         gate_pose[2] = -M_PI/2;
         //std::cout << "closes wall: Down wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
         break;
@@ -92,17 +94,23 @@ mission_output_0 mission_0(dubins_param dubins_param, double start_pose[3], doub
 }
 
 
-mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
+mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
     double gate_pose[3], std::vector<Point> bias_points, double delta){
     
     Path path;
-    struct mission_output_12 mission_12;
+    struct mission_output_1 mission_1;
 
     //create PRM instance
-    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples);
-    //call prm planner
-    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, PRM_param.max_dist,
-        PRM_param.min_dist, dubins_param, delta);
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
+    
+    //Add start and end point to bias points    
+    bias_points.insert(bias_points.begin(), Point(start_pose[0],start_pose[1]));
+    bias_points.push_back(Point(gate_pose[0],gate_pose[1]));
+
+    //Build the roadmap
+    PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);    
+   
+    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
     
     //Retrieve PRM variables for drawing purposes
     std::vector<Point> free_space_points = PRM_obj.get_free_space_points();
@@ -110,28 +118,29 @@ mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, doub
     std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
 
     //save output
-    mission_12.path = path;
-    mission_12.free_space_points = free_space_points;
-    mission_12.prm_graph = prm_graph;
-    mission_12.global_planner_path = global_planner_path;
-    mission_12.path_final_draw = PRM_obj.path_final_draw;
-    mission_12.failed_paths_draw = PRM_obj.failed_paths;
+    mission_1.path = path;
+    mission_1.free_space_points = free_space_points;
+    mission_1.prm_graph = prm_graph;
+    mission_1.global_planner_path = global_planner_path;
+    mission_1.path_final_draw = PRM_obj.path_final_draw;
+    mission_1.failed_paths_draw = PRM_obj.failed_paths;
 
-    return mission_12; 
+    return mission_1; 
 }
 
-mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
+mission_output_1 mission_15(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
     double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta){
     
     Path path;
-    struct mission_output_12 mission_12;
+    struct mission_output_1 mission_1;
     Point victim_centroid;
     std::vector<Point> bias_points;
+    Point start, goal;
 
     //create PRM instance
-    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples);
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
     
-    //set bias points
+    //set bias points with the victim list centroids
     for(std::pair<int,Polygon> victim : victim_list){
       victim_centroid = get_polygon_centroid(victim.second);
       bias_points.push_back(victim_centroid);
@@ -139,9 +148,17 @@ mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, doub
       //draw_victim(victim, map_param);
     }
     
+    //Add start and end point to bias points 
+    start = Point(start_pose[0],start_pose[1]);
+    goal = Point(gate_pose[0],gate_pose[1]);
+    bias_points.insert(bias_points.begin(),start);
+    bias_points.push_back(goal);
+    
+    //Build the roadmap
+    PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
+    
     //call prm planner
-    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, PRM_param.max_dist,
-        PRM_param.min_dist, dubins_param, delta);
+    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
     
     //Retrieve PRM variables for drawing purposes
     std::vector<Point> free_space_points = PRM_obj.get_free_space_points();
@@ -149,12 +166,74 @@ mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, doub
     std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
 
     //save output
-    mission_12.path = path;
-    mission_12.free_space_points = free_space_points;
-    mission_12.prm_graph = prm_graph;
-    mission_12.global_planner_path = global_planner_path;
-    mission_12.path_final_draw = PRM_obj.path_final_draw;
-    mission_12.failed_paths_draw = PRM_obj.failed_paths;
+    mission_1.path = path;
+    mission_1.free_space_points = free_space_points;
+    mission_1.prm_graph = prm_graph;
+    mission_1.global_planner_path = global_planner_path;
+    mission_1.path_final_draw = PRM_obj.path_final_draw;
+    mission_1.failed_paths_draw = PRM_obj.failed_paths;
+    mission_1.collision_points = PRM_obj.collision_points;
 
-    return mission_12; 
+    return mission_1; 
+}
+
+mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
+    double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta, 
+    double victim_reward, double robot_speed){
+    
+    //variables
+    Path path;
+    struct mission_output_2 mission_2;       
+    Point start, goal;
+    Point victim_centroid; 
+    std::vector<Point> victim_location_list;
+    std::vector<std::vector<Point>> all_bias_points_combinations;
+
+    //Set start and goal point
+    start = Point(start_pose[0],start_pose[1]);
+    goal = Point(gate_pose[0],gate_pose[1]);
+
+    //Set victim location list
+    for(std::pair<int,Polygon> victim : victim_list){
+      victim_centroid = get_polygon_centroid(victim.second);
+      victim_location_list.push_back(victim_centroid);      
+    }
+
+    //Set all possible combinations
+    all_bias_points_combinations.push_back(start); //add start always at the beginnin
+    for()
+
+
+    //create PRM instance
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
+    
+    //set bias points 
+    
+    //Add start and end point to bias points     
+    bias_points.insert(bias_points.begin(),start);
+    bias_points.push_back(goal);
+    
+    //Build the roadmap
+    PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
+    
+    //call prm planner
+    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
+    
+    //Retrieve PRM variables for drawing purposes
+    std::vector<Point> free_space_points = PRM_obj.get_free_space_points();
+    std::vector<std::pair<Point, std::vector<Point> >> prm_graph = PRM_obj.get_prm_graph();
+    std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
+
+    //save output
+    mission_2.path = path;
+    mission_2.free_space_points = free_space_points;
+    mission_2.prm_graph = prm_graph;
+    mission_2.global_planner_path = global_planner_path;
+    mission_2.path_final_draw = PRM_obj.path_final_draw;
+    mission_2.failed_paths_draw = PRM_obj.failed_paths;
+    mission_2.collision_points = PRM_obj.collision_points;
+
+
+
+    return mission_2; 
 }

@@ -1,13 +1,18 @@
 robot_length = 0.2
-robot_width = 0.14  
+robot_width = 0.14 
+robot_speed = 0.1 
 map_w = 1.56
 map_h = 1.06
 img_map_w = 720
-n_samples = 500    
+n_samples = 800    
 min_dist = 0.1001   
 max_dist = 0.2001 
-k_max = 10
+k_max = 20
 discretizer_size = 0.005
 delta = 5  
-mission_id = 2  
+goal_delta = 0.01
+victim_reward = 2
+mission_id = 1
+unit_test = 0  
 drawing = 1
+

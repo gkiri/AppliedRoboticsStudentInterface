@@ -386,3 +386,23 @@ double load_config_param(std::string config_dir, std::string param_name){
   }  
 }
 
+// //https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+// double minimum_distance(vec2<double> v, vec2<double> w, vec2<double> p) {
+//   vec2<double> dot, w_minus_v;
+//   // Return minimum distance between line segment vw and point p
+//   const float l2 = v.dist(w);  // i.e. |w-v|^2 -  avoid a sqrt
+//   if (l2 == 0.0) return l2;   // v == w case
+//   // Consider the line extending the segment, parameterized as v + t (w - v).
+//   // We find projection of point p onto the line. 
+//   // It falls where t = [(p-v) . (w-v)] / |w-v|^2
+//   // We clamp t from [0,1] to handle points outside the segment vw.
+//   const double t = std::max<double>(0, std::min<double>(1, dot.dot(p - v, w - v) / l2));
+//   const vec2<double> projection = v + w*t - v*t;  // Projection falls on the segment
+
+//   return p.dist(projection);
+// }
+
+// vec2<double> Point_to_vec2(Point Pt){
+//   return vec2(Pt.x,Pt.y);
+// }
+

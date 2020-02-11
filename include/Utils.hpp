@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string> 
 #include <algorithm>
+#include "vec2.h"
 
 
 /*Variables*/
@@ -41,6 +42,11 @@ struct PRM_param{
     double map_w, map_h, max_dist, min_dist;
     std::vector<Polygon> obstacle_list;
     int n_samples;
+    double scale;
+};
+//Struct for line equation parameters
+struct line_eq_param{
+    double m,b; // y=mx+b
 };
 
 
@@ -177,4 +183,18 @@ arc_param calculate_arc_drawing_angles(arc_extract arc);
 Point get_polygon_centroid(Polygon poly);
 
 
+/**
+ * Load an given parameter from a configuration file .txt given the full directory of the
+ * configuration file and the name of the parameter
+ * Note: It returns only double type
+ * 
+ * @param config_dir  - full directory of configuration file
+ * @param param_name - name of parameter
+ * @returns - value of parameter
+*/
 double load_config_param(std::string config_dir, std::string param_name);
+
+
+// double minimum_distance(vec2<double> v, vec2<double> w, vec2<double> p);
+
+// vec2<double> Point_to_vec2(Point Pt);
