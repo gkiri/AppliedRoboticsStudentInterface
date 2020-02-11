@@ -35,6 +35,7 @@ public:
 
     /*variables for testing purposes*/
     std::vector<arc_extract> path_final_draw;
+    std::vector<arc_extract> failed_paths;
     std::vector<Point> knn_draw;
 
     // /*final path*/

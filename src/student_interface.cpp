@@ -285,10 +285,9 @@ namespace student {
     std::string config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
     
     double robot_length = load_config_param(config_dir, "robot_length"); //(m)    
-    double robot_width = load_config_param(config_dir, "robot_width"); //(m) 
-   
+    double robot_width = load_config_param(config_dir, "robot_width"); //(m)    
 
-     //Visualising the map parameters
+    //Visualising the map parameters
     double map_w = load_config_param(config_dir, "map_w"); //real map width in m    
     double map_h = load_config_param(config_dir, "map_h"); //real map height in m     
     double img_map_w = load_config_param(config_dir, "img_map_w"); //image map width in pixels

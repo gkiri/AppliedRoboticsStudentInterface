@@ -41,14 +41,15 @@ PRM::~PRM()
 
 /* Draw Point in Polygon Test -------------------------------------------*/
 bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
-{
+{   
+    double TO_CM = 100;
     std::vector<cv::Point> contour;
     Polygon obstacle;
     cv::Point cv_point_temp;
 
     cv::Point2f test_pt;
-	  test_pt.x = pt.x*100*720/156;
-	  test_pt.y = pt.y*100*576/106;
+	  test_pt.x = pt.x*TO_CM*720/156;
+	  test_pt.y = pt.y*TO_CM*490/106; 
 
     for (size_t j = 0; j<cv_poly_list.size(); j++){  
 
@@ -57,8 +58,8 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list)
 
         for (size_t k = 0; k<obstacle.size(); k++){  
 
-            cv_point_temp.x=obstacle[k].x*100*720/150;//img_map_w*x_ob/map_w
-            cv_point_temp.y=obstacle[k].y*100*576/100;
+            cv_point_temp.x=obstacle[k].x*TO_CM*720/156;
+            cv_point_temp.y=obstacle[k].y*TO_CM*490/106;
             contour.push_back(cv_point_temp);
 
         }//inner for loop
@@ -289,9 +290,16 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             create_three_seg(three_seg, qs[0], qs[1], dubins_path);
 
             //Check for collision            
-            repath = Highlevel_Box_dubins_check(obstacle_list, three_seg);
-            std::cout << repath << std::endl;        
-
+            //repath = Highlevel_Box_dubins_check(obstacle_list, three_seg);
+            //Using liesin_point
+            for(DubinsLine dubins_sample: dubins_path.discretized_curve){                       
+                repath = point_liesin_polygon(Point(dubins_sample.xf, dubins_sample.yf),
+                    obstacle_list);
+                if(repath){
+                    break;
+                }
+            }
+           
             //No collision
             if(!repath){
                 std::cout << "---> QS: (" << qs[0] << "," << qs[1] << "," << qs[2]*RAD2DEG << "), QM: ("
@@ -311,7 +319,13 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             }   
             //Collision
             else{ 
-                //tune heading angle of qm
+
+                //Push failed segments for drawing purposes
+                for(int i=0; i<3; i++){
+                    failed_paths.push_back(three_seg[i]);
+                }
+
+                //tune heading angle of qm                
                 if(!tuned_up){                 
                     heading_angle_sum += delta*DEG2RAD;   //sum delta                    
                     qm[2] = heading_angle_sum; //set mid heading angle 

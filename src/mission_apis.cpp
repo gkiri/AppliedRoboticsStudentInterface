@@ -115,6 +115,7 @@ mission_output_12 mission_1(PRM_param PRM_param, dubins_param dubins_param, doub
     mission_12.prm_graph = prm_graph;
     mission_12.global_planner_path = global_planner_path;
     mission_12.path_final_draw = PRM_obj.path_final_draw;
+    mission_12.failed_paths_draw = PRM_obj.failed_paths;
 
     return mission_12; 
 }
@@ -153,6 +154,7 @@ mission_output_12 mission_2(PRM_param PRM_param, dubins_param dubins_param, doub
     mission_12.prm_graph = prm_graph;
     mission_12.global_planner_path = global_planner_path;
     mission_12.path_final_draw = PRM_obj.path_final_draw;
+    mission_12.failed_paths_draw = PRM_obj.failed_paths;
 
     return mission_12; 
 }
