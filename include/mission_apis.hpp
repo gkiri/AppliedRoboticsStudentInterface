@@ -14,6 +14,7 @@ struct mission_output_0{
 struct mission_output_12{
     Path path;
     std::vector<arc_extract> path_final_draw;
+    std::vector<arc_extract> failed_paths_draw;
     std::vector<Point> free_space_points;
     std::vector<std::pair<Point, std::vector<Point> >> prm_graph;
     std::vector<Point> global_planner_path;

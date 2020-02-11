@@ -8,6 +8,6 @@ min_dist = 0.1001
 max_dist = 0.2001 
 k_max = 10
 discretizer_size = 0.005
-delta = 15  
+delta = 5  
 mission_id = 2  
 drawing = 1
