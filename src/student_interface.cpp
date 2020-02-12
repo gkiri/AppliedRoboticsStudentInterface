@@ -44,6 +44,8 @@
 #define DRAW_GATE_TEST 0
 #define UNIT_TEST 0
 
+#define LAB_DIR 0
+
 
 namespace student {
 
@@ -233,23 +235,27 @@ namespace student {
     cv::warpPerspective(img_in, img_out, transf, img_in.size());
   }
 
-
   bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
 
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
-
+    bool arena=true;
     //const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
-    const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+    //const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+
+    const std::string& template_folder = "/home/robotics/workspace/group_4/imgs/template/";
 
     //const std::string& template_folder="../imgs/template/";
     // Convert color space from BGR to HSV
-    cv::Mat hsv_img;
+    cv::Mat hsv_img,temp_img;
     cv::cvtColor(img_in, hsv_img, cv::COLOR_BGR2HSV);
 
     const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
     if(!res1) std::cout << "processObstacles return false" << std::endl;
-    const bool res2 = processGate(hsv_img, scale, gate);
+
+    //const bool res2 = processGate(hsv_img, scale, gate);
+    const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
     if(!res2) std::cout << "processGate return false" << std::endl;
+
     //const bool res3 = processVictims(hsv_img, scale, victim_list);
     const bool res3 = processVictims_student(img_in,hsv_img, scale, victim_list,template_folder);
     if(!res3) std::cout << "processVictims return false" << std::endl;
@@ -281,8 +287,18 @@ namespace student {
   {   
     /*************CONFIG VARIABLES*********************/
     //Load config file
-    //std::string config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
-    std::string config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
+    int dir = 0; //0-Alvaro, 1-Kiran  
+    std::string config_dir;
+    #if LAB_DIR
+  	config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
+    #else    
+    if(dir){
+      config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
+    }
+    else{
+      config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
+    }    
+    #endif
 
     //Robot parameters
     double robot_length = load_config_param(config_dir, "robot_length"); //(m)    
@@ -329,18 +345,17 @@ namespace student {
     double OFFSET_polygon = robot_length/2; // less restrictive case --> length of robot                           
     std::vector<Polygon> clean_obstacle_list, inflated_obstacle_list, inflated_walls;
 
-    //sanity check     
+    //sanity check: Eliminate polygons with 2 or less edges
     for(Polygon poly:obstacle_list){   
       if(poly.size() > 2){
         clean_obstacle_list.push_back(poly);
       }
     }
     
-    //Inflate polygon function --> Return std::vector<Polygon>   
+    //Inflate polygon function   
     inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET_polygon);
     //Inflate walls    
     inflated_walls = inflate_walls(map_w, map_h, OFFSET_polygon);
-
     //Add inflated walls to inflated_obstacle_list
     inflated_obstacle_list.insert(inflated_obstacle_list.end(),inflated_walls.begin(),
             inflated_walls.end());
@@ -348,10 +363,15 @@ namespace student {
    
     /****************** Missions **********************************************/
     
-    /*------variables--------*/
+    //variables
     double start_pose[3], gate_pose[3];
     struct dubins_param dubins_param; 
-    std::vector<Point> bias_points;   
+    std::vector<Point> bias_points;
+
+    //output for missions
+    struct mission_output_0 miss_output_0;
+    struct mission_output_1 miss_output_1; 
+    struct mission_output_2 miss_output_2;  
     
     //set dubins param
     dubins_param.k_max = k_max;
@@ -370,42 +390,28 @@ namespace student {
     //start point    
     start_pose[0] = x;
     start_pose[1] = y;
-    start_pose[2] = theta;
-
-    // /*start test*/
-    // start_pose[0] = 0.173173964024;
-    // start_pose[1] = 0.866390109062;
-    // start_pose[2] = 0.00524377822876;
+    start_pose[2] = theta;   
 
     //end point = gate_pose    
     get_gate_pose(gate, map_h, map_w, robot_length, gate_pose, goal_delta);
-    
-    /*-------- failing test---------*/
-    //gate_pose[0] = 0.35;
-    //gate_pose[1] = 0.5;
-    //gate_pose[2] = M_PI;
-    
 
-
-
-    //output for missions
-    struct mission_output_0 miss_output_0;
-    struct mission_output_1 miss_output_1; 
-    struct mission_output_2 miss_output_2;
     
 
     /*--------mission selection ------------*/
     switch (mission_id){
 
     case 0:      
-      miss_output_0 = mission_0(dubins_param, start_pose, gate_pose);
-      path = miss_output_0.path;
-      if(path.empty()){
-        printf("Empty path\n");
+      miss_output_0 = mission_0(dubins_param, start_pose, gate_pose);     
+      if(miss_output_0.path.empty()){
+        printf("Empty path\n");   
         break;
       }
-      else if(drawing){       
-        drawing_mission_0(start_pose,gate_pose,gate,miss_output_0,map_param);
+      else{
+        //set path
+        path = miss_output_0.path;
+        if(drawing){       
+          drawing_mission_0(start_pose,gate_pose,gate,miss_output_0,map_param);
+        }
       }
       break;
       
@@ -413,44 +419,51 @@ namespace student {
     case 1:      
 
       miss_output_1 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
-        bias_points, delta);
-      path = miss_output_1.path;
-      if(path.empty()){
-        printf("Empty path\n");
+                                  bias_points, delta);      
+      if(miss_output_1.path.empty()){           
+        printf("Empty path\n");        
         break;
       }
-      else if(drawing){
-        drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
-      }
+      else{
+        //Set path
+        path = miss_output_1.path;
+        if(drawing){
+          drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
+        }
+      }      
       break;    
     
     case 15:
       
       miss_output_1 = mission_15(PRM_param, dubins_param, start_pose, gate_pose, 
-        victim_list, delta);
-      path = miss_output_1.path;
-      //if(path.empty()){
-      if(false){      
-        printf("Empty path\n");
+                                  victim_list, delta);      
+      if(miss_output_1.path.empty()){           
+        printf("Empty path\n");        
         break;
       }
-      else if(drawing){
-        drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
+      else{
+        //Set path
+        path = miss_output_1.path;
+        if(drawing){
+          drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
+        }
       }      
       break;
 
     case 2:
       
       miss_output_2 = mission_2(PRM_param, dubins_param, start_pose, gate_pose, 
-        victim_list, delta, victim_reward, robot_speed);
-      path = miss_output_2.path;
-      //if(path.empty()){  
-      if(false){
+                          victim_list, delta, victim_reward, robot_speed);
+      if(miss_output_2.path.empty()){   
         printf("Empty path\n");
         break;
       }
-      else if(drawing){
-        drawing_mission_2(inflated_obstacle_list, victim_list, miss_output_2, map_param);
+      else{
+        //Set path
+        path = miss_output_2.path;
+        if(drawing){
+          drawing_mission_2(inflated_obstacle_list, victim_list, miss_output_2, map_param);
+        }
       }      
       break;
     
@@ -462,6 +475,11 @@ namespace student {
     
 
 
+
+
+
+    /*********************UNIT TEST SECTION*******************************************************/
+    #if UNIT_TEST
     #if DRAW_GATE_TEST
     //Drawing
     //polygons
@@ -644,9 +662,8 @@ namespace student {
 
     #endif
 
-    #if UNIT_TEST
-    /*********************UNIT TEST SECTION*******************************************************/
     
+    /*********************UNIT TEST SECTION*******************************************************/    
     //permute
     //UT_permute();
     //UT_print_all_comb(victim_list);
@@ -674,7 +691,7 @@ namespace student {
     /*****************************************************************************/
     
     /* **********************Gkiri PRM space Unit Testing*************************/
-    //UT_sample_generation(inflated_obstacle_list,map_w,map_h,N,&map_param);
+    UT_sample_generation(inflated_obstacle_list,map_w,map_h,n_samples,&map_param);
     /*****************************************************************************/
     
     /************************Process map unit testing******************************/
@@ -727,7 +744,7 @@ namespace student {
     #endif
 
 
-    /* Map visualization -------------------------------------------*/
+    /* Map visualization -------------------------------------------*/    
     if(drawing){
       //Show map image
       cv::imshow("Image",map_param.img_map);

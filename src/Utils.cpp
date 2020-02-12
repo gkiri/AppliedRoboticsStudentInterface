@@ -33,11 +33,7 @@ void compute_heading_angle(double* qs,double* qm,double* qe){
   double alpha, d_s_e;
   triangle_angles triang;
   int quadrant;
-
-  //Calculate beta1, beta2
-  //triang = compute_triangle_angles(Point(qs[0],qs[1]), Point(qm[0],qm[1]), Point(qe[0],qe[1]));
-  //std::cout << "Test for heading angle: " << triang.beta_1 << "," << triang.beta_2 << "," << triang.beta_3 << std::endl;
-
+  
   //Calculate alpha
   d_s_e = sqrt(pow(qs[0]-qe[0],2) + pow(qs[1]-qe[1],2)); //euclidean distance
   alpha = SafeAcos(sqrt(pow(qs[0]-qe[0],2))/d_s_e); //angle btw start and end
@@ -110,10 +106,6 @@ Point point_t_to_Point(point_t pt_t){
   return Pt;
 }
 
-// bool same_point(Point pt1, Point pt2){
-//   float epsilon = 0.00001;
-//   return std::fabs(pt1.x - pt2.x) < epsilon && std::fabs(pt1.y - pt2.y) < epsilon? true:false;
-// }  
 
 bool same_point(point_t pt1, point_t pt2){
   float epsilon = 0.00001;
@@ -236,18 +228,6 @@ Point compute_center(Point start,Point end,float radius,float length, int LSR){
   /*Let Distance H from midpoint to center */
   float h, h_round, sqrt_content;
   sqrt_content = pow(radius,2) - pow(distance,2)/4;   
-  //h_round = std::ceil(sqrt_content * 100.0) / 100.0; //round to the 2nd decimal
-  //std::cout << "sqrt_content: " << sqrt_content << std::endl;
-  //std::cout << "h_round: " << h_round << std::endl;
-
-  // if(sqrt_content < -0.0001) //residual threshold for r2-d2/4
-  // {
-  //     //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
-  //     sqrt_content =0;
-  // }else if(sqrt_content < 0.0 && sqrt_content > -0.0001)
-  // {
-  //     //std::cout << "Gkiri::Sqrt is NaN or 0 " << h << std::endl;
-  // }
 
   if(sqrt_content > -0.0001 && sqrt_content < 0.0)
   {
@@ -291,8 +271,7 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
     }
     else{
         alpha = -alpha;
-    }
-    //std::cout << "ALPHA:"<< alpha << std::endl;
+    }  
 
     //Calculate beta = Angle btw positive x-axis and start    
     beta = atan2(e.y - arc.center.y, e.x - arc.center.x)*RAD2DEG;
@@ -301,8 +280,7 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
     }
     else{
         beta = -beta;
-    }
-    //std::cout << "BETA:"<< beta << std::endl;      
+    }       
 
     //Check for turn (Left or Right)
     if(alpha < beta){
@@ -326,9 +304,7 @@ arc_param calculate_arc_drawing_angles(arc_extract arc){
             start_angle = alpha;
             end_angle = beta + 360;
         }
-    }    
-
-    //std::cout << "START,END ANGLE:" << start_angle << "," << end_angle << std::endl;
+    }       
     
     arc_param result = {start_angle, end_angle};
 
@@ -389,24 +365,4 @@ double load_config_param(std::string config_dir, std::string param_name){
 double dist_2points(Point pt1, Point pt2){
     return sqrt(pow(pt2.x-pt1.x,2) + pow(pt2.y-pt1.y,2));
 }
-
-// //https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
-// double minimum_distance(vec2<double> v, vec2<double> w, vec2<double> p) {
-//   vec2<double> dot, w_minus_v;
-//   // Return minimum distance between line segment vw and point p
-//   const float l2 = v.dist(w);  // i.e. |w-v|^2 -  avoid a sqrt
-//   if (l2 == 0.0) return l2;   // v == w case
-//   // Consider the line extending the segment, parameterized as v + t (w - v).
-//   // We find projection of point p onto the line. 
-//   // It falls where t = [(p-v) . (w-v)] / |w-v|^2
-//   // We clamp t from [0,1] to handle points outside the segment vw.
-//   const double t = std::max<double>(0, std::min<double>(1, dot.dot(p - v, w - v) / l2));
-//   const vec2<double> projection = v + w*t - v*t;  // Projection falls on the segment
-
-//   return p.dist(projection);
-// }
-
-// vec2<double> Point_to_vec2(Point Pt){
-//   return vec2(Pt.x,Pt.y);
-// }
 

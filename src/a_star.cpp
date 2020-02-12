@@ -1,12 +1,3 @@
-/*******************************************************************************
-*                                                                              *
-* Author    :  Alvaro Rubio Gomez                                              *
-* Version   :  1.0                                                             *
-*                                                                              *
-*  TBC                                                                         * 
-*                                                                              *
-*******************************************************************************/
-
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
@@ -60,7 +51,6 @@ namespace globalplanner{
         
         //Define all variables
         std::vector<Point> path;        
-        //Node pointers start_node, end_node, current_node, current, new_node;
         Node *start_node, *end_node, *current_node, *current, *new_node;
         int current_index;
         int graph_index;
@@ -71,48 +61,20 @@ namespace globalplanner{
 
         //Initialize vertex and edges vector        
         for(int i=0;i<graph.size();i++){
-            V_vector.push_back(graph[i].first); //Vertex
-            //std::cout << "V_vector: " << V_vector[i].x << ", " << V_vector[i].y << std::endl;
+            V_vector.push_back(graph[i].first); //Vertex            
             E_vector.push_back(graph[i].second); //Edges            
         }            
 
         //Create start and end node
         start_node = start_node->create_node(nullptr,start);
-        end_node = end_node->create_node(nullptr,end);
-
-        // //Method tests       
-        // //start_node = start_node->create_node(nullptr,start);
-        // std::cout << "START: " << start_node->position.x << ", " << start_node->position.y << std::endl;
-        // std::cout << "ADDRESS: " << start_node << std::endl;
-        // //end_node = end_node->create_node(nullptr,end);
-        // std::cout << "END_PRE: " << end_node->position.x << ", " << end_node->position.y << std::endl;
-        // std::cout << "ADDRESS: " << end_node << std::endl;
-        // std::cout << "PARENT: " << end_node->parent << std::endl;
-        // end_node = end_node->create_node(start_node,Point(0,0));
-        // std::cout << "END_POS: " << end_node->position.x << ", " << end_node->position.y << std::endl;
-        // std::cout << "ADDRESS: " << end_node << std::endl;
-        // std::cout << "PARENT: " << end_node->parent << std::endl;
-        // std::cout << "PARENT_pos: " << end_node->parent->position.x << std::endl;
-        // //Check eq function
-        // //end_node->eq(start_node);
-        // end_node = start_node;
-        // std::cout << "END_POS: " << end_node->position.x << ", " << end_node->position.y << std::endl;
-        // std::cout << "ADDRESS: " << end_node << std::endl;
-        // std::cout << "PARENT: " << end_node->parent << std::endl;
-        // //Check if equal
-        // if(start_node->ifeq(end_node)){
-        //     std::cout << "True" << std::endl;
-        // } else{
-        //     std::cout << "False" << std::endl;
-        // }
+        end_node = end_node->create_node(nullptr,end);        
         
         //Initialize both open and closed list
         std::vector<Node*> open_list;  //include adjacent nodes that has to be evaluated (f value)
         std::vector<Node*> closed_list;  //include nodes from the open_list which has been evaluated (lowest f value)
        
         //Add the start node
-        open_list.push_back(start_node); 
-        
+        open_list.push_back(start_node);         
 
         //Loop until you find the end        
         while (open_list.size() > 0){                    
@@ -207,9 +169,8 @@ namespace globalplanner{
                 }
 
             }
-        }
+        }        
         
-        // //DELETE TEMP
         printf("path not found");
         return path; 
         

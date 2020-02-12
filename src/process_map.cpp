@@ -386,3 +386,56 @@ Point compute2DPolygonCentroid(Polygon vertices)
 
     return centroid;
 }
+
+
+
+
+
+bool Gate_Process_second(const cv::Mat &img_in, cv::Mat &showImage, const double scale, Polygon &gate, bool arena ) {
+    cv::Mat hsv_img;
+    cv::cvtColor(img_in, hsv_img, cv::COLOR_BGR2HSV);
+
+    // Find purple regions
+    cv::Mat green_mask;
+
+    if(!arena) { //Per simulatore
+        cv::inRange(hsv_img, cv::Scalar(45, 50, 50), cv::Scalar(75, 255, 255), green_mask);
+    }else{ //Arena
+        cv::inRange(hsv_img, cv::Scalar(45, 40, 60), cv::Scalar(80, 255, 180), green_mask);
+    }
+
+    cv::imshow("Gate", green_mask);
+    cv::waitKey(20);
+
+    std::vector<std::vector<cv::Point>> contours, contours_approx;
+    std::vector<cv::Point> approx_curve;
+    //cv::Mat contours_img;
+
+    // Process purple mask
+    //contours_img = hsv_img.clone();
+    cv::findContours(green_mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    //drawContours(contours_img, contours, -1, cv::Scalar(40,190,40), 4, cv::LINE_AA);
+    // std::cout << "N. contours: " << contours.size() << std::endl;
+
+    bool res = false;
+
+    for (auto &contour : contours) {
+        const double area = cv::contourArea(contour);
+        for (int i = 5; i < 10; i++) {
+            approxPolyDP(contour, approx_curve, i, true);
+
+            if (approx_curve.size() == 4) {
+                contours_approx = {approx_curve};
+                drawContours(showImage, contours_approx, -1, cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
+
+                for (const auto &pt: approx_curve) {
+                    gate.emplace_back(pt.x / scale, pt.y / scale);
+                }
+
+                return true;
+            }
+        }
+    }
+
+    return res;
+}

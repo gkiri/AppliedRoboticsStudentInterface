@@ -13,7 +13,6 @@
 #include <sstream>
 #include <string> 
 #include <algorithm>
-#include "vec2.h"
 
 
 /*Variables*/
@@ -107,15 +106,6 @@ point_t Point_to_point_t(Point Pt);
 */
 Point point_t_to_Point(point_t pt_t);
 
-// /**
-//  * Given two points of type Point, determine whether they are 
-//  * the same point or not
-//  * 
-//  * @param pt1 - first point
-//  * @param pt2 - second point
-//  * @output - return true if they are the same point, false otherwise
-// */
-// bool same_point(Point pt1, Point pt2);
 
 /**
  * Given two points of type point_t, determine whether they are 
@@ -195,4 +185,11 @@ Point get_polygon_centroid(Polygon poly);
 double load_config_param(std::string config_dir, std::string param_name);
 
 
+/**
+ * Calculate euclidean distance between two points
+ * 
+ * @param pt1  - first given point
+ * @param pt2 - second given point
+ * @returns - euclidean distance between given points
+*/
 double dist_2points(Point pt1, Point pt2);
