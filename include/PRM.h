@@ -17,12 +17,12 @@ class  PRM {
 public:
 
     PRM(std::vector<Polygon> polygons_list);
-    PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N);
+    PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N, double scale);
 
     ~PRM();    
 
     /*Function to check Point lies in polygon */
-    bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list);
+    bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale);
 
     /*Function to return private variables*/
     std::vector<Point> get_free_space_points();
@@ -37,9 +37,10 @@ public:
     std::vector<arc_extract> path_final_draw;
     std::vector<arc_extract> failed_paths;
     std::vector<Point> knn_draw;
+    std::vector<Point> collision_points;
 
-    // /*final path*/
-    // Path final_path; //Dubins planner final path
+    /*final path*/
+    double path_length; 
 
     
     /**
@@ -89,6 +90,10 @@ public:
      */
     Path dubins_planner(float start_theta, float goal_theta, struct dubins_param, double delta);
 
+
+    void build_roadmap(std::vector<Point> bias_points, double max_dist, double min_dist);
+
+
     /**
      * Given a starting pose, a goal pose and a vector of bias points (points through
      * where the robot is required to pass by), it updates the variable path used by 
@@ -102,10 +107,18 @@ public:
      * @param dubins_param - k_max and discretize step size for dubins
      * @param delta - tune angle in degrees when a collision happen
      * @return Path - return final path to be followed by the robot
-     */
+     */    
     Path prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bias_points,
-        double max_dist, double min_dist, struct dubins_param, double delta);
+        struct dubins_param, double delta);
 
+
+    /**
+     * Given a global planner path, refines the path to have the least amount of nodes
+     *  
+     * @param tmp_global_planner_path - Given global planner path to be refined     
+     * @returns - refined global planner path
+    */
+    std::vector<Point> refine_global_planner_path(std::vector<Point> tmp_global_planner_path);
 
 
 private:
@@ -117,12 +130,6 @@ private:
     double cspace_width; //width of sample space
     double cspace_height; //height of sample space
     int N; //Number of samples
-
-    /**
-     * Given a global planner path, refines the path to have the least amount of nodes
-     *  
-     * @param tmp_global_planner_path - Given global planner path to be refined     
-     * @returns - refined global planner path
-    */
-    std::vector<Point> refine_global_planner_path(std::vector<Point> tmp_global_planner_path);
+    double scale; //scale for point lies in polygon algorithm
+    
 };

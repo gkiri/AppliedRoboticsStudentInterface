@@ -105,7 +105,7 @@ std::vector<Point> generate_free_space_points_test (std::vector<std::pair<Point,
 void UT_sample_generation(std::vector<Polygon> obstacle_list, double map_w, 
           double map_h, int N, img_map_def *map_param)
 {
-    PRM obj(obstacle_list, map_w, map_h, N);
+    PRM obj(obstacle_list, map_w, map_h, N, map_param->scale);
     obj.generate_random_points();
     std::vector<Point> free_space_points = obj.get_free_space_points();
     std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << free_space_points.size() <<  std::endl;
@@ -319,7 +319,7 @@ void UT_dubins_path(std::vector<Polygon> obstacle_list, img_map_def *map_param){
 void UT_overall_planner(double* start_pose, double* goal_pose, 
       std::vector<Polygon> obstacle_list, double map_w, double map_h, int N, img_map_def *map_param){
   //Set variables for unit test
-  PRM obj(obstacle_list, map_w, map_h, N);
+  PRM obj(obstacle_list, map_w, map_h, N, map_param->scale);
   double min_dist = 0.1001;    
   double max_dist = 0.3001;
   //Point start = Point(0.1,0.1);
@@ -342,22 +342,22 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   std::vector<Point> bias_points;
   bias_points.push_back(start);
   bias_points.push_back(goal);
- 
+  
   //Call local planner 
   obj.local_planner(bias_points, max_dist, min_dist);
   
   //Retrieve the output of your function
   std::vector<std::pair<Point, std::vector<Point> >> prm_graph = obj.get_prm_graph();
-
+  /*
   //****************************************************************************
   //********Global planner****************************************************** 
-
+  
   //Call global planner   
   obj.global_planner(start,goal);
 
   //Retrieve output of global planner
   std::vector<Point> global_planner_path = obj.get_global_planner_path(); 
-
+  
   //****************************************************************************
   //********Dubins planner******************************************************
   //Path final_path; //container for dubins planner path outcome
@@ -368,7 +368,7 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   dubins_param.discretizer_size = 0.005;
   double delta = 15;
   obj.dubins_planner(start_theta, goal_theta, dubins_param, delta); 
-
+  */
 
   //****************************************************************************
   //********Drawing and printing the result ************************************
@@ -407,7 +407,7 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   for (int z=0;z<free_space_points.size();z++){
       draw_point(free_space_points[z], *map_param, cv::Scalar(255,0,0));           
   }
-
+  /*
   //Draw global_planner path
   for(int i=0;i<global_planner_path.size();i++){   
     //Draw path
@@ -425,7 +425,8 @@ void UT_overall_planner(double* start_pose, double* goal_pose,
   
     //Draw
     draw_dubins_segment(dubins_path_seg, *map_param, cv::Scalar(0,0,255));
-  }  
+  }
+  */
 }
 
 
@@ -433,7 +434,8 @@ void UT_prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bi
          std::vector<Polygon> obstacle_list, double map_w, double map_h, int N, 
          img_map_def *map_param){
   //Create instance
-  PRM obj(obstacle_list, map_w, map_h, N);
+  PRM obj(obstacle_list, map_w, map_h, N, map_param->scale);
+
   //call prm_planner
   struct dubins_param dubins_param;
   dubins_param.k_max = 10;
@@ -441,7 +443,7 @@ void UT_prm_planner(double* start_pose, double* goal_pose, std::vector<Point> bi
   double delta = 15;
   double min_dist = 0.1001;    
   double max_dist = 0.3001;
-  obj.prm_planner(start_pose, goal_pose, bias_points, max_dist, min_dist, dubins_param, delta);
+  obj.prm_planner(start_pose, goal_pose, bias_points, dubins_param, delta);
 
   //Retrieve all variables for drawing purposes
   std::vector<Point> free_space_points = obj.get_free_space_points();
@@ -1716,4 +1718,55 @@ void UT_KDTree(img_map_def *map_param){
   }
   //Nearest point (green)
   draw_point(Pt, *map_param, cv::Scalar(0,255,0)); //nearest
+}
+
+void print(const std::vector<int>& v)
+{
+    for (int e : v) {
+        std::cout << " " << e;
+    }
+    std::cout << std::endl;
+}
+
+//https://ideone.com/O4KhFh
+void UT_permute(){
+  std::vector<int> v = {0,1,2,3};
+  // vector should be sorted at the beginning.
+  int counter=0;
+
+  do {
+      print(v);
+      counter++;
+  } while (std::next_permutation(v.begin(), v.end()));
+  std::cout << "total iterations:" << counter << std::endl;
+}
+
+void UT_print_all_comb(std::vector<std::pair<int,Polygon>> victim_list){
+
+  std::vector<Point> victim_centroid_list;
+  Point victim_centroid;
+  std::vector<std::vector<Point>> v_comb;
+
+  Point start = Point(0,0);
+  Point end = Point(1,1);
+
+  for(std::pair<int,Polygon> victim : victim_list){
+    victim_centroid = get_polygon_centroid(victim.second);
+    victim_centroid_list.push_back(victim_centroid);    
+  }
+
+  compute_all_combinations(v_comb, start, end, victim_centroid_list);
+
+  std::cout << "v_comb_size:" << v_comb.size() << std::endl;
+  
+  int counter = 0;
+  for(std::vector<Point> comb:v_comb){
+    counter++;
+    std::cout << "COMBINATION: " << counter << std::endl;
+    for(Point bias_point:comb){
+      std::cout << "(" << std::round(bias_point.x*100)/100 << "," << 
+        std::round(bias_point.y*100)/100 << "), ";
+    }  
+    std::cout << std::endl;  
+  }
 }
