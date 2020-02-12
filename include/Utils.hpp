@@ -194,7 +194,3 @@ Point get_polygon_centroid(Polygon poly);
 */
 double load_config_param(std::string config_dir, std::string param_name);
 
-
-// double minimum_distance(vec2<double> v, vec2<double> w, vec2<double> p);
-
-// vec2<double> Point_to_vec2(Point Pt);

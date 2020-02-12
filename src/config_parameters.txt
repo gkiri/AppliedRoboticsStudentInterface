@@ -11,8 +11,8 @@ k_max = 20
 discretizer_size = 0.005
 delta = 5  
 goal_delta = 0.01
-victim_reward = 2
-mission_id = 1
-unit_test = 0  
+victim_reward = 20
+mission_id = 2
+unit_test = 0	
 drawing = 1
 

@@ -98,3 +98,7 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta, 
     double victim_reward, double robot_speed);
 
+
+
+void compute_all_combinations(std::vector<std::vector<Point>>& v_comb, 
+        Point start, Point end, std::vector<Point> victim_centroid_list);

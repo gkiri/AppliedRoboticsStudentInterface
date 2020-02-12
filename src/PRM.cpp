@@ -246,12 +246,14 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
     Path path, no_path;
     //For dubins
     //double discretizer_size = 0.005;
+    double total_path_length = 0;
     struct arc_extract three_seg[3]; 
     DubinsCurvesHandler dubins_handler(dubins_param.k_max, dubins_param.discretizer_size);       
     DubinsCurve dubins_path;
     double qs[3],qm[3],qe[3]; 
     double heading_angle_sum, heading_angle_sub; //trackers of the heading angles after summing and substracting
-    
+    std::vector<arc_extract> path_draw_container, failed_path_draw_container;
+
     while(!globalplanner::ifeq_point(global_planner_path[node_pos], global_planner_path.back())){ //while goal is not reached
         repath = true; //reset flag for collision detected
         N = 0; //reset repath counter    
@@ -320,10 +322,13 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
         
                 //Push segments for drawing purposes
                 for(int i=0; i<3; i++){
-                    path_final_draw.push_back(three_seg[i]);
+                    path_draw_container.push_back(three_seg[i]);                    
                 }
                 //Insert new dubins path into path
-                concatenate_dubins_path(path,dubins_path, dubins_param.discretizer_size);                                                  
+                concatenate_dubins_path(path,dubins_path, dubins_param.discretizer_size); 
+
+                //Add up length of dubins curve to the total length of path
+                total_path_length += dubins_path.L;                                                 
 
                 //Set up for next node            
                 node_pos++; //next node
@@ -334,7 +339,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
 
                 //Push failed segments for drawing purposes
                 for(int i=0; i<3; i++){
-                    failed_paths.push_back(three_seg[i]);
+                    failed_path_draw_container.push_back(three_seg[i]);                    
                 }
 
                 //tune heading angle of qm                
@@ -360,6 +365,11 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             return no_path; //return empty path
         }
     }
+
+    //Save total length of path and drawings paths
+    path_length = total_path_length;
+    path_final_draw = path_draw_container;
+    failed_paths = failed_path_draw_container;
    
     return path;
 }

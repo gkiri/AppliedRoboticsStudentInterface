@@ -458,7 +458,7 @@ namespace student {
     default:
       printf("Student interface: No mission selected\n");
       break;
-    }
+    }   
     
 
 
@@ -646,12 +646,16 @@ namespace student {
 
     #if UNIT_TEST
     /*********************UNIT TEST SECTION*******************************************************/
+    
+    //permute
+    //UT_permute();
+    //UT_print_all_comb(victim_list);
 
     /************************Draw test******************************************/
     //Print an example of th drawing functions in a single image
     //draw_test(obstacle_list,x,y,theta,victim_list,map_param);
     
-    UT_draw_victims(victim_list,&map_param);
+    //UT_draw_victims(victim_list,&map_param);
 
     /*****************************************************************************/ 
 
@@ -691,7 +695,7 @@ namespace student {
 
 
     /*****************GkiriCollision Unit testing ********************************/
-    UT_line_arc_collision_prof(&map_param);
+    //UT_line_arc_collision_prof(&map_param);
     //UT_Bounding_Box(obstacle_list,&map_param);
     //UT_Bounding_Box_line_check(obstacle_list,&map_param);//boundingbox vs line
     //UT_Bounding_Box_line_check_obstacles(obstacle_list,&map_param);//boundingbox vs line

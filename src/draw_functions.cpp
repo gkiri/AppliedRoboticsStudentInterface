@@ -581,6 +581,8 @@ void drawing_mission_2(std::vector<Polygon> inflated_obstacle_list,
     arc_extract edge_line;
     Point E_point;
     arc_extract dubins_path_seg;  
+    std::vector<arc_extract> all_paths, opt_path;
+    std::vector<arc_extract> path_draw;    
 
     //draw polygons
     for (size_t i = 0; i<inflated_obstacle_list.size(); i++){
@@ -594,4 +596,35 @@ void drawing_mission_2(std::vector<Polygon> inflated_obstacle_list,
       //draw
       draw_victim(victim, map_param);
     }
+
+    //Draw all paths
+    //Retrieve each path
+    for(int i=0;i<miss_output_2.all_cost_pathdraw.size();i++){
+        path_draw = miss_output_2.all_cost_pathdraw[i].second; 
+        //cost TBD   
+        //Draw dubins
+        for(int j=0; j<path_draw.size(); j++){
+            dubins_path_seg = path_draw[j]; //retrieve three_segments  
+            //Draw
+            draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(255,0,0));
+        } 
+    }
+
+    //Draw optimal one
+    path_draw = miss_output_2.opt_cost_pathdraw.second;
+    //cost TBD
+    //Draw dubins
+    for(int j=0; j<path_draw.size(); j++){
+        dubins_path_seg = path_draw[j]; //retrieve three_segments  
+        //Draw
+        draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,255,0));
+    } 
+   
 }
+
+// std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
+//     std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;
+
+//     all_paths, opt_path;
+
+//      std::vector<arc_extract> path_final_draw;

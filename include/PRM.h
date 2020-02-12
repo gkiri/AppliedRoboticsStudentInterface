@@ -39,8 +39,8 @@ public:
     std::vector<Point> knn_draw;
     std::vector<Point> collision_points;
 
-    // /*final path*/
-    // Path final_path; //Dubins planner final path
+    /*final path*/
+    double path_length; 
 
     
     /**

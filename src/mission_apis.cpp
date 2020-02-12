@@ -137,20 +137,19 @@ mission_output_1 mission_15(PRM_param PRM_param, dubins_param dubins_param, doub
     std::vector<Point> bias_points;
     Point start, goal;
 
+    //Set start and goal point
+    start = Point(start_pose[0],start_pose[1]);
+    goal = Point(gate_pose[0],gate_pose[1]);
+
     //create PRM instance
     PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
     
     //set bias points with the victim list centroids
     for(std::pair<int,Polygon> victim : victim_list){
       victim_centroid = get_polygon_centroid(victim.second);
-      bias_points.push_back(victim_centroid);
-      //draw
-      //draw_victim(victim, map_param);
-    }
-    
-    //Add start and end point to bias points 
-    start = Point(start_pose[0],start_pose[1]);
-    goal = Point(gate_pose[0],gate_pose[1]);
+      bias_points.push_back(victim_centroid);      
+    }    
+    //Add start and end point to bias points     
     bias_points.insert(bias_points.begin(),start);
     bias_points.push_back(goal);
     
@@ -186,54 +185,110 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     struct mission_output_2 mission_2;       
     Point start, goal;
     Point victim_centroid; 
-    std::vector<Point> victim_location_list;
-    std::vector<std::vector<Point>> all_bias_points_combinations;
+    std::vector<Point> victim_centroid_list;
+    std::vector<std::vector<Point>> v_comb;
+    std::vector<std::pair<double, Path>> all_cost_path;
+    std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
+    std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;
+    std::vector<Point> bias_points;
+    double path_cost;
+    int opt_index;
+    double lowest_cost = 9999;
+
 
     //Set start and goal point
     start = Point(start_pose[0],start_pose[1]);
-    goal = Point(gate_pose[0],gate_pose[1]);
+    goal = Point(gate_pose[0],gate_pose[1]);  
 
-    //Set victim location list
+    //set bias points with the victim list centroids
     for(std::pair<int,Polygon> victim : victim_list){
       victim_centroid = get_polygon_centroid(victim.second);
-      victim_location_list.push_back(victim_centroid);      
-    }
-
-    //Set all possible combinations
-    all_bias_points_combinations.push_back(start); //add start always at the beginnin
-    for()
-
-
-    //create PRM instance
-    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
-    
-    //set bias points 
-    
+      bias_points.push_back(victim_centroid);      
+    }    
+    //Save copy of only victim centroids for computing all combinations of victims
+    victim_centroid_list = bias_points;
     //Add start and end point to bias points     
     bias_points.insert(bias_points.begin(),start);
     bias_points.push_back(goal);
-    
+
+    //create PRM instance
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
+        
     //Build the roadmap
     PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
+
+    //Compute all possible combinations
+    compute_all_combinations(v_comb, start, goal, victim_centroid_list);    
     
-    //call prm planner
-    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
     
-    //Retrieve PRM variables for drawing purposes
-    std::vector<Point> free_space_points = PRM_obj.get_free_space_points();
-    std::vector<std::pair<Point, std::vector<Point> >> prm_graph = PRM_obj.get_prm_graph();
-    std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
+    for(int i=0; i<v_comb.size();i++){
+        //For each combination
+        bias_points = v_comb[i];
+
+        //call prm planner
+        path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
+
+        //Calculate cost of path
+        path_cost = PRM_obj.path_length/robot_speed - victim_reward*(bias_points.size()-2); //- 2 :discount start and end
+
+        //Save cost and path
+        all_cost_path.push_back(std::make_pair(path_cost, path));
+
+        //Save path segments for drawing purposes
+        all_cost_pathdraw.push_back(std::make_pair(path_cost, PRM_obj.path_final_draw));
+    }
+
+    //Check the optimal path
+    for(int i=0; i< all_cost_path.size(); i++) {
+        if(all_cost_path[i].first < lowest_cost){
+            opt_index = i;
+            lowest_cost = all_cost_path[i].first;
+        }        
+    }  
+
+    //Save optimal path
+    path = all_cost_path[opt_index].second; 
+
+    //Save optimal path segments for drawing purposes
+    opt_cost_pathdraw = all_cost_pathdraw[opt_index];
+
 
     //save output
     mission_2.path = path;
-    mission_2.free_space_points = free_space_points;
-    mission_2.prm_graph = prm_graph;
-    mission_2.global_planner_path = global_planner_path;
-    mission_2.path_final_draw = PRM_obj.path_final_draw;
-    mission_2.failed_paths_draw = PRM_obj.failed_paths;
-    mission_2.collision_points = PRM_obj.collision_points;
-
-
+    mission_2.all_cost_pathdraw = all_cost_pathdraw;
+    mission_2.opt_cost_pathdraw = opt_cost_pathdraw;
 
     return mission_2; 
+}
+
+
+void compute_all_combinations(std::vector<std::vector<Point>>& v_comb, 
+        Point start, Point end, std::vector<Point> victim_centroid_list){
+    
+    //variables
+    std::vector<int> v_index_permuted;
+    std::vector<Point> comb;
+    int N; //number of indexes
+
+    //Set vector of indexes
+    for(int j=0; j<victim_centroid_list.size() ;j++){
+        v_index_permuted.push_back(j);
+    }
+
+    //permutations
+    do {    
+        N = v_index_permuted.size();     
+        while(N > 0){
+            comb.push_back(start); //Add start
+            for(int i=0; i<N; i++){
+                //add victim centroid for each permutation
+                comb.push_back(victim_centroid_list[i]); 
+            }
+            comb.push_back(end); //add end
+            v_comb.push_back(comb); // Add final combination to the vector of combinations
+            N--; //remove last victim
+            comb.clear(); //empty vector
+        }        
+    } while (std::next_permutation(v_index_permuted.begin(), v_index_permuted.end()));    
+    v_comb.push_back({start,end}); //Last combination is from start to end
 }
