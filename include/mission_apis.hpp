@@ -21,9 +21,12 @@ struct mission_output_1{
     std::vector<Point> collision_points;
 };
 struct mission_output_2{
-    Path path;
+    Path path;    
     std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
-    std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;        
+    std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;    
+    std::vector<Point> free_space_points;
+    std::vector<std::pair<Point, std::vector<Point> >> prm_graph; 
+    std::vector<Point> global_planner_path;   
 };
 
 
@@ -68,7 +71,7 @@ mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, doubl
 
 /**
  * Perform mission 1.5: Robot goes from actual position to the gate avoiding obstacles and collecting
- * all victims in no particular order (the one retrieved by process map)
+ * all victims in order depending on proximity
  * 
  * @param PRM_param - All parameters needed for PRM (obstacle list, map dimensions, number of samples)
  * @param dubins_param - dubins parameters k_max and discretizer_size
@@ -99,7 +102,14 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     double victim_reward, double robot_speed);
 
 
-
+/**
+ * Compute all possible path combinations (only the indexes) for a given set of victims
+ * 
+ * @param v_comb - All possible path combinations passed by reference
+ * @param start - starting point of the robot
+ * @param end - end point of the robot (gate) 
+ * @output - return by reference all possible path combinations
+*/
 void compute_all_combinations(std::vector<std::vector<Point>>& v_comb, 
         Point start, Point end, std::vector<Point> victim_centroid_list);
 

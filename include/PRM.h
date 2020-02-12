@@ -6,10 +6,6 @@
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 
-
-//#include "dubins_curve.hpp"
-
-//#include "DubinsCurvesHandler.hpp" (included in utils)
 #include "Utils.hpp"
 
 class  PRM {
@@ -91,6 +87,15 @@ public:
     Path dubins_planner(float start_theta, float goal_theta, struct dubins_param, double delta);
 
 
+    /**
+     * Given a set of bias points and a vector of samples, it builds a roadmap 
+     * (i.e, a graph of edges between samples)
+     *  
+     * @param bias_points - Points through where the robots must pass (E.g start,end,victim1,etc)
+     * @param max_dist - Maximum radius within it looks for nearest neighbors
+     * @param min_dist - Minimum radius within it does not look for nearest neighbors.     
+     * @output - updated prm_graph (roadmap)
+     */
     void build_roadmap(std::vector<Point> bias_points, double max_dist, double min_dist);
 
 
