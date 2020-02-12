@@ -194,3 +194,5 @@ Point get_polygon_centroid(Polygon poly);
 */
 double load_config_param(std::string config_dir, std::string param_name);
 
+
+double dist_2points(Point pt1, Point pt2);

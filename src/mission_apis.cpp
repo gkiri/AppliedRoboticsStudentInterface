@@ -183,17 +183,20 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     //variables
     Path path;
     struct mission_output_2 mission_2;       
-    Point start, goal;
+    Point start, goal, start_line_point, end_line_point;
     Point victim_centroid; 
-    std::vector<Point> victim_centroid_list;
+    std::vector<Point> victim_centroid_list, tmp_victim_centroid_list;
     std::vector<std::vector<Point>> v_comb;
     std::vector<std::pair<double, Path>> all_cost_path;
     std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
     std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;
-    std::vector<Point> bias_points;
+    std::vector<Point> bias_points, start_to_victim_path, global_planner_path;
     double path_cost;
-    int opt_index;
-    double lowest_cost = 9999;
+    int opt_index; 
+    int victim_index = 0;
+    double lowest_cost = 9999;    
+    std::vector<std::pair<double, int>> v_length_index_pair;
+    double L = 0;
 
 
     //Set start and goal point
@@ -216,6 +219,33 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
         
     //Build the roadmap
     PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
+
+    //Sort the victim list in terms of proximity to the start point
+    for(Point victim_location:victim_centroid_list){        
+        L = 0; //Reset length
+        //Call global planner
+        PRM_obj.global_planner(start,victim_location);
+        global_planner_path = PRM_obj.get_global_planner_path();
+        start_to_victim_path = PRM_obj.refine_global_planner_path(global_planner_path);
+        //Calculate distance for each victim
+        for(int i=0; i<start_to_victim_path.size() - 1; i++){
+            start_line_point = start_to_victim_path[i]; //start point of line
+            end_line_point = start_to_victim_path[i + 1]; //end point of line
+
+            //add up distance between points
+            L += dist_2points(start_line_point, end_line_point);            
+        }
+        //save length and victim index pair into vector
+        v_length_index_pair.push_back(std::make_pair(L, victim_index));
+        victim_index++; 
+    }
+    //sort by distance
+    tmp_victim_centroid_list = victim_centroid_list; //make tmp copy
+    sort(v_length_index_pair.begin(), v_length_index_pair.end());
+    //save definitive order into victim centroid list
+    for(int i=0;i<v_length_index_pair.size();i++){
+        victim_centroid_list[i] = tmp_victim_centroid_list[v_length_index_pair[i].second];
+    }   
 
     //Compute all possible combinations
     compute_all_combinations(v_comb, start, goal, victim_centroid_list);    
@@ -292,3 +322,5 @@ void compute_all_combinations(std::vector<std::vector<Point>>& v_comb,
     } while (std::next_permutation(v_index_permuted.begin(), v_index_permuted.end()));    
     v_comb.push_back({start,end}); //Last combination is from start to end
 }
+
+

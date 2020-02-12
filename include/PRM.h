@@ -112,6 +112,15 @@ public:
         struct dubins_param, double delta);
 
 
+    /**
+     * Given a global planner path, refines the path to have the least amount of nodes
+     *  
+     * @param tmp_global_planner_path - Given global planner path to be refined     
+     * @returns - refined global planner path
+    */
+    std::vector<Point> refine_global_planner_path(std::vector<Point> tmp_global_planner_path);
+
+
 private:
 
     std::vector<std::pair<Point, std::vector<Point> >> prm_graph; //G(V,E)
@@ -122,12 +131,5 @@ private:
     double cspace_height; //height of sample space
     int N; //Number of samples
     double scale; //scale for point lies in polygon algorithm
-
-    /**
-     * Given a global planner path, refines the path to have the least amount of nodes
-     *  
-     * @param tmp_global_planner_path - Given global planner path to be refined     
-     * @returns - refined global planner path
-    */
-    std::vector<Point> refine_global_planner_path(std::vector<Point> tmp_global_planner_path);
+    
 };

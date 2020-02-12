@@ -33,7 +33,6 @@ PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_
     this->scale = scale;
 }
 
-
 PRM::~PRM()
 {
 

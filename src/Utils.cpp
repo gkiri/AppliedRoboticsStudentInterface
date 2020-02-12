@@ -386,6 +386,10 @@ double load_config_param(std::string config_dir, std::string param_name){
   }  
 }
 
+double dist_2points(Point pt1, Point pt2){
+    return sqrt(pow(pt2.x-pt1.x,2) + pow(pt2.y-pt1.y,2));
+}
+
 // //https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 // double minimum_distance(vec2<double> v, vec2<double> w, vec2<double> p) {
 //   vec2<double> dot, w_minus_v;
