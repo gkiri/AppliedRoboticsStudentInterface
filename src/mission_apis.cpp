@@ -146,26 +146,31 @@ mission_output_1 mission_15(PRM_param PRM_param, dubins_param dubins_param, doub
    
     //Set start and goal point
     start = Point(start_pose[0],start_pose[1]);
-    goal = Point(gate_pose[0],gate_pose[1]);  
+    goal = Point(gate_pose[0],gate_pose[1]); 
 
-
-
-
-    //set bias points with victims in the order given by its number    
+    //set bias points with victims in the order given by its number 
+    //create vector of pairs: number + location of centroid   
     for(std::pair<int,Polygon> victim : victim_list){
       victim_centroid = get_polygon_centroid(victim.second);
-      victim_list_pos.push_back(std::make_pair(victim.first, victim_centroid));
-      bias_points.push_back(victim_centroid);      
+      victim_list_pos.push_back(std::make_pair(victim.first, victim_centroid));            
     }    
-    //Save copy of only victim centroids for computing all combinations of victims
-    victim_centroid_list = bias_points;
-    //Add start and end point to bias points     
-    bias_points.insert(bias_points.begin(),start);
+    //Sort by number
+    sort(victim_list_pos.begin(), victim_list_pos.end());
+    //Create bias points: start + sorted victims + goal
+    //Add start
+    bias_points.push_back(start);
+    //Add sorted victims
+    for(std::pair<int,Point> victim_pos : victim_list_pos){
+      bias_points.push_back(victim_pos.second);          
+    }  
+    //Add goal
     bias_points.push_back(goal);
 
-
-
-
+    // //Save copy of only victim centroids for computing all combinations of victims
+    // victim_centroid_list = bias_points;
+    // //Add start and end point to bias points     
+    // bias_points.insert(bias_points.begin(),start);
+    // bias_points.push_back(goal);
 
     //create PRM instance
     PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
