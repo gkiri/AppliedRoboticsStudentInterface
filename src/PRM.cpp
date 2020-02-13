@@ -323,7 +323,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             
         }
         if(N == maxIter){
-            printf("It does NOT exist a non-colliding path with this roadmap\n");          
+            //printf("It does NOT exist a non-colliding path with this roadmap\n");          
             return no_path; //return empty path
         }
     }
