@@ -17,7 +17,13 @@ public:
 
     ~PRM();    
 
-    /*Function to check Point lies in polygon */
+    /**
+     * Function to check Point lies in polygon
+     *
+     * @param cv_poly_list - polygon list     
+     *
+     * @returns - true if point lies inside false otherwise
+     */
     bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale);
 
     /*Function to return private variables*/

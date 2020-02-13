@@ -235,7 +235,7 @@ namespace student {
     cv::warpPerspective(img_in, img_out, transf, img_in.size());
   }
 
-  bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
+    bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
 
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
     bool arena=true;
@@ -252,8 +252,8 @@ namespace student {
     const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
     if(!res1) std::cout << "processObstacles return false" << std::endl;
 
-    //const bool res2 = processGate(hsv_img, scale, gate);
-    const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
+    const bool res2 = processGate(hsv_img, scale, gate);
+    //const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
     if(!res2) std::cout << "processGate return false" << std::endl;
 
     //const bool res3 = processVictims(hsv_img, scale, victim_list);
@@ -266,15 +266,20 @@ namespace student {
 
   }
 
+
   bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
     //throw std::logic_error( "STUDENT FUNCTION NOT IMPLEMENTED" );
-
+    bool robot_found;
+    
     //std::cout << "Gkiri:: findRobot:: Started" << std::endl;
-    findRobot_api(img_in, scale, triangle, x, y, theta, config_folder);
-    // Save robot parameters
-    x = x;
-    y = y;
-    theta = theta;
+    //robot_found=findRobot_api(img_in, scale, triangle, x, y, theta, config_folder);
+    robot_found=process_robot(img_in, scale, triangle, x, y, theta, config_folder);
+    if(!robot_found) 
+      std::cout << "findRobot:: return false " << std::endl;
+      // Save robot parameters
+      x = x;
+      y = y;
+      theta = theta;
   }
 
 

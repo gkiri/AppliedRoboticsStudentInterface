@@ -4,18 +4,13 @@
 #define RAD2DEG 180.0/M_PI
 #define COLLISION_DEBUG 0
 
-
-
 #define RHO 0.1
+
+#define EPS 1e-9
 
 //  Determines the intersection point of the line defined by points A and B with the
 //  line defined by points C and D.
 //
-//  Returns YES if the intersection point was found, and stores that point in X,Y.
-//  Returns NO if there is no determinable intersection point, in which case X,Y will
-//  be unmodified.
-#define EPS 1e-9
-
 bool isIntersecting(Point& p1, Point& p2, Point& q1, Point& q2) {
 
     return (((q1.x-p1.x)*(p2.y-p1.y) - (q1.y-p1.y)*(p2.x-p1.x))
@@ -86,7 +81,7 @@ bool linePoint(double x1, double y1, double x2, double y2, double px, double py)
 }
 
 
-// LINE/CIRCLE
+// Line circle collision detection
 bool lineCircle(double x1, double y1, double x2, double y2, double cx, double cy, double r) {
 
   // is either end INSIDE the circle?
