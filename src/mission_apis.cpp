@@ -95,120 +95,51 @@ mission_output_0 mission_0(dubins_param dubins_param, double start_pose[3], doub
 
 
 mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
-    double gate_pose[3], std::vector<Point> bias_points, double delta){
-    
-    Path path;
-    struct mission_output_1 mission_1;
-
-    //create PRM instance
-    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
-    
-    //Add start and end point to bias points    
-    bias_points.insert(bias_points.begin(), Point(start_pose[0],start_pose[1]));
-    bias_points.push_back(Point(gate_pose[0],gate_pose[1]));
-
-    //Build the roadmap
-    PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);    
-   
-    path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
-    
-    //Retrieve PRM variables for drawing purposes
-    std::vector<Point> free_space_points = PRM_obj.get_free_space_points();
-    std::vector<std::pair<Point, std::vector<Point> >> prm_graph = PRM_obj.get_prm_graph();
-    std::vector<Point> global_planner_path = PRM_obj.get_global_planner_path(); 
-
-    //save output
-    mission_1.path = path;
-    mission_1.free_space_points = free_space_points;
-    mission_1.prm_graph = prm_graph;
-    mission_1.global_planner_path = global_planner_path;
-    mission_1.path_final_draw = PRM_obj.path_final_draw;
-    mission_1.failed_paths_draw = PRM_obj.failed_paths;
-
-    return mission_1; 
-}
-
-mission_output_1 mission_15(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], 
     double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta){
     
     Path path;
-    struct mission_output_1 mission_1;
-    std::vector<std::pair<int,Point>> victim_list_pos; //centroid instead of polygon
-    Point start, goal, victim_centroid;
-    //Point start_line_point, end_line_point;
-    //std::vector<Point> victim_centroid_list, tmp_victim_centroid_list;
-    std::vector<Point> bias_points;
-    //DELETE start_to_victim_path, global_planner_path;    
-    //int victim_index = 0;
-    //double lowest_cost = 9999;    
-    //std::vector<std::pair<double, int>> v_length_index_pair;
-    //double L = 0;   
+    struct mission_output_1 mission_1;    
+    Point start, goal;    
+    std::vector<std::pair<int,int>> v_id_index_pair;
+    std::vector<int> v_victim_id;
+    std::vector<Point> v_victim_centroid;
+    Point victim_centroid;
+    int victim_index;   
+    std::vector<Point> bias_points;   
+  
    
     //Set start and goal point
     start = Point(start_pose[0],start_pose[1]);
-    goal = Point(gate_pose[0],gate_pose[1]); 
+    goal = Point(gate_pose[0],gate_pose[1]);   
 
-    //set bias points with victims in the order given by its number 
-    //create vector of pairs: number + location of centroid   
-    for(std::pair<int,Polygon> victim : victim_list){
-      victim_centroid = get_polygon_centroid(victim.second);
-      victim_list_pos.push_back(std::make_pair(victim.first, victim_centroid));            
-    }    
-    //Sort by number
-    sort(victim_list_pos.begin(), victim_list_pos.end());
-    //Create bias points: start + sorted victims + goal
+    //set bias points with victims in the order given by its number     
+    //sort by number 
+    victim_index = 0;
+    for(std::pair<int,Polygon> victim : victim_list){        
+        //Location of victim
+        victim_centroid = get_polygon_centroid(victim.second);
+        v_victim_centroid.push_back(victim_centroid);
+        //Save pair of victim id and index
+        v_id_index_pair.push_back(std::make_pair(victim.first, victim_index));
+        //increase index
+        victim_index++;
+    }
+    //sort by id
+    sort(v_id_index_pair.begin(), v_id_index_pair.end());
     //Add start
     bias_points.push_back(start);
-    //Add sorted victims
-    for(std::pair<int,Point> victim_pos : victim_list_pos){
-      bias_points.push_back(victim_pos.second);          
-    }  
-    //Add goal
+    //Add sorted victim locations (centroids)
+    for(std::pair<int, int> id_index_pair: v_id_index_pair){
+        bias_points.push_back(v_victim_centroid[id_index_pair.second]);
+    }
+    //Add end
     bias_points.push_back(goal);
-
-    // //Save copy of only victim centroids for computing all combinations of victims
-    // victim_centroid_list = bias_points;
-    // //Add start and end point to bias points     
-    // bias_points.insert(bias_points.begin(),start);
-    // bias_points.push_back(goal);
 
     //create PRM instance
     PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
         
     //Build the roadmap
     PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
-
-    // //Sort the victim list in terms of proximity to the start point
-    // for(Point victim_location:victim_centroid_list){        
-    //     L = 0; //Reset length
-    //     //Call global planner
-    //     PRM_obj.global_planner(start,victim_location);
-    //     global_planner_path = PRM_obj.get_global_planner_path();
-    //     start_to_victim_path = PRM_obj.refine_global_planner_path(global_planner_path);
-    //     //Calculate distance for each victim
-    //     for(int i=0; i<start_to_victim_path.size() - 1; i++){
-    //         start_line_point = start_to_victim_path[i]; //start point of line
-    //         end_line_point = start_to_victim_path[i + 1]; //end point of line
-
-    //         //add up distance between points
-    //         L += dist_2points(start_line_point, end_line_point);            
-    //     }
-    //     //save length and victim index pair into vector
-    //     v_length_index_pair.push_back(std::make_pair(L, victim_index));
-    //     victim_index++; 
-    // }
-    // //sort by distance
-    // tmp_victim_centroid_list = victim_centroid_list; //make tmp copy
-    // sort(v_length_index_pair.begin(), v_length_index_pair.end());
-    // //save definitive order into victim centroid list
-    // for(int i=0;i<v_length_index_pair.size();i++){
-    //     victim_centroid_list[i] = tmp_victim_centroid_list[v_length_index_pair[i].second];
-    // }      
-   
-    // //Bias points + victim list
-    // bias_points = victim_centroid_list;
-    // bias_points.insert(bias_points.begin(),start);
-    // bias_points.push_back(goal);
 
     //call prm planner
     path = PRM_obj.prm_planner(start_pose, gate_pose, bias_points, dubins_param, delta);
@@ -244,7 +175,7 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     std::vector<std::pair<double, Path>> all_cost_path;
     std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
     std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;
-    std::vector<Point> bias_points, start_to_victim_path, global_planner_path, free_space_points;
+    std::vector<Point> bias_points, refined_gp_path, global_planner_path, free_space_points;
     std::vector<std::pair<Point, std::vector<Point> >> prm_graph;
     double path_cost;
     int opt_index; 
@@ -276,44 +207,42 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     //Build the roadmap
     PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
 
-    //Sort the victim list in terms of proximity to the start point
+    //Sort the victim list in terms of proximity to the start point and gate remoteness
     for(Point victim_location:victim_centroid_list){        
-        L_sv = 0; //Reset length
-        L_vg = 0; //Reset length
-        L = 0;
+        L_sv = 0; //Reset distance btw start and victim
+        L_vg = 0; //Reset distance btw victim and goal
+        L = 0;    // Reset tota cost distance
         //Call global planner from start point to victim
         PRM_obj.global_planner(start,victim_location);
         global_planner_path = PRM_obj.get_global_planner_path();
-        start_to_victim_path = PRM_obj.refine_global_planner_path(global_planner_path);
+        refined_gp_path = PRM_obj.refine_global_planner_path(global_planner_path);
         //Calculate distance for each victim
-        for(int i=0; i<start_to_victim_path.size() - 1; i++){
-            start_line_point = start_to_victim_path[i]; //start point of line
-            end_line_point = start_to_victim_path[i + 1]; //end point of line
-
+        for(int i=0; i<refined_gp_path.size() - 1; i++){
+            start_line_point = refined_gp_path[i]; //start point of line
+            end_line_point = refined_gp_path[i + 1]; //end point of line
             //add up distance between points
-            L_sv += dist_2points(start_line_point, end_line_point); 
-                             
+            L_sv += dist_2points(start_line_point, end_line_point);                              
         }
         //Call global planner from victim to gate
         PRM_obj.global_planner(victim_location,goal);
         global_planner_path = PRM_obj.get_global_planner_path();
-        start_to_victim_path = PRM_obj.refine_global_planner_path(global_planner_path);
+        refined_gp_path = PRM_obj.refine_global_planner_path(global_planner_path);
         //Calculate distance for each victim
-        for(int i=0; i<start_to_victim_path.size() - 1; i++){
-            start_line_point = start_to_victim_path[i]; //start point of line
-            end_line_point = start_to_victim_path[i + 1]; //end point of line
-
+        for(int i=0; i<refined_gp_path.size() - 1; i++){
+            start_line_point = refined_gp_path[i]; //start point of line
+            end_line_point = refined_gp_path[i + 1]; //end point of line
             //add up distance between points
-            L_vg += dist_2points(start_line_point, end_line_point); 
-                             
+            L_vg += dist_2points(start_line_point, end_line_point);                              
         }
         //Sum up both lengths
         L = L_sv - L_vg;        
         //save length and victim index pair into vector
         v_length_index_pair.push_back(std::make_pair(L, victim_index));
+        //Increase index       
         victim_index++; 
-    }
-    //sort by distance
+    }   
+
+    //sort by distance cost
     tmp_victim_centroid_list = victim_centroid_list; //make tmp copy
     sort(v_length_index_pair.begin(), v_length_index_pair.end());
 
@@ -321,7 +250,6 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     for(int i=0;i<v_length_index_pair.size();i++){
         victim_centroid_list[i] = tmp_victim_centroid_list[v_length_index_pair[i].second];
     }  
-
 
     //Compute all possible combinations
     compute_all_combinations(v_comb, start, goal, victim_centroid_list);  

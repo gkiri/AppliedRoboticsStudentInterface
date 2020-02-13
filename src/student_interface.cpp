@@ -44,7 +44,7 @@
 #define DRAW_GATE_TEST 0
 #define UNIT_TEST 0
 
-#define LAB_DIR 1
+#define LAB_DIR 0
 
 
 namespace student {
@@ -240,9 +240,9 @@ namespace student {
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
     bool arena=true;
     //const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
-    //const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+    const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
 
-    const std::string& template_folder = "/home/robotics/workspace/group_4/imgs/template/";
+    //const std::string& template_folder = "/home/robotics/workspace/group_4/imgs/template/";
 
     //const std::string& template_folder="../imgs/template/";
     // Convert color space from BGR to HSV
@@ -252,8 +252,8 @@ namespace student {
     const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
     if(!res1) std::cout << "processObstacles return false" << std::endl;
 
-    //const bool res2 = processGate(hsv_img, scale, gate);
-    const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
+    const bool res2 = processGate(hsv_img, scale, gate);
+    //const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
     if(!res2) std::cout << "processGate return false" << std::endl;
 
     //const bool res3 = processVictims(hsv_img, scale, victim_list);
@@ -419,29 +419,11 @@ namespace student {
           drawing_mission_0(start_pose,gate_pose,gate,miss_output_0,map_param);
         }
       }
-      break;
-      
-
-    case 1:      
-
-      miss_output_1 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
-                                  bias_points, delta);      
-      if(miss_output_1.path.empty()){           
-        printf("Empty path\n");        
-        break;
-      }
-      else{
-        //Set path
-        path = miss_output_1.path;
-        if(drawing){
-          drawing_mission_1(inflated_obstacle_list, gate, miss_output_1, map_param);
-        }
-      }      
-      break;    
+      break;       
     
-    case 15:
+    case 1:
       
-      miss_output_1 = mission_15(PRM_param, dubins_param, start_pose, gate_pose, 
+      miss_output_1 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
                                   victim_list, delta);      
       if(miss_output_1.path.empty()){           
         printf("Empty path\n");        
