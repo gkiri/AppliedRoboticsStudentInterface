@@ -424,7 +424,7 @@ bool Gate_Process_second(const cv::Mat &img_in, cv::Mat &showImage, const double
         for (int i = 5; i < 10; i++) {
             approxPolyDP(contour, approx_curve, i, true);
 
-            if (approx_curve.size() == 4) {
+            if ((area>500.0)&&(approx_curve.size() == 4) ){
                 contours_approx = {approx_curve};
                 drawContours(showImage, contours_approx, -1, cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
 
