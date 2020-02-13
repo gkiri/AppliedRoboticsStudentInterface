@@ -428,7 +428,7 @@ namespace student {
         //Set path
         path = miss_output_1.path;
         if(drawing){
-          drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
+          drawing_mission_1(inflated_obstacle_list, gate, miss_output_1, map_param);
         }
       }      
       break;    
@@ -445,7 +445,7 @@ namespace student {
         //Set path
         path = miss_output_1.path;
         if(drawing){
-          drawing_mission_1(inflated_obstacle_list, miss_output_1, map_param);
+          drawing_mission_1(inflated_obstacle_list, gate, miss_output_1, map_param);
         }
       }      
       break;

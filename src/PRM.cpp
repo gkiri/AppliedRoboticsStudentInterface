@@ -221,8 +221,8 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
     DubinsCurve dubins_path;
     double qs[3],qm[3],qe[3]; 
     double heading_angle_sum, heading_angle_sub; //trackers of the heading angles after summing and substracting
-    std::vector<arc_extract> path_draw_container, failed_path_draw_container;
-    double qsqe, qmqe, alpha, beta;
+    std::vector<arc_extract> path_draw_container, failed_path_draw_container;  
+    triangle_angles triplet;
 
     while(!globalplanner::ifeq_point(global_planner_path[node_pos], global_planner_path.back())){ //while goal is not reached
         repath = true; //reset flag for collision detected
@@ -247,8 +247,15 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             qe[1] = global_planner_path[node_pos + 2].y;
             //by default goal theta, it is not used at any point
             qe[2] = goal_theta;           
-            //heading angle for the mid point -> Angle towards next point
-            qm[2] = atan2(qe[1] - qm[1], qe[0] - qm[0]);
+            //heading angle for the mid point
+            triplet = compute_triangle_angles(Point(qs[0],qs[1]),Point(qm[0],qm[1]), Point(qe[0],qe[1]));
+            if(triplet.beta_2*RAD2DEG < 90){ //qsqmqe angle
+                qm[2] = atan2(qe[1] - qm[1], qe[0] - qm[0]); //oriented towards inmmediate next point (big turn)   
+            }
+            else{
+                qm[2] = atan2(qe[1] - qs[1], qe[0] - qs[0]); //oriented towards next point ahead (small turn)
+            }
+            //qm[2] = atan2(qe[1] - qm[1], qe[0] - qm[0]);
         }            
       
         //Save original heading angle of mid point in case of collision
