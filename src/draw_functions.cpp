@@ -479,10 +479,10 @@ void drawing_mission_1(std::vector<Polygon> inflated_obstacle_list, Polygon gate
     //      draw_point(V, map_param, cv::Scalar(255,0,0));
     // }  
 
-     //Draw sample points  
-    for (int z=0;z<miss_output_1.free_space_points.size();z++){
-        draw_point(miss_output_1.free_space_points[z], map_param, cv::Scalar(255,0,0));           
-    }
+    //  //Draw sample points  
+    // for (int z=0;z<miss_output_1.free_space_points.size();z++){
+    //     draw_point(miss_output_1.free_space_points[z], map_param, cv::Scalar(255,0,0));           
+    // }
 
      //Draw global_planner path
     for(int i=0;i<miss_output_1.global_planner_path.size();i++){   
@@ -494,23 +494,23 @@ void drawing_mission_1(std::vector<Polygon> inflated_obstacle_list, Polygon gate
          //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
     }
 
-    // //Draw failed dubins curve   
-    // for(int i=0; i<miss_output_1.failed_paths_draw.size(); i++){
-    //     dubins_path_seg = miss_output_1.failed_paths_draw[i]; //retrieve three_segments
-    //     //std::cout << "Dubins_path_" << i << std::endl;
+    //Draw failed dubins curve   
+    for(int i=0; i<miss_output_1.failed_paths_draw.size(); i++){
+        dubins_path_seg = miss_output_1.failed_paths_draw[i]; //retrieve three_segments
+        //std::cout << "Dubins_path_" << i << std::endl;
 
-    //     //Draw
-    //     draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(255,0,0));
-    // } 
+        //Draw
+        draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(255,0,0));
+    } 
 
-    // //Draw sucessful dubins curve   
-    // for(int i=0; i<miss_output_1.path_final_draw.size(); i++){
-    //     dubins_path_seg = miss_output_1.path_final_draw[i]; //retrieve three_segments
-    //     //std::cout << "Dubins_path_" << i << std::endl;
+    //Draw sucessful dubins curve   
+    for(int i=0; i<miss_output_1.path_final_draw.size(); i++){
+        dubins_path_seg = miss_output_1.path_final_draw[i]; //retrieve three_segments
+        //std::cout << "Dubins_path_" << i << std::endl;
 
-    //     //Draw
-    //     draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,255,0));
-    // } 
+        //Draw
+        draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,255,0));
+    } 
 
     // //Draw collision points      
     // for(int i=0;i<miss_output_1.collision_points.size();i++){      

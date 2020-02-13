@@ -249,7 +249,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             qe[2] = goal_theta;           
             //heading angle for the mid point
             triplet = compute_triangle_angles(Point(qs[0],qs[1]),Point(qm[0],qm[1]), Point(qe[0],qe[1]));
-            if(triplet.beta_2*RAD2DEG < 45){ //qsqmqe angle
+            if(triplet.beta_2*RAD2DEG < 90){ //qsqmqe angle
                 qm[2] = atan2(qe[1] - qm[1], qe[0] - qm[0]); //oriented towards inmmediate next point (big turn)   
             }
             else{
