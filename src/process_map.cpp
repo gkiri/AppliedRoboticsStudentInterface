@@ -404,8 +404,8 @@ bool Gate_Process_second(const cv::Mat &img_in, cv::Mat &showImage, const double
         cv::inRange(hsv_img, cv::Scalar(45, 40, 60), cv::Scalar(80, 255, 180), green_mask);
     }
 
-    cv::imshow("Gate", green_mask);
-    cv::waitKey(20);
+    //cv::imshow("Gate", green_mask);
+    //cv::waitKey(20);
 
     std::vector<std::vector<cv::Point>> contours, contours_approx;
     std::vector<cv::Point> approx_curve;

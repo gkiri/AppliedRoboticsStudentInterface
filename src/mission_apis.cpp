@@ -251,7 +251,8 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     int victim_index = 0;
     double lowest_cost = 9999;    
     std::vector<std::pair<double, int>> v_length_index_pair;
-    double L = 0;
+    double L_sv, L_vg;
+    double L=0;
 
 
     //Set start and goal point
@@ -277,8 +278,10 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
 
     //Sort the victim list in terms of proximity to the start point
     for(Point victim_location:victim_centroid_list){        
-        L = 0; //Reset length
-        //Call global planner
+        L_sv = 0; //Reset length
+        L_vg = 0; //Reset length
+        L = 0;
+        //Call global planner from start point to victim
         PRM_obj.global_planner(start,victim_location);
         global_planner_path = PRM_obj.get_global_planner_path();
         start_to_victim_path = PRM_obj.refine_global_planner_path(global_planner_path);
@@ -288,8 +291,24 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
             end_line_point = start_to_victim_path[i + 1]; //end point of line
 
             //add up distance between points
-            L += dist_2points(start_line_point, end_line_point);            
+            L_sv += dist_2points(start_line_point, end_line_point); 
+                             
         }
+        //Call global planner from victim to gate
+        PRM_obj.global_planner(victim_location,goal);
+        global_planner_path = PRM_obj.get_global_planner_path();
+        start_to_victim_path = PRM_obj.refine_global_planner_path(global_planner_path);
+        //Calculate distance for each victim
+        for(int i=0; i<start_to_victim_path.size() - 1; i++){
+            start_line_point = start_to_victim_path[i]; //start point of line
+            end_line_point = start_to_victim_path[i + 1]; //end point of line
+
+            //add up distance between points
+            L_vg += dist_2points(start_line_point, end_line_point); 
+                             
+        }
+        //Sum up both lengths
+        L = L_sv - L_vg;        
         //save length and victim index pair into vector
         v_length_index_pair.push_back(std::make_pair(L, victim_index));
         victim_index++; 
@@ -297,6 +316,7 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     //sort by distance
     tmp_victim_centroid_list = victim_centroid_list; //make tmp copy
     sort(v_length_index_pair.begin(), v_length_index_pair.end());
+
     //save definitive order into victim centroid list
     for(int i=0;i<v_length_index_pair.size();i++){
         victim_centroid_list[i] = tmp_victim_centroid_list[v_length_index_pair[i].second];

@@ -44,7 +44,7 @@
 #define DRAW_GATE_TEST 0
 #define UNIT_TEST 0
 
-#define LAB_DIR 0
+#define LAB_DIR 1
 
 
 namespace student {
@@ -252,8 +252,8 @@ namespace student {
     const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
     if(!res1) std::cout << "processObstacles return false" << std::endl;
 
-    const bool res2 = processGate(hsv_img, scale, gate);
-    //const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
+    //const bool res2 = processGate(hsv_img, scale, gate);
+    const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
     if(!res2) std::cout << "processGate return false" << std::endl;
 
     //const bool res3 = processVictims(hsv_img, scale, victim_list);
@@ -399,6 +399,7 @@ namespace student {
 
     //end point = gate_pose    
     get_gate_pose(gate, map_h, map_w, robot_length, gate_pose, goal_delta);
+
 
     
 
@@ -750,7 +751,7 @@ namespace student {
 
 
     /* Map visualization -------------------------------------------*/    
-    if(drawing){
+    if(drawing){      
       //Show map image
       cv::imshow("Image",map_param.img_map);
       cv::waitKey( 0.01 );
