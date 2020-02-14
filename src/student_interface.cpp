@@ -310,9 +310,7 @@ namespace student {
     double robot_width = load_config_param(config_dir, "robot_width"); //(m)
     double robot_speed = load_config_param(config_dir, "robot_speed"); //(m/s)   
 
-    //Visualising the map parameters
-    double map_w = load_config_param(config_dir, "map_w"); //real map width in m    
-    double map_h = load_config_param(config_dir, "map_h"); //real map height in m     
+    //Visualising the map parameters        
     double img_map_w = load_config_param(config_dir, "img_map_w"); //image map width in pixels
     //image map height is calculated through the other three parameters 
     
@@ -340,27 +338,32 @@ namespace student {
     int unit_test = load_config_param(config_dir, "unit_test");
     /*****************************************************/
 
+    //Retrieve map dimensions   
+    //Points of borders in the same order as selection after pipeline (lb,rb,rt,lt)
+    // i.e, map width = right bottom, map height = left top
+    double map_w = borders[1].x; //m
+    double map_h = borders[3].y; //m
+    //std::cout << map_w << "," << map_h << std::endl;
 
     //Initialize map matrix and scale
     img_map_def map_param = initialize_img_map(map_w, map_h, img_map_w);    
 
-    /* Inflate polygons and walls -------------------------------------------*/
-    //Radius of circle approximating robot shape (m) 
-    double OFFSET_walls = sqrt(pow(robot_length,2) + pow(robot_width,2))/2; //more restrictive case, diagonal of robot
-    double OFFSET_polygon = robot_length/2; // less restrictive case --> length of robot                           
     std::vector<Polygon> clean_obstacle_list, inflated_obstacle_list, inflated_walls;
-
     //sanity check: Eliminate polygons with 2 or less edges
     for(Polygon poly:obstacle_list){   
       if(poly.size() > 2){
         clean_obstacle_list.push_back(poly);
       }
-    }
-    
-    //Inflate polygon function   
-    inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET_polygon);
+    }   
+
+    //Inflate polygons and walls    
+    //General OFFSET --> Robot width
+    double OFFSET = robot_width/2;                
+    //Inflate polygons   
+    //inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET);
+    inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET);
     //Inflate walls    
-    inflated_walls = inflate_walls(map_w, map_h, OFFSET_polygon);
+    inflated_walls = inflate_walls(map_w, map_h, OFFSET);
     //Add inflated walls to inflated_obstacle_list
     inflated_obstacle_list.insert(inflated_obstacle_list.end(),inflated_walls.begin(),
             inflated_walls.end());
@@ -447,6 +450,8 @@ namespace student {
         break;
       }
       else{
+        //Print cost
+        std::cout << "Total path cost: " << miss_output_2.opt_cost_pathdraw.first << std::endl;
         //Set path
         path = miss_output_2.path;
         if(drawing){

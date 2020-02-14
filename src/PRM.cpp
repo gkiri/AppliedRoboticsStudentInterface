@@ -381,9 +381,15 @@ Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> 
     //Save concatenate global planner into PRM variable
     global_planner_path = tmp_global_planner_path;
 
-    //Call dubins planner
-    path = PRM::dubins_planner(start_theta, goal_theta, dubins_param, delta);
-    
+    //global path checker
+    if(global_planner_path.size()!=0){
+        //Call dubins planner
+        path = PRM::dubins_planner(start_theta, goal_theta, dubins_param, delta);
+    }
+    else{
+        printf("It does not exist a global path. Dubins planner call avoided");
+    }
+        
     //return
     return path;
 }
@@ -445,6 +451,10 @@ void PRM::set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_g
 
 void PRM::set_free_space_points(std::vector<Point> free_space_points_test){
     free_space_points = free_space_points_test;
+}
+
+void PRM::set_global_planner_path(std::vector<Point> global_planner_path_sample){
+    global_planner_path = global_planner_path_sample;
 }
 
 

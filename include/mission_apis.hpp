@@ -22,7 +22,7 @@ struct mission_output_1{
 };
 struct mission_output_2{
     Path path;    
-    std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
+    //std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
     std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;    
     std::vector<Point> free_space_points;
     std::vector<std::pair<Point, std::vector<Point> >> prm_graph; 

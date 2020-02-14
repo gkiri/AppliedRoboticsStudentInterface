@@ -118,8 +118,8 @@ namespace globalplanner{
                 }
             }
             if(graph_index >= V_vector.size()){   
-                std::cout << "V not found: " << std::endl;                           
-                return path; //Error
+                std::cout << "One of the bias point does not belong to the roadmap: " << std::endl;                           
+                return path; //Error: Empty path
             }
 
             //Loop through edges for current node
@@ -171,7 +171,7 @@ namespace globalplanner{
             }
         }        
         
-        printf("path not found");
+        printf("A connection to the goal point is not stablished. Try increasing the number of samples");
         return path; 
         
     }
