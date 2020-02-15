@@ -42,9 +42,10 @@
 #define DUBINS_TEST 0
 #define PRM_PLANNER_TEST 0
 #define DRAW_GATE_TEST 0
-#define UNIT_TEST 0
+#define UNIT_TEST 1
 
 #define LAB_DIR 0
+int dir = 0; //0-Alvaro, 1-Kiran 
 
 
 namespace student {
@@ -239,10 +240,20 @@ namespace student {
 
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
     bool arena=true;
-    //const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
-    const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+    const std::string& template_folder;
+    
+    #if LAB_DIR
+    template_folder = "/home/robotics/workspace/group_4/imgs/template/";
+    #else
+    if(dir){
+      template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+    }
+    else{
+      template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
+    }
+    #endif
 
-    //const std::string& template_folder = "/home/robotics/workspace/group_4/imgs/template/";
+    //const std::string& 
 
     //const std::string& template_folder="../imgs/template/";
     // Convert color space from BGR to HSV
@@ -252,8 +263,11 @@ namespace student {
     const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
     if(!res1) std::cout << "processObstacles return false" << std::endl;
 
+    #if LAB_DIR
     const bool res2 = processGate(hsv_img, scale, gate);
-    //const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
+    #else
+    const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
+    #endif
     if(!res2) std::cout << "processGate return false" << std::endl;
 
     //const bool res3 = processVictims(hsv_img, scale, victim_list);
@@ -291,14 +305,13 @@ namespace student {
 
   {   
     /*************CONFIG VARIABLES*********************/
-    //Load config file
-    int dir = 0; //0-Alvaro, 1-Kiran  
+    //Load config file     
     std::string config_dir;
     #if LAB_DIR
   	config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
     #else    
     if(dir){
-      config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
+      config_dir = "/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/src/config_parameters.txt";
     }
     else{
       config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
@@ -685,6 +698,7 @@ namespace student {
     
     /* **********************Gkiri PRM space Unit Testing*************************/
     UT_sample_generation(inflated_obstacle_list,map_w,map_h,n_samples,&map_param);
+    UT_gaussian_generation()
     /*****************************************************************************/
     
     /************************Process map unit testing******************************/

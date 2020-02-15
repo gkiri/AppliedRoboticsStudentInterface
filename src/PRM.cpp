@@ -107,7 +107,7 @@ void PRM::generate_gaussian_points()
 {
     Point test_pt ,Guassian_Point;
     int count=0,inside_counter=0; 
-    std::cout << " Start of GaussianT " << std::endl; 
+    //std::cout << " Start of GaussianT " << std::endl; 
     std::vector<Point> final_guass_points;
 
     int GUASSIAN_RADIUS_POINTS=25;
@@ -120,13 +120,13 @@ void PRM::generate_gaussian_points()
     mean=0;
     variance=0.01;
 
-    std::cout << " $$$$$$$$$$$$$$$$$$$$ Sample size to generate  N= " << N <<  std::endl;
+    //std::cout << " $$$$$$$$$$$$$$$$$$$$ Sample size to generate  N= " << N <<  std::endl;
 
     while(count < N){
         float x_rand = (rand() / (double) RAND_MAX) * cspace_width; //Generate random sample
         float y_rand = (rand() / (double) RAND_MAX) * cspace_height;
 
-        std::cout << "Gaussian x_rand "<< x_rand << " y_rand " << y_rand << std::endl; 
+        //std::cout << "Gaussian x_rand "<< x_rand << " y_rand " << y_rand << std::endl; 
 
         test_pt.x=x_rand;
         test_pt.y=y_rand;
@@ -159,7 +159,7 @@ void PRM::generate_gaussian_points()
 
     }
 
-    std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << final_guass_points.size() <<  std::endl;
+    //std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << final_guass_points.size() <<  std::endl;
 
    
 
@@ -172,7 +172,7 @@ void PRM::generate_gaussian_points()
            
     }
 
-    std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << free_space_points.size() <<  std::endl;
+    //std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << free_space_points.size() <<  std::endl;
 
 }
 
