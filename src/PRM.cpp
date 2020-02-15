@@ -205,7 +205,7 @@ void PRM::generate_random_points()
 void PRM::global_planner(Point start,Point goal){ 
     
     //Call astar  
-    global_planner_path = globalplanner::astar(prm_graph, start, goal);
+    global_planner_path = globalplanner::astar(prm_graph, start, goal);    
 }
 
 
@@ -310,7 +310,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
         qm[0] = global_planner_path[node_pos + 1].x;
         qm[1] = global_planner_path[node_pos + 1].y;       
 
-        if(node_pos == 0){ //set start angle
+        if(node_pos == 0){ //first node --> set start angle
             qs[2] = start_theta; 
         }
         if(node_pos + 1 == global_planner_path.size() - 1){ //mid node is goal
@@ -329,8 +329,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             }
             else{
                 qm[2] = atan2(qe[1] - qs[1], qe[0] - qs[0]); //oriented towards next point ahead (small turn)
-            }
-            //qm[2] = atan2(qe[1] - qm[1], qe[0] - qm[0]);
+            }            
         }            
       
         //Save original heading angle of mid point in case of collision
@@ -398,7 +397,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             
         }
         if(N == maxIter){
-            //printf("It does NOT exist a non-colliding path with this roadmap\n");          
+            printf("It does NOT exist a non-colliding path with this roadmap\n");          
             return no_path; //return empty path
         }
     }
@@ -457,9 +456,15 @@ Path PRM::prm_planner(double* start_pose, double* goal_pose, std::vector<Point> 
     //Save concatenate global planner into PRM variable
     global_planner_path = tmp_global_planner_path;
 
-    //Call dubins planner
-    path = PRM::dubins_planner(start_theta, goal_theta, dubins_param, delta);
-    
+    //global path checker
+    if(global_planner_path.size()!=0){
+        //Call dubins planner
+        path = PRM::dubins_planner(start_theta, goal_theta, dubins_param, delta);
+    }
+    else{
+        printf("It does not exist a global path. Dubins planner call avoided");
+    }
+        
     //return
     return path;
 }
@@ -522,3 +527,8 @@ void PRM::set_prm_graph(std::vector<std::pair<Point, std::vector<Point> >> prm_g
 void PRM::set_free_space_points(std::vector<Point> free_space_points_test){
     free_space_points = free_space_points_test;
 }
+
+void PRM::set_global_planner_path(std::vector<Point> global_planner_path_sample){
+    global_planner_path = global_planner_path_sample;
+}
+

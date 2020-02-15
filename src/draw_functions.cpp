@@ -537,7 +537,7 @@ void drawing_mission_2(std::vector<Polygon> inflated_obstacle_list,
         draw_polygon(inflated_obstacle_list[i], map_param);
     }
 
-    /*
+    
     //Draw prm_graph
     for(int i=0; i<miss_output_2.prm_graph.size(); i++){
          //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
@@ -559,7 +559,18 @@ void drawing_mission_2(std::vector<Polygon> inflated_obstacle_list,
     for (int z=0;z<miss_output_2.free_space_points.size();z++){
        draw_point(miss_output_2.free_space_points[z], map_param, cv::Scalar(255,0,0));           
     }
-    */
+
+
+    //Draw global_planner path
+    for(int i=0;i<miss_output_2.global_planner_path.size();i++){   
+        //Draw path
+        if(i<miss_output_2.global_planner_path.size()-1){         
+            edge_line = to_arc_extract_type(miss_output_2.global_planner_path[i],miss_output_2.global_planner_path[i+1],true);
+            draw_line(edge_line, map_param, cv::Scalar(0,255,0));    
+        }
+        //std::cout << "gpp "<< i << ": " << global_planner_path[i].x << ", " << global_planner_path[i].y << std::endl;
+    }
+    
  
     //Draw victims 
     for(std::pair<int,Polygon> victim : victim_list){
@@ -569,18 +580,18 @@ void drawing_mission_2(std::vector<Polygon> inflated_obstacle_list,
       draw_victim(victim, map_param);
     }
 
-    //Draw all paths
-    //Retrieve each path
-    for(int i=0;i<miss_output_2.all_cost_pathdraw.size();i++){
-        path_draw = miss_output_2.all_cost_pathdraw[i].second; 
-        //cost TBD   
-        //Draw dubins
-        for(int j=0; j<path_draw.size(); j++){
-            dubins_path_seg = path_draw[j]; //retrieve three_segments  
-            //Draw
-            draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(255,0,0));
-        } 
-    }
+    // //Draw all paths
+    // //Retrieve each path
+    // for(int i=0;i<miss_output_2.all_cost_pathdraw.size();i++){
+    //     path_draw = miss_output_2.all_cost_pathdraw[i].second; 
+    //     //cost TBD   
+    //     //Draw dubins
+    //     for(int j=0; j<path_draw.size(); j++){
+    //         dubins_path_seg = path_draw[j]; //retrieve three_segments  
+    //         //Draw
+    //         draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(255,0,0));
+    //     } 
+    // }
 
     //Draw optimal one
     path_draw = miss_output_2.opt_cost_pathdraw.second;

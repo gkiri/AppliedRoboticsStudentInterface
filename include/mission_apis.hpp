@@ -22,7 +22,7 @@ struct mission_output_1{
 };
 struct mission_output_2{
     Path path;    
-    std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
+    //std::vector<std::pair<double, std::vector<arc_extract>>> all_cost_pathdraw;
     std::pair<double, std::vector<arc_extract>> opt_cost_pathdraw;    
     std::vector<Point> free_space_points;
     std::vector<std::pair<Point, std::vector<Point> >> prm_graph; 
@@ -55,23 +55,8 @@ mission_output_0 mission_0(dubins_param dubins_param, double start_pose[3], doub
 
 
 /**
- * Perform mission 1.5: Robot goes from actual position to the gate avoiding obstacles and collecting
- * victims depending on the cost, being cost = reward - distance to victim
- * 
- * @param PRM_param - All parameters needed for PRM (obstacle list, map dimensions, number of samples)
- * @param dubins_param - dubins parameters k_max and discretizer_size
- * @param start_pose - starting pose of the robot
- * @param gate_pose - pose at the gate 
- * @param bias_points - bias points over where the robot must pass.
- * @param delta - tune angle in degrees for dubins planner
- * @output Path - Return path to be followed by the robot to complete the mission
-*/
-mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<Point> bias_points, double delta);
-
-
-/**
- * Perform mission 1.5: Robot goes from actual position to the gate avoiding obstacles and collecting
- * all victims in order depending on proximity
+ * Perform mission 1: Robot goes from actual position to the gate avoiding obstacles and collecting
+ * all victims in order given by its number
  * 
  * @param PRM_param - All parameters needed for PRM (obstacle list, map dimensions, number of samples)
  * @param dubins_param - dubins parameters k_max and discretizer_size
@@ -81,7 +66,7 @@ mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, doubl
  * @param delta - tune angle in degrees for dubins planner
  * @output Path - Return path to be followed by the robot to complete the mission
 */
-mission_output_1 mission_15(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta);
+mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, double start_pose[3], double gate_pose[3], std::vector<std::pair<int,Polygon>> victim_list, double delta);
 
 /**
  * Perform mission 2: Robot goes from actual position to the gate avoiding obstacles and collecting
