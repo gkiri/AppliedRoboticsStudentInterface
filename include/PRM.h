@@ -56,6 +56,18 @@ public:
     void generate_random_points();
 
     /**
+     * Generate guassian point inside configuration space of map
+     * updated to free_space_points vector
+     *
+     * Avoid points inside polygon     
+     *
+     * @returns - zero on successful completion, or the result of the callback
+     */
+
+
+    void generate_gaussian_points();
+
+    /**
      * Generate grpah from list of free_space_points by adding to vertices
      *
      * Iterate over vertices for connecting edges and paralelly check for collision while 
