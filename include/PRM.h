@@ -13,7 +13,8 @@ class  PRM {
 public:
 
     PRM(std::vector<Polygon> polygons_list);
-    PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N, double scale);
+    PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, 
+                int rand_samples, int gauss_samples, double scale);
 
     ~PRM();    
 
@@ -24,7 +25,7 @@ public:
      *
      * @returns - true if point lies inside false otherwise
      */
-    bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale);
+    bool point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale, double proximity);
 
     /*Function to return private variables*/
     std::vector<Point> get_free_space_points();
@@ -153,7 +154,8 @@ private:
     std::vector<Point> global_planner_path;    
     double cspace_width; //width of sample space
     double cspace_height; //height of sample space
-    int N; //Number of samples
+    int rand_samples; //Number of samples for random sampling
+    int gauss_samples; //Number of samples for gaussian sampling
     double scale; //scale for point lies in polygon algorithm
     
 };

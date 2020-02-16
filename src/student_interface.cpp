@@ -45,6 +45,7 @@
 #define UNIT_TEST 0
 
 #define LAB_DIR 0
+int dir = 0; //0-Alvaro, 1-Kiran 
 
 
 namespace student {
@@ -239,10 +240,22 @@ namespace student {
 
     std::cout << "Gkiri::$$$$$$$$$$$$$$$ processMap-------------- "  << std::endl;
     bool arena=true;
-    //const std::string& template_folder="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
-    const std::string& template_folder = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+    std::string folder_name;
+    
+    #if LAB_DIR
+    folder_name = "/home/robotics/workspace/group_4/imgs/template/";
+    #else
+    if(dir){      
+      folder_name ="/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/imgs/template/";
+    }
+    else{
+      folder_name = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/imgs/template/";
+    }
+    #endif
 
-    //const std::string& template_folder = "/home/robotics/workspace/group_4/imgs/template/";
+    std::string& template_folder = folder_name;   
+
+    //const std::string& 
 
     //const std::string& template_folder="../imgs/template/";
     // Convert color space from BGR to HSV
@@ -252,8 +265,11 @@ namespace student {
     const bool res1 = processObstacles(hsv_img, scale, obstacle_list);
     if(!res1) std::cout << "processObstacles return false" << std::endl;
 
+    #if LAB_DIR
+    const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);    
+    #else
     const bool res2 = processGate(hsv_img, scale, gate);
-    //const bool res2 = Gate_Process_second(hsv_img, temp_img, scale,gate,arena);
+    #endif
     if(!res2) std::cout << "processGate return false" << std::endl;
 
     //const bool res3 = processVictims(hsv_img, scale, victim_list);
@@ -291,14 +307,13 @@ namespace student {
 
   {   
     /*************CONFIG VARIABLES*********************/
-    //Load config file
-    int dir = 0; //0-Alvaro, 1-Kiran  
+    //Load config file     
     std::string config_dir;
     #if LAB_DIR
   	config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
     #else    
     if(dir){
-      config_dir = "/home/robotics/workspace/group_4/src/config_parameters.txt";
+      config_dir = "/home/gkiri/Desktop/Applied_Robotics/Workspace/Team_Project/src/config_parameters.txt";
     }
     else{
       config_dir = "/home/alvaro/workspace/AppliedRoboticsStudentInterface/src/config_parameters.txt";
@@ -315,7 +330,8 @@ namespace student {
     //image map height is calculated through the other three parameters 
     
     //Sampling
-    int n_samples = load_config_param(config_dir, "n_samples");
+    int rand_samples = load_config_param(config_dir, "rand_samples");
+    int gauss_samples = load_config_param(config_dir, "gauss_samples");
     
     //Local planner
     double min_dist = load_config_param(config_dir, "min_dist");     
@@ -338,6 +354,19 @@ namespace student {
     int unit_test = load_config_param(config_dir, "unit_test");
     /*****************************************************/
 
+    /***********VARIABLES*********************************/
+    //variables
+    double start_pose[3], gate_pose[3];
+    struct dubins_param dubins_param; 
+    std::vector<Point> bias_points;    
+
+    //output for missions
+    struct mission_output_0 miss_output_0;
+    struct mission_output_1 miss_output_1; 
+    struct mission_output_2 miss_output_2; 
+    /******************************************************/
+
+    /********* MAP ****************************************/
     //Retrieve map dimensions   
     //Points of borders in the same order as selection after pipeline (lb,rb,rt,lt)
     // i.e, map width = right bottom, map height = left top
@@ -356,30 +385,26 @@ namespace student {
       }
     }   
 
-    //Inflate polygons and walls    
-    //General OFFSET --> Robot width
-    double OFFSET = robot_width/2;                
-    //Inflate polygons   
-    //inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET);
+    //Retrieve end point and gate
+    //end point = gate_pose    
+    Polygon square_gate = get_gate_pose(gate, map_h, map_w, robot_length, gate_pose, goal_delta); 
+    
+    //Inflate polygons and walls   
+    double OFFSET = sqrt(pow(robot_length,2) + pow(robot_width,2))/2; //Robot radius
+   
+    //Inflate polygons    
     inflated_obstacle_list = inflate_polygons(clean_obstacle_list, OFFSET);
+
     //Inflate walls    
-    inflated_walls = inflate_walls(map_w, map_h, OFFSET);
+    inflated_walls = inflate_walls(map_w, map_h, OFFSET, gate, square_gate); //substract gate shape
+
     //Add inflated walls to inflated_obstacle_list
     inflated_obstacle_list.insert(inflated_obstacle_list.end(),inflated_walls.begin(),
             inflated_walls.end());
+    /************************************************************************/
 
    
-    /****************** Missions **********************************************/
-    
-    //variables
-    double start_pose[3], gate_pose[3];
-    struct dubins_param dubins_param; 
-    std::vector<Point> bias_points;
-
-    //output for missions
-    struct mission_output_0 miss_output_0;
-    struct mission_output_1 miss_output_1; 
-    struct mission_output_2 miss_output_2;  
+    /****************** MISSIONS **********************************************/ 
     
     //set dubins param
     dubins_param.k_max = k_max;
@@ -390,7 +415,8 @@ namespace student {
     PRM_param.map_h = map_h;
     PRM_param.map_w = map_w;
     PRM_param.obstacle_list = inflated_obstacle_list;
-    PRM_param.n_samples = n_samples;
+    PRM_param.rand_samples = rand_samples;
+    PRM_param.gauss_samples = gauss_samples;
     PRM_param.max_dist = max_dist;
     PRM_param.min_dist = min_dist;
     PRM_param.scale = map_param.scale;
@@ -398,11 +424,7 @@ namespace student {
     //start point    
     start_pose[0] = x;
     start_pose[1] = y;
-    start_pose[2] = theta;   
-
-    //end point = gate_pose    
-    get_gate_pose(gate, map_h, map_w, robot_length, gate_pose, goal_delta);
-
+    start_pose[2] = theta;    
 
     
 
@@ -428,7 +450,8 @@ namespace student {
       
       miss_output_1 = mission_1(PRM_param, dubins_param, start_pose, gate_pose, 
                                   victim_list, delta);      
-      if(miss_output_1.path.empty()){           
+      if(miss_output_1.path.empty()){
+        drawing_mission_1(inflated_obstacle_list, gate, miss_output_1, map_param);           
         printf("Empty path\n");        
         break;
       }
@@ -513,7 +536,7 @@ namespace student {
       //std::vector<Point> bias_points;
       //Call planner
 
-      //UT_overall_planner(start_pose, gate_pose, inflated_obstacle_list,map_w,map_h,n_samples, &map_param); 
+      //UT_overall_planner(start_pose, gate_pose, inflated_obstacle_list,map_w,map_h,rand_samples, &map_param); 
       //UT_prm_planner(qs, qe, bias_points, inflated_obstacle_list, map_w,map_h,N, &map_param); 
       //Create instance
       /*
@@ -684,7 +707,11 @@ namespace student {
     /*****************************************************************************/
     
     /* **********************Gkiri PRM space Unit Testing*************************/
-    UT_sample_generation(inflated_obstacle_list,map_w,map_h,n_samples,&map_param);
+    //UT_sample_generation(inflated_obstacle_list,map_w,map_h,rand_samples,&map_param);
+    //inflated_obstacle_list = UT_substract_gate(map_w,map_h, OFFSET, gate, square_gate);
+    UT_guass_generation_test(inflated_obstacle_list,map_w,map_h,gauss_samples,&map_param);
+    std::cout << "number of samples passed:" << gauss_samples << std::endl;
+    
     /*****************************************************************************/
     
     /************************Process map unit testing******************************/

@@ -5,71 +5,6 @@
 
 #include "mission_apis.hpp"
 
-void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot_length, 
-    double* gate_pose, double goal_delta){  
-
-    double RAD2DEG = 180.0/M_PI;
-    double x_sum = 0;
-    double y_sum = 0;
-    int n_vertex = 0;
-    //double delta = 0.025;
-    std::vector<double> dist_to_wall; //[left,right,up,down]    
-    double lowest_dist = 100;
-    int closest_wall;
-
-    // Center point of rectangle
-    for(Point vertex : gate){
-        //std::cout << vertex.x <<","<<vertex.y<<std::endl;
-        x_sum += vertex.x;
-        y_sum += vertex.y;
-        n_vertex++;
-    }
-    gate_pose[0] = x_sum/n_vertex; //xc
-    gate_pose[1] = y_sum/n_vertex; //yc
-
-    //gate_pose
-    dist_to_wall.push_back(gate_pose[0]); //left
-    dist_to_wall.push_back(map_w - gate_pose[0]); //right
-    dist_to_wall.push_back(map_h - gate_pose[1]); //up    
-    dist_to_wall.push_back(gate_pose[1]); //down
-    
-    //Get closest wall
-    for(int i=0;i<dist_to_wall.size();i++){
-        if(dist_to_wall[i] < lowest_dist){
-            lowest_dist = dist_to_wall[i];
-            closest_wall = i;
-        }
-    }
-    //std::cout << "lowest dist:" << lowest_dist << std::endl;
-
-    //Set pose and heading angle depending on closest wall
-    switch (closest_wall){
-    case 0: //left
-        gate_pose[0] = robot_length/2 + goal_delta;
-        gate_pose[2] = M_PI;
-        //std::cout << "closes wall: Left wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
-        break;
-    case 1: //right
-        gate_pose[0] = map_w - (robot_length/2 + goal_delta);
-        gate_pose[2] = 0;
-        //std::cout << "closes wall: Right wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
-        break;
-    case 2: //up
-        gate_pose[1] = map_h - (robot_length/2 + goal_delta);
-        gate_pose[2] = M_PI/2;
-        //std::cout << "closes wall: Up wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
-        break;
-    case 3: //down
-        gate_pose[1] = robot_length/2 + goal_delta;
-        gate_pose[2] = -M_PI/2;
-        //std::cout << "closes wall: Down wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
-        break;
-    
-    default:
-        printf("No closest wall found\n");
-        break;
-    } 
-}
 
 mission_output_0 mission_0(dubins_param dubins_param, double start_pose[3], double gate_pose[3]){
 
@@ -136,7 +71,8 @@ mission_output_1 mission_1(PRM_param PRM_param, dubins_param dubins_param, doubl
     bias_points.push_back(goal);
 
     //create PRM instance
-    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, 
+            PRM_param.rand_samples, PRM_param.gauss_samples, PRM_param.scale);
         
     //Build the roadmap
     PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
@@ -206,7 +142,8 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     bias_points.push_back(goal);
 
     //create PRM instance
-    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, PRM_param.n_samples, PRM_param.scale);
+    PRM PRM_obj(PRM_param.obstacle_list, PRM_param.map_w, PRM_param.map_h, 
+            PRM_param.rand_samples, PRM_param.gauss_samples, PRM_param.scale);
         
     //Build the roadmap
     PRM_obj.build_roadmap(bias_points, PRM_param.max_dist, PRM_param.min_dist);
@@ -253,31 +190,15 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
         victim_centroid_list[i] = tmp_victim_centroid_list[v_length_index_pair[i].second];
     }  
 
-    //Compute all possible combinations    
-    //compute_all_combinations(v_comb, victim_centroid_list); 
-    compute_all_combinations(v_comb, start, goal, victim_centroid_list); 
-    // std::cout << "comb size: " << v_comb.size() << std::endl;
-    // for(std::vector<Point> victim_order:v_comb){
-    //     for(Point victim: victim_order){
-    //         std::cout << victim.x << "," << victim.y << "/";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    //Compute all possible combinations      
+    compute_all_combinations(v_comb, start, goal, victim_centroid_list);  
 
     //Calculate cost for all possible paths (global planner aproximation)    
     for(int i=0; i<v_comb.size();i++){
         //Empty bias points
         bias_points.clear();        
         //For each combination
-        bias_points = v_comb[i];         
-
-        // std::cout << "Bias points " << i << ":" <<std::endl;
-        // for(Point bias:bias_points){
-            
-        //     std::cout << bias.x << "," << bias.y << "///";
-        // }
-        // std::cout << std::endl;
-        
+        bias_points = v_comb[i];        
         
         //Save initial node into the tmp_global_planner_path
         tmp_global_planner_path.clear(); //empty container
@@ -299,9 +220,7 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
             //Save concatenation of refined global planners
             tmp_global_planner_path.insert(tmp_global_planner_path.end(), 
                 refined_gp_path.begin() + 1, refined_gp_path.end()); //+1 to not duplicate points (previous end = next start)
-        }      
-
-        //mission_2.global_planner_path = tmp_global_planner_path;    
+        }          
 
         //Calculate cost for refined path
         //Get global planner length
@@ -319,13 +238,9 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
         v_cost.push_back(std::make_pair(path_cost, i));
         //Save global planner
         v_gppath.push_back(tmp_global_planner_path);
-        //v_cost_gppath.push_back(std::make_pair(path_cost, tmp_global_planner_path));       
     }
-
-    //std::cout << "global planner vector size: " << v_gppath.size() << std::endl; 
         
-    //Sort vector by cost
-    //sort(v_cost_gppath.begin(), v_cost_gppath.end());
+    //Sort vector by cost    
     sort(v_cost.begin(), v_cost.end());
     
     // std::cout << "I sorted the thing, shorthest is " << v_cost[0].second 
@@ -363,37 +278,6 @@ mission_output_2 mission_2(PRM_param PRM_param, dubins_param dubins_param, doubl
     return mission_2;
     
 }
-
-// void compute_all_combinations(std::vector<std::vector<Point>>& v_comb, 
-//         Point start, Point end, std::vector<Point> victim_centroid_list){
-    
-//     //variables
-//     std::vector<int> v_index_permuted;
-//     std::vector<Point> comb;
-//     int N; //number of indexes
-
-//     //Set vector of indexes
-//     for(int j=0; j<victim_centroid_list.size() ;j++){
-//         v_index_permuted.push_back(j);
-//     }
-
-//     //permutations
-//     do {    
-//         N = v_index_permuted.size();     
-//         while(N > 0){
-//             comb.push_back(start); //Add start
-//             for(int i=0; i<N; i++){
-//                 //add victim centroid for each permutation
-//                 comb.push_back(victim_centroid_list[i]); 
-//             }
-//             comb.push_back(end); //add end
-//             v_comb.push_back(comb); // Add final combination to the vector of combinations
-//             N--; //remove last victim
-//             comb.clear(); //empty vector
-//         }        
-//     } while (std::next_permutation(v_index_permuted.begin(), v_index_permuted.end()));    
-//     v_comb.push_back({start,end}); //Last combination is from start to end
-// }
 
 void compute_all_combinations(std::vector<std::vector<Point>>& v_comb, 
         Point start, Point end, std::vector<Point> victim_centroid_list){

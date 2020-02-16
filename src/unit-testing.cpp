@@ -1,119 +1,13 @@
-// #include "student_image_elab_interface.hpp"
-// #include "student_planning_interface.hpp"
+#include "student_image_elab_interface.hpp"
+#include "student_planning_interface.hpp"
 
-// #include <vector>
-
-
-void UT_guass_generation_test(std::vector<Polygon> obstacle_list, double map_w, 
-          double map_h, int N, img_map_def *map_param)
-{
-    PRM obj(obstacle_list, map_w, map_h, N, map_param->scale);
-    obj.generate_gaussian_points();
-    //obj.generate_random_points();
-    std::vector<Point> free_space_points = obj.get_free_space_points();
-    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT no:of point= " << free_space_points.size() <<  std::endl;
-    for (size_t i = 0; i<obstacle_list.size(); i++){
-         draw_polygon(obstacle_list[i], *map_param);
-    }
-    for (int z=0;z<free_space_points.size();z++){
-        draw_point(free_space_points[z], *map_param); 
-           
-    }
-
-}
+#include <vector>
 
 
+#include "Utils.hpp"
+#include "PRM.h"
 
 
-//FUll guassian implementation
-void UT_gaussian_generation(std::vector<Polygon> obstacle_list, double map_w, 
-          double map_h, int N, img_map_def *map_param)
-{
-    Point test_pt ,Guassian_Point;
-    int count=0; 
-    std::cout << " Start of GaussianT " << std::endl; 
-    std::vector<Point> free_space_points,final_guass_points;
-
-    std::random_device rd; 
-    std::mt19937 gen(rd()); 
-
-    double mean ,variance;
-
-    mean=0;
-    variance=0.5;
-
-
-    free_space_points.clear();
-    std::cout << " $$$$$$$$$$$$$$$$$$$$ Sample size to generate  N= " << N <<  std::endl;
-
-    while(count < N){
-        float x_rand = (rand() / (double) RAND_MAX) * 1.5; //Generate random sample
-        float y_rand = (rand() / (double) RAND_MAX) * 1.0;
-
-        std::cout << "Gaussian x_rand "<< x_rand << " y_rand " << y_rand << std::endl; 
-
-        test_pt.x=x_rand;
-        test_pt.y=y_rand;
-        if(Detect_point_liesin_polygon(test_pt ,  obstacle_list)){
-
-            continue; //Just ignore the samples inside obstacles
-        }
-
-        //Generate Guassian samples around randompoint and check for any point lies in obstacles
-        //samples are centered around random point with some variance
-        for (size_t k = 0; k<25; k++) {
-
-            std::normal_distribution<float> x_rand2(test_pt.x, variance); //Guassian Sample with
-            std::normal_distribution<float> y_rand2(test_pt.y, variance);
-
-            Guassian_Point.x = x_rand2(gen); 
-            Guassian_Point.y = y_rand2(gen);
-
-            //If any guassian point lies in obstacles pick/store it as final point 
-            if(Detect_point_liesin_polygon(Guassian_Point ,  obstacle_list)){ 
-
-              draw_point(Guassian_Point, *map_param); 
-              free_space_points.push_back(Guassian_Point);
-              std::cout << " Storing gauss value  count= " << free_space_points.size() << " G.x " << Guassian_Point.x << " G.y " << Guassian_Point.y << std::endl;
-              //count++;  //Increment guassians samples per rand()
-            }
-          
-        }//for
-
-        count++;  //Increment consideration for rand()
-
-    }
-
-    for (int z=0;z<free_space_points.size();z++){
-          if(!Detect_point_liesin_polygon(free_space_points[z] ,  obstacle_list))
-          {
-              final_guass_points.push_back(free_space_points[z]);
-          }  
-           
-    }
-
-
-    std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << final_guass_points.size() <<  std::endl;
-
-
-    for (size_t i = 0; i<obstacle_list.size(); i++){
-         draw_polygon(obstacle_list[i], *map_param);
-    }
-    for (int z=0;z<final_guass_points.size();z++){
-        draw_point(final_guass_points[z], *map_param); 
-           
-    }
-
-}
-
-
-// void UT_sampling_motion_plan(std::vector<Polygon> obstacle_list ,img_map_def *map_param){
-//     /*Gkiri  PRM sampling motion planning debugging*/
-//     //draw_motion_planning(obstacle_list,&map_param);
-//     //draw_motion_planning(inflated_obstacle_list,&map_param);
-
-// #include "Utils.hpp"
-// #include "PRM.h"
 
 // /************Input variables generation for Unit Testing**********************/
 // Point add_points(Point pt1,Point pt2){
@@ -1881,3 +1775,199 @@ void UT_gaussian_generation(std::vector<Polygon> obstacle_list, double map_w,
 //     std::cout << std::endl;  
 //   }
 // }
+
+void UT_guass_generation_test(std::vector<Polygon> obstacle_list, double map_w, 
+          double map_h, int N, img_map_def *map_param)
+{   
+    PRM obj(obstacle_list, map_w, map_h,0, N, map_param->scale);
+    obj.generate_gaussian_points();
+    //obj.generate_random_points();
+    std::vector<Point> free_space_points = obj.get_free_space_points();
+    std::cout << " $$$$$$$$$$$$$$$$$$$$  UT no:of point= " << free_space_points.size() <<  std::endl;
+    for (size_t i = 0; i<obstacle_list.size(); i++){
+         draw_polygon(obstacle_list[i], *map_param);
+    }
+    for (int z=0;z<free_space_points.size();z++){
+        draw_point(free_space_points[z], *map_param); 
+           
+    }
+
+}
+
+
+
+
+// //FUll guassian implementation
+// void UT_gaussian_generation(std::vector<Polygon> obstacle_list, double map_w, 
+//           double map_h, int N, img_map_def *map_param)
+// {
+//     Point test_pt ,Guassian_Point;
+//     int count=0; 
+//     std::cout << " Start of GaussianT " << std::endl; 
+//     std::vector<Point> free_space_points,final_guass_points;
+
+//     std::random_device rd; 
+//     std::mt19937 gen(rd()); 
+
+//     double mean ,variance;
+
+//     mean=0;
+//     variance=0.5;
+
+
+//     free_space_points.clear();
+//     std::cout << " $$$$$$$$$$$$$$$$$$$$ Sample size to generate  N= " << N <<  std::endl;
+
+//     while(count < N){
+//         float x_rand = (rand() / (double) RAND_MAX) * 1.5; //Generate random sample
+//         float y_rand = (rand() / (double) RAND_MAX) * 1.0;
+
+//         std::cout << "Gaussian x_rand "<< x_rand << " y_rand " << y_rand << std::endl; 
+
+//         test_pt.x=x_rand;
+//         test_pt.y=y_rand;
+//         if(Detect_point_liesin_polygon(test_pt ,  obstacle_list)){
+
+//             continue; //Just ignore the samples inside obstacles
+//         }
+
+//         //Generate Guassian samples around randompoint and check for any point lies in obstacles
+//         //samples are centered around random point with some variance
+//         for (size_t k = 0; k<25; k++) {
+
+//             std::normal_distribution<float> x_rand2(test_pt.x, variance); //Guassian Sample with
+//             std::normal_distribution<float> y_rand2(test_pt.y, variance);
+
+//             Guassian_Point.x = x_rand2(gen); 
+//             Guassian_Point.y = y_rand2(gen);
+
+//             //If any guassian point lies in obstacles pick/store it as final point 
+//             if(Detect_point_liesin_polygon(Guassian_Point ,  obstacle_list)){ 
+
+//               draw_point(Guassian_Point, *map_param); 
+//               free_space_points.push_back(Guassian_Point);
+//               std::cout << " Storing gauss value  count= " << free_space_points.size() << " G.x " << Guassian_Point.x << " G.y " << Guassian_Point.y << std::endl;
+//               //count++;  //Increment guassians samples per rand()
+//             }
+          
+//         }//for
+
+//         count++;  //Increment consideration for rand()
+
+//     }
+
+//     for (int z=0;z<free_space_points.size();z++){
+//           if(!Detect_point_liesin_polygon(free_space_points[z] ,  obstacle_list))
+//           {
+//               final_guass_points.push_back(free_space_points[z]);
+//           }  
+           
+//     }
+
+
+//     std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << final_guass_points.size() <<  std::endl;
+
+
+//     for (size_t i = 0; i<obstacle_list.size(); i++){
+//          draw_polygon(obstacle_list[i], *map_param);
+//     }
+//     for (int z=0;z<final_guass_points.size();z++){
+//         draw_point(final_guass_points[z], *map_param); 
+           
+//     }
+
+// }
+
+
+// std::vector<Polygon> UT_substract_gate(double map_w, double map_h, double OFFSET, 
+//                     Polygon gate, Polygon square_gate){
+//     Polygon wall;
+//     std::vector<Polygon> inflated_walls, final_walls;
+//     double diff_x, diff_y, max_diff = 0;
+
+//     //left wall
+//     wall.emplace_back(0,0);
+//     wall.emplace_back(OFFSET,0);
+//     wall.emplace_back(OFFSET,map_h);
+//     wall.emplace_back(0,map_h);
+//     inflated_walls.push_back(wall);
+//     wall.clear();
+
+//     //Upper wall
+//     wall.emplace_back(0,map_h - OFFSET);
+//     wall.emplace_back(map_w,map_h - OFFSET);
+//     wall.emplace_back(map_w,map_h);
+//     wall.emplace_back(0,map_h);
+//     inflated_walls.push_back(wall);
+//     wall.clear();
+
+//     //bottom wall
+//     wall.emplace_back(0,0);
+//     wall.emplace_back(map_w,0);
+//     wall.emplace_back(map_w,OFFSET);
+//     wall.emplace_back(0,OFFSET);
+//     inflated_walls.push_back(wall);
+//     wall.clear();
+
+//     //right wall
+//     wall.emplace_back(map_w - OFFSET,0);
+//     wall.emplace_back(map_w,0);
+//     wall.emplace_back(map_w,map_h);
+//     wall.emplace_back(map_w - OFFSET,map_h);
+//     inflated_walls.push_back(wall);
+//     wall.clear();    
+
+//     //Constant variables
+//     const double INT_ROUND = 1000.;  
+
+//     //Clipper variables
+//     ClipperLib::Path gatePoly;
+//     ClipperLib::Path wallPoly;
+//     ClipperLib::Paths newPoly;
+    
+//     int wall_size = inflated_walls.size();
+//     final_walls.resize(wall_size);    
+
+//     //save square gate
+//     std::cout << "gate size: " << gate.size() << std::endl;
+//     std::cout << "square gate size: " << square_gate.size() << std::endl;
+//     for (size_t j = 0; j<square_gate.size(); j++){        
+//         int x = square_gate[j].x*INT_ROUND;
+//         int y = square_gate[j].y*INT_ROUND;       
+//         std::cout << "gate: x:" << x << "  y:" << y << std::endl;     
+//         gatePoly << ClipperLib::IntPoint(x, y);
+//     }  
+
+//     for(int i=0; i<inflated_walls.size();i++){
+//         wallPoly.clear();
+//         wall = inflated_walls[i];
+//         for (size_t j = 0; j<wall.size(); j++){        
+//             int x = wall[j].x*INT_ROUND;
+//             int y = wall[j].y*INT_ROUND;       
+//             //std::cout << "wall: x:" << x << "  y:" << y << std::endl;      
+//             wallPoly << ClipperLib::IntPoint(x, y);
+//         }
+        
+//         ClipperLib::Clipper clpr;   
+//         clpr.AddPath(wallPoly, ClipperLib::ptSubject, true);
+//         clpr.AddPath(gatePoly, ClipperLib::ptClip, true);
+//         //ClipperLib::Paths solution;
+//         clpr.Execute(ClipperLib::ctDifference, newPoly, ClipperLib::pftEvenOdd, ClipperLib::pftEvenOdd);
+
+//         //Save inflated polygon
+//         for(const ClipperLib::Path &path: newPoly){                
+//             for (const ClipperLib::IntPoint &pt: path){
+//                 float x = pt.X / INT_ROUND;
+//                 float y = pt.Y / INT_ROUND;
+//                 //std::cout << "new_x:" << x << "  new_y:" << y << std::endl;
+//                 //add vertex (x,y) to current obstacle                       
+//                 final_walls[i].emplace_back(x, y);            
+//             }
+//         }        
+//     }
+
+//     return final_walls;
+// }
+
+
+

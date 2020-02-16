@@ -40,7 +40,8 @@ struct dubins_param{
 struct PRM_param{
     double map_w, map_h, max_dist, min_dist;
     std::vector<Polygon> obstacle_list;
-    int n_samples;
+    int rand_samples;
+    int gauss_samples;
     double scale;
 };
 //Struct for line equation parameters
