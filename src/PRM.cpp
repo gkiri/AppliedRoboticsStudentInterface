@@ -22,7 +22,8 @@ PRM::PRM(std::vector<Polygon> polygons_list)
 }
 
 
-PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height, int N, double scale)
+PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_height,
+            int rand_samples, int gauss_samples, double scale)
 {
     //polygons
     for (size_t j = 0; j<polygons_list.size(); j++){  
@@ -31,7 +32,8 @@ PRM::PRM(std::vector<Polygon> polygons_list, double cspace_width, double cspace_
     //rest
     this->cspace_width = cspace_width;
     this->cspace_height = cspace_height;
-    this->N = N;
+    this->rand_samples = rand_samples;
+    this->gauss_samples = gauss_samples;
     this->scale = scale;
     //inittialize length
     this->path_length = 9999;
@@ -44,7 +46,7 @@ PRM::~PRM()
 
 
 /* Draw Point in Polygon Test -------------------------------------------*/
-bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale)
+bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, double scale, double proximity)
 {   
     double TO_CM = 100.0;
     std::vector<cv::Point> contour;
@@ -84,7 +86,7 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, doubl
                 break;
             case -1:   //-1 (point lies outside polygon)
                 
-                if((dist< 0.0 && dist > -1.0))
+                if((dist< 0.0 && dist > proximity))
                 {
                     return true;//Point outside polygon but bit closer to edge so remove this with some threshold distance   
                 }
@@ -105,12 +107,14 @@ bool PRM::point_liesin_polygon(Point pt,std::vector<Polygon> cv_poly_list, doubl
 
 void PRM::generate_gaussian_points()
 {
-    Point test_pt ,Guassian_Point;
+    Point test_pt ,Gaussian_Point;
     int count=0,inside_counter=0; 
     //std::cout << " Start of GaussianT " << std::endl; 
-    std::vector<Point> final_guass_points;
+    std::vector<Point> final_gauss_points;
 
-    int GUASSIAN_RADIUS_POINTS=25;
+    int GAUSSIAN_RADIUS_POINTS=25;
+    int accept_ratio = 2*GAUSSIAN_RADIUS_POINTS/3;
+    int n_accepted_samples;
 
     std::random_device rd; 
     std::mt19937 gen(rd()); 
@@ -118,11 +122,11 @@ void PRM::generate_gaussian_points()
     double mean ,variance;
 
     mean=0;
-    variance=0.01;
+    variance=0.025;
 
     //std::cout << " $$$$$$$$$$$$$$$$$$$$ Sample size to generate  N= " << N <<  std::endl;
 
-    while(count < N){
+    while(count < gauss_samples){
         float x_rand = (rand() / (double) RAND_MAX) * cspace_width; //Generate random sample
         float y_rand = (rand() / (double) RAND_MAX) * cspace_height;
 
@@ -130,47 +134,51 @@ void PRM::generate_gaussian_points()
 
         test_pt.x=x_rand;
         test_pt.y=y_rand;
-        if(point_liesin_polygon(test_pt ,  obstacle_list ,scale )){
+        if(point_liesin_polygon(test_pt , obstacle_list ,scale, -1.0)){
 
             continue; //Just ignore the samples inside obstacles
         }
        //Generate Guassian samples around randompoint and check for any point lies in obstacles
         //samples are centered around random point with some variance
-        for (size_t k = 0; k<GUASSIAN_RADIUS_POINTS; k++) {
+        n_accepted_samples = 0;
+        for (size_t k = 0; k<GAUSSIAN_RADIUS_POINTS; k++) {
 
             std::normal_distribution<float> x_rand2(test_pt.x, variance); //Guassian Sample with
             std::normal_distribution<float> y_rand2(test_pt.y, variance);
 
-            Guassian_Point.x = x_rand2(gen); 
-            Guassian_Point.y = y_rand2(gen);
+            Gaussian_Point.x = x_rand2(gen); 
+            Gaussian_Point.y = y_rand2(gen);
 
-            //If any guassian point lies in obstacles pick/store it as final point 
-            if(point_liesin_polygon(Guassian_Point ,  obstacle_list ,scale )){ 
-               std::cout << " Storing gauss value  count= " << final_guass_points.size() << " G.x " << Guassian_Point.x << " G.y " << Guassian_Point.y << std::endl;
+            //If any guassian point lies in obstacles, increase counter
+            if(point_liesin_polygon(Gaussian_Point ,  obstacle_list ,scale, -1.0 )){ 
+               //std::cout << " Storing gauss value  count= " << final_guass_points.size() << " G.x " << Guassian_Point.x << " G.y " << Guassian_Point.y << std::endl;
+         
+                n_accepted_samples++;               
+            }
 
-               final_guass_points.push_back(test_pt);
-               break;
-               //count++;  //Increment guassians samples per rand()
+            // if number of points inside polygons is bigger than acceptance ratio, save final point
+            if(n_accepted_samples >= accept_ratio){
+                final_gauss_points.push_back(test_pt);
+                count++;
+                break;
             }
           
         }//for
-
-        count++;  //Increment consideration for rand()
-
     }
 
     //std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << final_guass_points.size() <<  std::endl;
 
    
 
-    for (int z=0;z<final_guass_points.size();z++){     
+    for (int z=0;z<final_gauss_points.size();z++){     
 
-          if(!point_liesin_polygon(final_guass_points[z] ,  obstacle_list,scale))
+          if(!point_liesin_polygon(final_gauss_points[z] , obstacle_list,scale, -1.0))
           {
-              free_space_points.push_back(final_guass_points[z]);
+              free_space_points.push_back(final_gauss_points[z]);
           }  
            
     }
+    
 
     //std::cout << " $$$$$$$$$$$$$$$$$$$$  no:of point= " << free_space_points.size() <<  std::endl;
 
@@ -185,14 +193,14 @@ void PRM::generate_random_points()
     int count=0;  
 
     /* Generate random pointst */    
-    while(count < N){
+    while(count < rand_samples){
         float x_rand = (rand() / (double) RAND_MAX) * cspace_width; //Generate random sample
         float y_rand = (rand() / (double) RAND_MAX) * cspace_height;        
 
         test_pt.x=x_rand;
         test_pt.y=y_rand;
 
-        if(!point_liesin_polygon(test_pt ,  obstacle_list, scale)){ //Global obstacle list
+        if(!point_liesin_polygon(test_pt ,  obstacle_list, scale, -3.0)){ //Global obstacle list
             //draw_point(random_points[z], *map_param); 
             free_space_points.emplace_back(test_pt);
             count++;            
@@ -347,7 +355,7 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
             //Using liesin_point
             for(DubinsLine dubins_sample: dubins_path.discretized_curve){                       
                 repath = point_liesin_polygon(Point(dubins_sample.xf, dubins_sample.yf),
-                    obstacle_list, scale);
+                    obstacle_list, scale, -1.0);
                 if(repath){
                     //std::cout << "colliding point: " << dubins_sample.xf <<","<< dubins_sample.yf << std::endl;                  
                     collision_points.push_back(Point(dubins_sample.xf, dubins_sample.yf));
@@ -411,8 +419,12 @@ Path PRM::dubins_planner(float start_theta, float goal_theta, struct dubins_para
 }
 
 void PRM::build_roadmap(std::vector<Point> bias_points, double max_dist, double min_dist){
-    //Sample generation
-    PRM::generate_random_points();      
+   
+    //Random sample generation
+    PRM::generate_random_points(); 
+    
+    //Gausian sample generation
+    PRM::generate_gaussian_points();   
     
     //Call local planner 
     PRM::local_planner(bias_points, max_dist, min_dist);

@@ -76,41 +76,214 @@ std::vector<Polygon> inflate_polygons(const std::vector<Polygon>& obstacle_list,
     return inflated_obstacle_list;
 }
 
-std::vector<Polygon> inflate_walls(double map_w, double map_h, double OFFSET){
-    //variables    
-    Polygon left_wall, right_wall, upper_wall, bottom_wall;
-    std::vector<Polygon> inflated_walls;
+
+std::vector<Polygon> inflate_walls(double map_w, double map_h, double OFFSET, 
+        Polygon gate, Polygon square_gate){
+    
+    Polygon wall;
+    std::vector<Polygon> inflated_walls, final_walls;
+    double diff_x, diff_y, max_diff = 0;
+   
 
     //left wall
-    left_wall.emplace_back(0,0);
-    left_wall.emplace_back(OFFSET,0);
-    left_wall.emplace_back(OFFSET,map_h);
-    left_wall.emplace_back(0,map_h);
-
-    //bottom wall
-    bottom_wall.emplace_back(0,0);
-    bottom_wall.emplace_back(map_w,0);
-    bottom_wall.emplace_back(map_w,OFFSET);
-    bottom_wall.emplace_back(0,OFFSET);
-
-    //right wall
-    right_wall.emplace_back(map_w - OFFSET,0);
-    right_wall.emplace_back(map_w,0);
-    right_wall.emplace_back(map_w,map_h);
-    right_wall.emplace_back(map_w - OFFSET,map_h);
+    wall.emplace_back(0,0);
+    wall.emplace_back(OFFSET,0);
+    wall.emplace_back(OFFSET,map_h);
+    wall.emplace_back(0,map_h);
+    inflated_walls.push_back(wall);
+    wall.clear();
 
     //Upper wall
-    upper_wall.emplace_back(0,map_h - OFFSET);
-    upper_wall.emplace_back(map_w,map_h - OFFSET);
-    upper_wall.emplace_back(map_w,map_h);
-    upper_wall.emplace_back(0,map_h);
+    wall.emplace_back(0,map_h - OFFSET);
+    wall.emplace_back(map_w,map_h - OFFSET);
+    wall.emplace_back(map_w,map_h);
+    wall.emplace_back(0,map_h);
+    inflated_walls.push_back(wall);
+    wall.clear();
 
-    //Push all into vector
-    inflated_walls.push_back(left_wall);
-    inflated_walls.push_back(right_wall);
-    inflated_walls.push_back(upper_wall);
-    inflated_walls.push_back(bottom_wall);
+    //bottom wall
+    wall.emplace_back(0,0);
+    wall.emplace_back(map_w,0);
+    wall.emplace_back(map_w,OFFSET);
+    wall.emplace_back(0,OFFSET);
+    inflated_walls.push_back(wall);
+    wall.clear();
 
-    return inflated_walls;
+    //right wall
+    wall.emplace_back(map_w - OFFSET,0);
+    wall.emplace_back(map_w,0);
+    wall.emplace_back(map_w,map_h);
+    wall.emplace_back(map_w - OFFSET,map_h);
+    inflated_walls.push_back(wall);
+    wall.clear();    
+
+    //Constant variables
+    const double INT_ROUND = 1000.;  
+
+    //Clipper variables
+    ClipperLib::Path gatePoly;
+    ClipperLib::Path wallPoly;
+    ClipperLib::Paths newPoly;
+    
+    int wall_size = inflated_walls.size();
+    final_walls.resize(wall_size);    
+
+    //save square gate    
+    for (size_t j = 0; j<square_gate.size(); j++){        
+        int x = square_gate[j].x*INT_ROUND;
+        int y = square_gate[j].y*INT_ROUND;       
+        //std::cout << "gate: x:" << x << "  y:" << y << std::endl;     
+        gatePoly << ClipperLib::IntPoint(x, y);
+    }  
+
+    for(int i=0; i<inflated_walls.size();i++){
+        wallPoly.clear();
+        wall = inflated_walls[i];
+        for (size_t j = 0; j<wall.size(); j++){        
+            int x = wall[j].x*INT_ROUND;
+            int y = wall[j].y*INT_ROUND;       
+            //std::cout << "wall: x:" << x << "  y:" << y << std::endl;      
+            wallPoly << ClipperLib::IntPoint(x, y);
+        }
+        
+        ClipperLib::Clipper clpr;   
+        clpr.AddPath(wallPoly, ClipperLib::ptSubject, true);
+        clpr.AddPath(gatePoly, ClipperLib::ptClip, true);
+        //ClipperLib::Paths solution;
+        clpr.Execute(ClipperLib::ctDifference, newPoly, ClipperLib::pftEvenOdd, ClipperLib::pftEvenOdd);
+
+        //Save inflated polygon
+        for(const ClipperLib::Path &path: newPoly){                
+            for (const ClipperLib::IntPoint &pt: path){
+                float x = pt.X / INT_ROUND;
+                float y = pt.Y / INT_ROUND;
+                //std::cout << "new_x:" << x << "  new_y:" << y << std::endl;
+                //add vertex (x,y) to current obstacle                       
+                final_walls[i].emplace_back(x, y);            
+            }
+        }        
+    }
+
+    return final_walls;
+}
+
+
+
+Polygon get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot_length, 
+    double* gate_pose, double goal_delta){  
+
+    double RAD2DEG = 180.0/M_PI;
+    double x_sum = 0;
+    double y_sum = 0;
+    int n_vertex = 0;
+    double gate_w, diff_x, diff_y, w_d2, w_d4, w_3d4;
+    //double delta = 0.025;
+    std::vector<double> dist_to_wall; //[left,right,up,down]    
+    double lowest_dist = 100;
+    int closest_wall;
+    Polygon square_gate;
+
+    // Center point of rectangle
+    for(Point vertex : gate){
+        //std::cout << vertex.x <<","<<vertex.y<<std::endl;
+        x_sum += vertex.x;
+        y_sum += vertex.y;
+        n_vertex++;
+    }
+    gate_pose[0] = x_sum/n_vertex; //xc
+    gate_pose[1] = y_sum/n_vertex; //yc
+
+    //gate center point
+    Point gate_center = Point(gate_pose[0], gate_pose[1]);
+
+    //gate_pose
+    dist_to_wall.push_back(gate_pose[0]); //left
+    dist_to_wall.push_back(map_w - gate_pose[0]); //right
+    dist_to_wall.push_back(map_h - gate_pose[1]); //up    
+    dist_to_wall.push_back(gate_pose[1]); //down
+    
+    //Get closest wall
+    for(int i=0;i<dist_to_wall.size();i++){
+        if(dist_to_wall[i] < lowest_dist){
+            lowest_dist = dist_to_wall[i];
+            closest_wall = i;
+        }
+    }
+    //std::cout << "lowest dist:" << lowest_dist << std::endl;
+
+    //gate width (biggest side)
+    for(int i=0;i<gate.size()-1;i++){
+        diff_x = fabs(gate[i].x - gate[i+1].x);
+        diff_y = fabs(gate[i].y - gate[i+1].y);
+        if(diff_x > diff_y){
+            if(diff_x > gate_w){
+                gate_w = diff_x;
+            }
+        }
+        else if(diff_y > gate_w){
+            gate_w = diff_y;
+        }           
+    }
+    //std::cout << "GATE WIDTH: " << gate_w << std::endl;
+
+    //square gate constants
+    Point gate_tl_corner;
+    w_d2 = gate_w/2;
+    w_d4 = gate_w/4;
+    w_3d4 = 3*gate_w/4;
+   
+
+    //Set pose and heading angle depending on closest wall
+    switch (closest_wall){
+    case 0: //left
+        gate_pose[0] = robot_length/2 + goal_delta;
+        gate_pose[2] = M_PI;
+        //std::cout << "closes wall: Left wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
+
+        //get top left corner of square gate
+        gate_tl_corner = Point(gate_center.x-w_d4, gate_center.y+w_d2);
+
+        break;
+    case 1: //right
+        gate_pose[0] = map_w - (robot_length/2 + goal_delta);
+        gate_pose[2] = 0;
+        //std::cout << "closes wall: Right wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
+
+        //get top left corner of square gate
+        gate_tl_corner = Point(gate_center.x-w_3d4, gate_center.y+w_d4);
+
+        break;
+    case 2: //up
+        gate_pose[1] = map_h - (robot_length/2 + goal_delta);
+        gate_pose[2] = M_PI/2;
+        //std::cout << "closes wall: Up wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
+       
+        //get top left corner of square gate
+        gate_tl_corner = Point(gate_center.x-w_d2, gate_center.y+w_d4);
+
+        break;
+    case 3: //down
+        gate_pose[1] = robot_length/2 + goal_delta;
+        gate_pose[2] = -M_PI/2;
+        //std::cout << "closes wall: Down wall, HA:" << gate_pose[2]*RAD2DEG << std::endl;
+        
+        //get top left corner of square gate
+        gate_tl_corner = Point(gate_center.x-w_d2, gate_center.y+w_3d4);
+
+        break;
+    
+    default:
+        printf("No closest wall found\n");
+        break;
+    } 
+
+    //Construct square gate    
+    square_gate.emplace_back(gate_tl_corner);
+    square_gate.emplace_back(gate_tl_corner.x + gate_w, gate_tl_corner.y);
+    square_gate.emplace_back(gate_tl_corner.x + gate_w, gate_tl_corner.y - gate_w);
+    square_gate.emplace_back(gate_tl_corner.x, gate_tl_corner.y - gate_w);
+   
+
+    return square_gate;
 }
 

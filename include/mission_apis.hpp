@@ -31,19 +31,6 @@ struct mission_output_2{
 
 
 /**
- * Return the final pose of the robot at the gate (keeping a safe distance to the wall
- * and with a proper angle depending on the location of the gate)
- * 
- * @param gate - polygon representing the gate location
- * @param gate_pose - pose at the gate (double gate_pose[3])
- * @param map_h - height of map (y-axis)
- * @param map_w - width of map (x-axis)
- * @param goal_delta - proximity to the wall at the gate
- * @output - pose at gate passed by reference
-*/
-void get_gate_pose(const Polygon& gate, double map_h, double map_w, double robot_length,  double* gate_pose, double goal_delta);
-
-/**
  * Perform mission 0: Robot goes from actual position to the gate (no obstacles considered)
  * 
  * @param dubins_param - dubins parameters k_max and discretizer_size
