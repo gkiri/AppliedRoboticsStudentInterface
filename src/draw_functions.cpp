@@ -462,26 +462,26 @@ void drawing_mission_1(std::vector<Polygon> inflated_obstacle_list, Polygon gate
     //draw gate
     draw_polygon(gate, map_param, cv::Scalar(255,20,147));
 
-    //Draw prm_graph
-    for(int i=0; i<miss_output_1.prm_graph.size(); i++){
-         //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
-         graph_node = miss_output_1.prm_graph[i];
-         V = graph_node.first; //Vertex
-         //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
-         E = graph_node.second; //Edges
-         //Draw edges    
-         for(int j=0;j<E.size();j++){ 
-            //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
-            edge_line = to_arc_extract_type(V,E[j],true);
-            draw_line(edge_line, map_param);
-         }
-         //Draw vertex
-         draw_point(V, map_param, cv::Scalar(255,0,0));
-    }  
+    // //Draw prm_graph
+    // for(int i=0; i<miss_output_1.prm_graph.size(); i++){
+    //      //std::cout << "prm raph size: " << prm_graph.size() << std::endl;
+    //      graph_node = miss_output_1.prm_graph[i];
+    //      V = graph_node.first; //Vertex
+    //      //std::cout << "prm V: " << V.x << ", " << V.y << std::endl;
+    //      E = graph_node.second; //Edges
+    //      //Draw edges    
+    //      for(int j=0;j<E.size();j++){ 
+    //         //std::cout << "Edge: " << E[j].x << ", " << E[j].y << std::endl;
+    //         edge_line = to_arc_extract_type(V,E[j],true);
+    //         draw_line(edge_line, map_param);
+    //      }
+    //      //Draw vertex
+    //      draw_point(V, map_param, cv::Scalar(255,0,0));
+    // }  
 
      //Draw sample points  
     for (int z=0;z<miss_output_1.free_space_points.size();z++){
-        draw_point(miss_output_1.free_space_points[z], map_param, cv::Scalar(255,0,0));           
+        draw_point(miss_output_1.free_space_points[z], map_param, cv::Scalar(255,255,255));           
     }
 
      //Draw global_planner path
@@ -512,10 +512,10 @@ void drawing_mission_1(std::vector<Polygon> inflated_obstacle_list, Polygon gate
         draw_dubins_segment(dubins_path_seg, map_param, cv::Scalar(0,255,0));
     } 
 
-    // //Draw collision points      
-    // for(int i=0;i<miss_output_1.collision_points.size();i++){      
-    //   draw_point(miss_output_1.collision_points[i], map_param);
-    // }      
+    //Draw collision points      
+    for(int i=0;i<miss_output_1.collision_points.size();i++){      
+      draw_point(miss_output_1.collision_points[i], map_param);
+    }      
 
 }
 
